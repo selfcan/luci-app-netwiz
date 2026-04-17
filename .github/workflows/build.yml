@@ -10,18 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build LuCI ipk
         uses: sbwml/openwrt-gh-action-sdk@master
         env:
-          ARCH: x86_64-23.05 # 使用通用 x86_64 SDK 编译，产物是 all 架构，全通杀
+          ARCH: x86_64-23.05
           FEEDNAME: packages
           PACKAGES: luci-app-netwiz
           NO_REFRESH_CHECK: true
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: luci-app-netwiz
           path: bin/packages/*/packages/luci-app-netwiz*.ipk
+          compression-level: 0 # v4 建议加上的参数，ipk 已经是压缩包，无需再次压缩
