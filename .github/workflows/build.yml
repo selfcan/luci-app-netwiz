@@ -15,8 +15,8 @@ jobs:
       - name: Build LuCI ipk
         uses: sbwml/openwrt-gh-action-sdk@main   
         env:
-          ARCH: x86_64-23.05.5
-          FEEDNAME: custom             # 恢复为 custom
+          ARCH: x86_64- 25.12.2
+          FEEDNAME: custom
           PACKAGES: luci-app-netwiz
           NO_REFRESH_CHECK: true
 
@@ -24,6 +24,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: luci-app-netwiz
-          # 使用终极通配符，不管包掉落在哪个目录都能精准抓取
           path: bin/packages/*/*/luci-app-netwiz*.ipk
           compression-level: 0
