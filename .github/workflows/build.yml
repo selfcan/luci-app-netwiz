@@ -1,19 +1,17 @@
-name: luci-app-netwiz Build IPK & APK (一键安装版)
+name: luci-app-netwiz Build IPK & APK
 
 on:
   workflow_dispatch:
     inputs:
       highlights:
-        description: '✨ OpenWrt/ImmortalWrt/iStoreOS一键安装版'
+        description: '✨ OpenWrt/ImmortalWrt一键安装版更新说明'
         required: false
         default: '常规维护与稳定性更新。'
 
 jobs:
+  # 多架构并行编译
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write 
-    
     strategy:
       matrix:
         sdk_version: [ "x86_64-23.05.5", "x86_64-snapshot" ]
@@ -32,16 +30,30 @@ jobs:
       - name: Prepare Fixed-Name Packages
         run: |
           mkdir -p release_pkgs
-          # 👇 化繁为简，只保留最纯粹的包名
+          # 化繁为简：找到生成的包并统一命名，找不到也不会报错
           find bin/ -name "luci-app-netwiz*.ipk" -exec cp {} release_pkgs/luci-app-netwiz.ipk \;
           find bin/ -name "luci-app-netwiz*.apk" -exec cp {} release_pkgs/luci-app-netwiz.apk \;
 
-      - name: Upload Artifact
+      - name: Upload Artifacts to Cloud
         uses: actions/upload-artifact@v4
         with:
-          name: luci-app-netwiz-${{ matrix.sdk_version }}
+          name: packages-${{ matrix.sdk_version }}
           path: release_pkgs/*
           compression-level: 0 
+
+  # 二：统一收集并发布
+  release:
+    needs: build  # 💡 核心指令：必须等上面的 build 彻底完成才执行
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+      
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: final_release
+          merge-multiple: true # 把多台机器的 ipk 和 apk 合并到这一个文件夹里！
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
@@ -61,7 +73,6 @@ jobs:
             ```bash
             wget -qO- [https://raw.githubusercontent.com/$](https://raw.githubusercontent.com/$){{ github.repository }}/master/install.sh | sh
             ```
-          files: |
-            release_pkgs/luci-app-netwiz.ipk
-            release_pkgs/luci-app-netwiz.apk
+          # 💡 直接上传文件夹里所有的包
+          files: final_release/*
           generate_release_notes: false
