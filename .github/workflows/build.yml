@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: '🔖 版本号 (保持 Auto 将自动读取上一版并 +0.0.1)'
+        description: '🔖 版本号 (Auto 自动读取上一版本并递增 +0.0.1，支持手动指定（如 v1.0.0）)'
         required: true
         default: 'Auto'
       highlights:
