@@ -134,11 +134,11 @@ return view.extend({
             '           <div style="font-weight: 600; color: #222; font-size: 16px;">启用旁路由模式</div>',
             '           <label class="nw-switch"><input type="checkbox" id="lan-bypass-toggle"><span class="nw-slider"></span></label>',
             '        </div>',
-            '        <div id="lan-bypass-warning" style="display:none; background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; border: 1px solid #fecaca; line-height: 1.7; letter-spacing: 1px;">',
-            '           <b>旁路由模式开启：</b><br>1、DHCP 将会关闭，设备无法从本机获取 IP。<br>2、网关必须填写上级主路由 IP。<br>3、本机 IP 如有变更，请确保访问端与修改后 IP 处于同一网段，否则将<b style="color: #059669;">无法访问本路由器</b>！',
+            '        <div id="lan-bypass-warning" style="display:none; background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; border: 1px solid #fecaca; line-height: 1.7; letter-spacing: 1px; font-weight: bolder;">',
+            '           <b style="font-size: 16px;">旁路由模式开启：</b><br>1、DHCP 将会关闭，设备无法从本机获取 IP。<br>2、网关必须填写上级主路由 IP。<br>3、本机 IP 如有变更，请确保访问端与修改后 IP 处于同一网段，否则将<b style="font-size: 16px; color: #059669;">无法访问本路由器</b>！',
             '        </div>',
-            '        <div id="lan-main-warning" style="background: #f0fdf4; color: #059669; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; border: 1px solid #bbf7d0; line-height: 1.7; letter-spacing: 1px;">',
-            '           <b>主路由模式开启：</b><br>1、DHCP 将会开启，本机负责分配 IP。<br>2、主路由网关通常留空。<br>3、本机 IP 如有变更，请确保访问端与修改后 IP 处于同一网段，否则将<b style="color: #dc2626;">无法访问本路由器</b>！',
+            '        <div id="lan-main-warning" style="background: #f0fdf4; color: #059669; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; border: 1px solid #bbf7d0; line-height: 1.7; letter-spacing: 1px; font-weight: bolder;">',
+            '           <b style="font-size: 16px;">主路由模式开启：</b><br>1、DHCP 将会开启，本机负责分配 IP。<br>2、主路由网关通常留空。<br>3、本机 IP 如有变更，请确保访问端与修改后 IP 处于同一网段，否则将<b style="font-size: 16px; color: #dc2626;">无法访问本路由器</b>！',
             '        </div>',
             '        <div class="cbi-value"><label class="cbi-value-title">本机局域网 IP</label><div class="cbi-value-field"><input type="text" id="lan-ip" placeholder="例: 192.168.1.2" autocomplete="new-password"></div></div>',
             '        <div class="cbi-value"><label class="cbi-value-title">局域网网关</label><div class="cbi-value-field"><input type="text" id="lan-gw" placeholder="主路由留空，旁路由必填" autocomplete="new-password"></div></div>',
@@ -503,10 +503,10 @@ return view.extend({
                 
                 if (selectedMode === 'lan' && arg1 && arg1 !== currentHost) {
                     openModal({ title: '配置已生效', msg: '检测到本机 IP 已变更。<br>即将为您跳转至新管理地址：<br><b>' + arg1 + '</b>', spin: true });
-                    setTimeout(function() { window.location.href = 'http://' + arg1; }, 10000);
+                    setTimeout(function() { window.location.href = 'http://' + arg1; }, 15000);
                 } else {
-                    openModal({ title: '正在应用配置', msg: '底层网络正在重置，请稍候...<br><br><span style="font-size: 14px; color: #555;">(系统将在 10 秒后自动刷新并展示最新状态)</span>', spin: true });
-                    setTimeout(function() { location.reload(); }, 10000); 
+                    openModal({ title: '正在应用配置', msg: '底层网络正在重置，请稍候...<br><br><span style="font-size: 14px; color: #555;">(系统将在 15 秒后自动刷新并展示最新状态)</span>', spin: true });
+                    setTimeout(function() { location.reload(); }, 15000); 
                 }
             };
             
