@@ -241,11 +241,11 @@ return view.extend({
                                                 spin: true // 直接在此开启转圈，不传 okText 则会自动隐藏按钮
                                             });
                                             
-                                            // 执行安装指令
+                                            // 执行安装指令do_install
                                             callNetSetup('do_install').then(function() {
-                                                setTimeout(function() { location.reload(true); }, 7000);
+                                                setTimeout(function() { location.reload(true); }, 12000); 
                                             }).catch(function() {
-                                                setTimeout(function() { location.reload(true); }, 7000);
+                                                setTimeout(function() { location.reload(true); }, 12000); 
                                             });
                                         }
                                     });
