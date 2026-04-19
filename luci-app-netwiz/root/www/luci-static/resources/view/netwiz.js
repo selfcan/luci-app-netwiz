@@ -5,10 +5,20 @@
 'require ui';
 'require uci';
 
+// 💡 这里的版本号为临时版本。每次发布新版，yml会全自动替换为Actions时的版本！
+var CURRENT_VERSION = 'v1.0.0';
+
 var callNetSetup = rpc.declare({
     object: 'netwiz',
     method: 'set_network',
     params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4'],
+    expect: { result: 0 }
+});
+
+// 💡 声明新的自动更新方法
+var callUpdate = rpc.declare({
+    object: 'netwiz',
+    method: 'do_update',
     expect: { result: 0 }
 });
 
@@ -20,9 +30,15 @@ return view.extend({
             '<style>',
             'html, body { overflow-y: scroll !important; scrollbar-gutter: stable; }',
             '.nw-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 80vh; padding-top: 10vh; padding-bottom: 10vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }',
-            '.nw-header { text-align: center; margin-bottom: 40px; background-color: #5e72e4; padding: 25px; margin-top: -100px; border-radius: 0 0 15px 15px; }',
+            '.nw-header { text-align: center; margin-bottom: 40px; background-color: #5e72e4; padding: 25px; margin-top: -100px; border-radius: 0 0 15px 15px; position: relative; }',
             '.nw-main-title { font-size: 35px; font-weight: 600; margin-bottom: 10px; color: #ffffff; letter-spacing: 2px; }',
             '.nw-header p { color: #ffffff; font-size: 16px; opacity: 0.9; margin: 0; letter-spacing: 1px; }',
+            
+            // 💡 右上角炫酷的更新提示徽章样式
+            '#nw-update-badge { position: absolute; top: 25px; right: 25px; display: none; background: #facc15; color: #854d0e; padding: 8px 16px; border-radius: 30px; font-size: 14px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; border: 2px solid #eab308; z-index: 10; animation: pulse 2s infinite; }',
+            '#nw-update-badge:hover { transform: scale(1.05); background: #fde047; }',
+            '@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); } 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); } }',
+            
             '.nw-step { width: 100%; max-width: 750px; text-align: center; animation: slideUp 0.4s ease-out; }',
             '@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }',
             '.nw-card-group { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }',
@@ -30,7 +46,7 @@ return view.extend({
             '.nw-card:hover { transform: translateY(-5px); }',
             '.nw-card[data-mode="router"] { background: rgba(79, 150, 101, 0.85); }',
             '.nw-card[data-mode="pppoe"] { background: rgba(80, 0, 183, 0.85); }',
-            '.nw-card[data-mode="lan"] { background: rgba(245, 54, 92, 0.85); }',
+            '.nw-card[data-mode="lan"] { background: rgba(253, 0, 115, 0.85); }',
             '.nw-badge { width: 54px; height: 54px; line-height: 54px; border-radius: 50%; font-size: 20px; font-weight: bold; margin-bottom: 20px; }',
             '.nw-badge-dhcp { background: #e0f2fe; color: #0284c7; }',
             '.nw-badge-pppoe { background: #f3e8ff; color: #9333ea; }',
@@ -46,8 +62,8 @@ return view.extend({
             'input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active { -webkit-box-shadow: 0 0 0 1000px #f9fafb inset !important; -webkit-text-fill-color: #333 !important; transition: background-color 5000s ease-in-out 0s; }',
             '.nw-actions { margin-top: 35px; display: flex; justify-content: center; gap: 15px; }',
             '.nw-actions button { border-radius: 8px; padding: 10px 24px; font-weight: 500; font-size: 15px; cursor: pointer; border: none; }',
-            '.nw-actions .cbi-button-apply { background: #67A57B; color: white; transition: background 0.2s; }',
-            '.nw-actions .cbi-button-apply:hover { background: #67A57B }',
+            '.nw-actions .cbi-button-apply { background: #10b981; color: white; transition: background 0.2s; }',
+            '.nw-actions .cbi-button-apply:hover { background: #059669; }',
             '.nw-actions .cbi-button-reset { background: #f5365c; color: #fff; transition: background 0.2s; }',
             '.nw-actions .cbi-button-reset:hover { background: red; }',
             '.nw-radio-group { display: flex; gap: 24px; font-size: 15px; color: #333; align-items: center; margin: 0; padding: 0; }',
@@ -76,7 +92,8 @@ return view.extend({
 
             '<div class="nw-wrapper">',
             '  <div class="nw-header">',
-            '    <div class="nw-main-title">网 络 设 置 向 导 <span style="font-size:14px; background:#67A57B; padding:4px 10px; border-radius:6px; vertical-align:middle;">V1.07</span></div>',
+            '    <div id="nw-update-badge">🚀 发现新版本 <span id="nw-new-ver"></span></div>',
+            '    <div class="nw-main-title">网 络 设 置 向 导 <span style="font-size:14px; background:#10b981; padding:4px 10px; border-radius:6px; vertical-align:middle;">' + CURRENT_VERSION + '</span></div>',
             '    <p>「 纯净 · 安全 · 零破坏 」的极简网络配置</p>',
             '  </div>',
 
@@ -134,11 +151,11 @@ return view.extend({
             '           <div style="font-weight: 600; color: #222; font-size: 16px;">启用旁路由模式</div>',
             '           <label class="nw-switch"><input type="checkbox" id="lan-bypass-toggle"><span class="nw-slider"></span></label>',
             '        </div>',
-            '        <div id="lan-bypass-warning" style="display:none; background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; border: 1px solid #fecaca; line-height: 1.7; letter-spacing: 1px; font-weight: bolder;">',
-            '           <b style="font-size: 16px;">旁路由模式开启：</b><br>1、DHCP 将会关闭，设备无法从本机获取 IP。<br>2、网关必须填写上级主路由 IP。<br>3、本机 IP 如有变更，请确保访问端与修改后 IP 处于同一网段，否则将<b style="font-size: 16px; color: #059669;">无法访问本路由器</b>！',
+            '        <div id="lan-bypass-warning" style="display:none; background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; border: 1px solid #fecaca; line-height: 1.7; letter-spacing: 1px;">',
+            '           <b>旁路由模式开启：</b><br>1、DHCP 将会关闭，设备无法从本机获取 IP。<br>2、网关必须填写上级主路由 IP。<br>3、本机 IP 如有变更，请确保访问端与修改后 IP 处于同一网段，否则将<b style="color: #059669;">无法访问本路由器</b>！',
             '        </div>',
-            '        <div id="lan-main-warning" style="background: #f0fdf4; color: #059669; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; border: 1px solid #bbf7d0; line-height: 1.7; letter-spacing: 1px; font-weight: bolder;">',
-            '           <b style="font-size: 16px;">主路由模式开启：</b><br>1、DHCP 将会开启，本机负责分配 IP。<br>2、主路由网关通常留空。<br>3、本机 IP 如有变更，请确保访问端与修改后 IP 处于同一网段，否则将<b style="font-size: 16px; color: #dc2626;">无法访问本路由器</b>！',
+            '        <div id="lan-main-warning" style="background: #f0fdf4; color: #059669; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; border: 1px solid #bbf7d0; line-height: 1.7; letter-spacing: 1px;">',
+            '           <b>主路由模式开启：</b><br>1、DHCP 将会开启，本机负责分配 IP。<br>2、主路由网关通常留空。<br>3、本机 IP 如有变更，请确保访问端与修改后 IP 处于同一网段，否则将<b style="color: #dc2626;">无法访问本路由器</b>！',
             '        </div>',
             '        <div class="cbi-value"><label class="cbi-value-title">本机局域网 IP</label><div class="cbi-value-field"><input type="text" id="lan-ip" placeholder="例: 192.168.1.2" autocomplete="new-password"></div></div>',
             '        <div class="cbi-value"><label class="cbi-value-title">局域网网关</label><div class="cbi-value-field"><input type="text" id="lan-gw" placeholder="主路由留空，旁路由必填" autocomplete="new-password"></div></div>',
@@ -155,7 +172,7 @@ return view.extend({
             '      <div style="background-color: #f8fafc; padding: 15px; font-size: 13.5px; margin-top: 20px; border: 1px solid #e2e8f0; line-height: 1.7; color: #475569; border-radius: 12px;">',
             '        <div style="font-weight: bold; color: #0f172a; margin-bottom: 8px; font-size: 14.5px;">配置生效说明：</div>',
             '        <div style="display: flex; gap: 8px;"><span style="color:#3b82f6;">•</span> <span>点击确认后，底层网络将自动重启并应用新配置。</span></div>',
-            '        <div style="display: flex; gap: 8px;"><span style="color:#67A57B;">•</span> <span>系统将在 10 秒后为您自动刷新或跳转。</span></div>',
+            '        <div style="display: flex; gap: 8px;"><span style="color:#10b981;">•</span> <span>系统将在 15 秒后为您自动刷新或跳转。</span></div>',
             '      </div>',
             '    </div>',
             '    <div class="nw-actions"><button id="btn-back-2" class="cbi-button cbi-button-reset">返回</button><button id="btn-apply" class="cbi-button cbi-button-apply">确认应用</button></div>',
@@ -175,6 +192,47 @@ return view.extend({
         var confirmText = container.querySelector('#confirm-mode-text');
         var modeTextEl = container.querySelector('#current-mode-text');
         var selectedMode = '';
+
+        // 💡 核心：OTA 在线更新检测逻辑
+        function checkUpdate() {
+            fetch('https://api.github.com/repos/huchd0/luci-app-netwiz/releases/latest')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var latestVer = data.tag_name;
+                    if (latestVer && latestVer !== CURRENT_VERSION && latestVer.indexOf('v') === 0) {
+                        var badge = container.querySelector('#nw-update-badge');
+                        var verSpan = container.querySelector('#nw-new-ver');
+                        if (badge && verSpan) {
+                            verSpan.innerText = latestVer;
+                            badge.style.display = 'inline-block';
+                            
+                            badge.addEventListener('click', function() {
+                                openModal({
+                                    title: '✨ 发现新版本 ' + latestVer,
+                                    msg: '<b>更新内容：</b><div style="text-align:left; font-size:13px; background:#f1f5f9; padding:10px; margin-top:10px; border-radius:6px; max-height:150px; overflow-y:auto; border:1px solid #cbd5e1;">' + (data.body || '常规稳定性更新').replace(/\n/g, '<br>') + '</div><br>是否立即在后台静默升级？',
+                                    okText: '立即升级',
+                                    cancelText: '暂不更新',
+                                    onOk: function() {
+                                        openModal({
+                                            title: '🚀 正在自动升级', 
+                                            msg: '正在从云端下载并安装最新版本，请勿关闭路由器电源...<br><br><span style="font-size:13px; color:#666;">(大约需要 30~45 秒，完成后网页将自动刷新)</span>', 
+                                            spin: true
+                                        });
+                                        callUpdate().then(function(){
+                                            setTimeout(function(){ location.reload(); }, 35000);
+                                        }).catch(function(){
+                                            setTimeout(function(){ location.reload(); }, 35000);
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    }
+                }).catch(function(e) { console.log('OTA Check failed', e); });
+        }
+        
+        // 页面渲染完毕后，偷偷检查一次更新
+        setTimeout(checkUpdate, 1500);
 
         function updateStatusDisplay() {
             if (modeTextEl) {
@@ -218,7 +276,7 @@ return view.extend({
                 }
 
                 if (modeTextEl) {
-                    modeTextEl.innerHTML = "<div style='font-size:17px; font-weight:600; margin-bottom:10px; color:#ffffff;font-family: monospace; '>" + sTitle + "</div>" +
+                    modeTextEl.innerHTML = "<div style='font-size:17px; font-weight:600; margin-bottom:10px; color:#ffffff;'>" + sTitle + "</div>" +
                                            "<div style='font-size:15px; font-weight:bold; color:#ffffff; font-family:monospace; letter-spacing:0.5px;'>" + sDetails + "</div>";
                 }
             }).catch(function() {
@@ -230,7 +288,6 @@ return view.extend({
 
         function calculateNetmask(ip) { return '255.255.255.0'; }
 
-        // 💡 极其严格的格式校验器（防乱填）
         function isValidIP(ip) {
             if (!ip) return false;
             var parts = ip.split('.');
@@ -245,7 +302,6 @@ return view.extend({
             return true;
         }
 
-        // 💡 同网段拦截器
         function isSameSubnet(ip1, ip2) {
             if (!ip1 || !ip2) return false;
             var p1 = ip1.split('.');
@@ -332,7 +388,6 @@ return view.extend({
         container.querySelector('#btn-back-1').addEventListener('click', function () { step2.style.display = 'none'; step1.style.display = 'block'; });
         container.querySelector('#btn-back-2').addEventListener('click', function () { step3.style.display = 'none'; step2.style.display = 'block'; });
 
-        // 💡 核心校验步骤 (加入 try-catch 防止崩溃无响应)
         container.querySelector('#btn-next-2').addEventListener('click', function () {
             try {
                 var rTypeEl = container.querySelector('input[name="router_type"]:checked');
