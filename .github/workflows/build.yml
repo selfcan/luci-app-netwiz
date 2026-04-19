@@ -111,15 +111,13 @@ jobs:
           sleep 3
           
           CURRENT_TAG="${{ needs.build.outputs.final_version }}"
-          # 获取当前仓库名称
           REPO="${{ github.repository }}"
           
-          # -R "$REPO" 参数，直接指明仓库，彻底摆脱本地 .git 依赖
-          TAGS_TO_DELETE=$(gh release list -R "$REPO" --limit 100 | awk '{print $1}' | grep -v "$CURRENT_TAG")
+          ALL_TAGS=$(gh release list -R "$REPO" --limit 100 --json tagName -q '.[].tagName')
           
-          for tag in $TAGS_TO_DELETE; do
-            if [ -n "$tag" ]; then
-              echo "正在删除旧版本: $tag"
+          for tag in $ALL_TAGS; do
+            if [ "$tag" != "$CURRENT_TAG" ] && [ -n "$tag" ]; then
+              echo "🎯 锁定并删除旧版本: $tag"
               gh release delete "$tag" -R "$REPO" --cleanup-tag -y || true
             fi
           done
