@@ -14,11 +14,10 @@ var callNetSetup = rpc.declare({
     expect: { result: 0 }
 });
 
-var callUpdate = rpc.declare({
-    object: 'netwiz',
-    method: 'do_update',
-    expect: { result: 0 }
-});
+// 💡 声明三个全新的智能无缝更新接口
+var callPrepareUpdate = rpc.declare({ object: 'netwiz', method: 'prepare_update', expect: { result: 0 } });
+var callCheckStatus = rpc.declare({ object: 'netwiz', method: 'check_update_status', expect: { ready: 0 } });
+var callDoInstall = rpc.declare({ object: 'netwiz', method: 'do_install', expect: { result: 0 } });
 
 return view.extend({
     render: function () {
@@ -204,14 +203,12 @@ return view.extend({
             return 0;
         }
 
-        // 💡 极简版静默探测器：加入了【防缓存】和【限流提示】
         function doUpdateCheck() {
             var badge = container.querySelector('#nw-update-badge');
 
-            // 💡 关键修复：URL 后面加上 ?t=时间戳，彻底打破浏览器缓存！
             fetch('https://api.github.com/repos/huchd0/luci-app-netwiz/releases?t=' + Date.now(), { cache: 'no-store' })
                 .then(function(res) { 
-                    if (!res.ok) throw new Error('API Request Failed: ' + res.status);
+                    if (!res.ok) throw new Error('API Failed: ' + res.status);
                     return res.json(); 
                 })
                 .then(function(data) {
@@ -223,7 +220,8 @@ return view.extend({
                             var cleanText = rawText.split('---')[0].replace(/### ✨ 最新版发布/g, '').trim();
                             if (!cleanText) cleanText = '常规稳定性更新与优化。';
 
-                            if (badge) {
+                            // 💡 核心逻辑：定义显示更新按钮及安装弹窗
+                            var showReadyBadge = function() {
                                 badge.className = 'nw-badge-new';
                                 badge.innerText = '🚀 发现新版本 ' + latestVer;
                                 badge.style.display = 'inline-block'; 
@@ -233,64 +231,52 @@ return view.extend({
                                 badge = newBadge;
 
                                 badge.addEventListener('click', function() {
-                                    var msgHtml = '<b>更新亮点：</b><div style="text-align:left; font-size:13px; background:#f1f5f9; padding:10px; margin-top:10px; border-radius:6px; max-height:150px; overflow-y:auto; border:1px solid #cbd5e1;">' + cleanText.replace(/\n/g, '<br>') + '</div><br>' +
-                                                  '<div class="nw-radio-group" style="flex-direction:column; align-items:flex-start; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-top:15px;">' +
-                                                  '<label style="margin-bottom:12px!important; font-weight:bold; color:#0f172a;"><input type="radio" name="upg_type" value="silent" checked> 🚀 一键后台静默升级 (推荐)</label>' +
-                                                  '<label style="font-weight:bold; color:#475569;"><input type="radio" name="upg_type" value="manual"> 🛠️ 获取手动安装指令与安装包</label>' +
-                                                  '</div>';
+                                    // 💡 极简弹窗：不再有任何单选框，因为安装包已经在本地躺好了！
+                                    var msgHtml = '<b>✨ 新版本安装包已在后台悄悄准备就绪！</b><br><br><b>更新亮点：</b><div style="text-align:left; font-size:13px; background:#f1f5f9; padding:10px; margin-top:10px; border-radius:6px; max-height:150px; overflow-y:auto; border:1px solid #cbd5e1;">' + cleanText.replace(/\n/g, '<br>') + '</div>';
 
                                     openModal({
-                                        title: '✨ 发现新版本 ' + latestVer,
+                                        title: '🚀 升级准备就绪 (' + latestVer + ')',
                                         msg: msgHtml,
-                                        okText: '确认升级',
+                                        okText: '立即安装并重启',
                                         cancelText: '暂不更新',
                                         onOk: function() {
-                                            var isManualCheck = container.querySelector('input[name="upg_type"]:checked').value === 'manual';
+                                            openModal({
+                                                title: '⚙️ 正在极速安装', 
+                                                msg: '正在部署本地更新包，请稍候...<br><br><div class="nw-spinner" style="margin-top:20px; width:30px; height:30px;"></div><span style="font-size:13px; color:#666;">安装非常快，系统即将自动刷新...</span>', 
+                                                spin: false 
+                                            });
                                             
-                                            if (isManualCheck) {
-                                                openModal({
-                                                    title: '🛠️ 手动升级指南',
-                                                    msg: '<b>方式一：SSH 终端一键安装指令</b><br><input type="text" value="wget -qO- https://raw.githubusercontent.com/huchd0/luci-app-netwiz/master/install.sh | sh" readonly style="width:100%; margin:10px 0 20px; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family:monospace; background:#f1f5f9;" onclick="this.select()"><br>' +
-                                                         '<b>方式二：下载离线包</b><br><a href="' + data[0].html_url + '" target="_blank" style="display:inline-block; margin-top:10px; color:#fff; background:#3b82f6; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:bold;">👉 前往 GitHub 下载</a>',
-                                                    okText: '关闭'
-                                                });
-                                            } else {
-                                                openModal({
-                                                    title: '🚀 正在全自动升级', 
-                                                    msg: '正在从云端拉取并部署新版本，请勿断开路由器电源...<br><br><div class="nw-spinner" style="margin-top:20px; width:30px; height:30px;"></div><span style="font-size:13px; color:#666;">系统正在智能侦测更新进度，完成后将自动刷新...</span>', 
-                                                    spin: false 
-                                                });
-                                                
-                                                var updateStarted = false;
-                                                var beginPolling = function() {
-                                                    if (updateStarted) return;
-                                                    updateStarted = true;
-                                                    setTimeout(function() {
-                                                        var pollTimer = setInterval(function() {
-                                                            fetch(window.location.href.split('#')[0] + '?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' })
-                                                                .then(function(res) {
-                                                                    if (res.ok) {
-                                                                        clearInterval(pollTimer);
-                                                                        location.reload(true);
-                                                                    }
-                                                                }).catch(function(e) {});
-                                                        }, 3000);
-                                                    }, 15000);
-                                                };
-
-                                                callUpdate().then(beginPolling).catch(beginPolling);
-                                                setTimeout(beginPolling, 5000);
-                                            }
+                                            // 💡 触发本地无缝安装，并设置刷新倒计时
+                                            callDoInstall().then(function() {
+                                                setTimeout(function() { location.reload(true); }, 7000); 
+                                            }).catch(function() {
+                                                setTimeout(function() { location.reload(true); }, 7000);
+                                            });
                                         }
                                     });
                                 });
-                            }
+                            };
+
+                            // 💡 无缝热更新状态机：先查状态，没下载就触发下载，下载完再显示火箭
+                            callCheckStatus().then(function(res) {
+                                if (res === 1) {
+                                    showReadyBadge(); // 之前已经下载好了，直接现身
+                                } else {
+                                    callPrepareUpdate(); // 告诉底层：偷偷去下载吧
+                                    // 开始查岗，每 4 秒问一次下载完了没
+                                    var pollStatus = setInterval(function() {
+                                        callCheckStatus().then(function(r) {
+                                            if (r === 1) {
+                                                clearInterval(pollStatus);
+                                                showReadyBadge(); // 下好了！突然现身
+                                            }
+                                        }).catch(function(){});
+                                    }, 4000);
+                                }
+                            }).catch(function(e) { console.error('Status check failed', e); });
                         }
                     }
-                }).catch(function(e) { 
-                    // 如果被 GitHub 限流了，会在浏览器 F12 控制台里打出明确警告
-                    console.error('OTA Check failed! (可能是 API 超过一小时 60 次限制，或者网络被墙):', e); 
-                });
+                }).catch(function(e) { console.error('OTA Check failed:', e); });
         }
         
         setTimeout(doUpdateCheck, 1500);
