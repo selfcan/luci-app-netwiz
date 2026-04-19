@@ -2,7 +2,6 @@
 
 case "$1" in
     list)
-        # 新增 do_update 方法供前端调用
         echo '{ "set_network": { "mode": "string", "arg1": "string", "arg2": "string", "arg3": "string", "arg4": "string" }, "do_update": {} }'
         exit 0
         ;;
@@ -68,14 +67,17 @@ case "$1" in
                 exit 0
                 ;;
             
-            # 静默更新功能
             do_update)
                 echo '{"result":0}'
-                # 后台异步执行一键安装脚本，完全不阻塞前端
-                (
-                    sleep 2
-                    wget -qO- https://raw.githubusercontent.com/huchd0/luci-app-netwiz/master/install.sh | sh
-                ) >/dev/null 2>&1 &
+                # 写入临时脚本，赋权，脱离父进程执行
+                cat << 'EOF' > /tmp/nw_do_update.sh
+#!/bin/sh
+sleep 2
+wget -qO- --no-check-certificate https://raw.githubusercontent.com/huchd0/luci-app-netwiz/master/install.sh | sh
+rm -f /tmp/nw_do_update.sh
+EOF
+                chmod +x /tmp/nw_do_update.sh
+                /tmp/nw_do_update.sh >/tmp/nw_update_debug.log 2>&1 &
                 exit 0
                 ;;
         esac
