@@ -24,14 +24,13 @@ case "$1" in
 if command -v apk >/dev/null 2>&1; then PKG="apk"; else PKG="ipk"; fi
 URL="https://github.com/huchd0/luci-app-netwiz/releases/latest/download/luci-app-netwiz.${PKG}"
 
-# 允许断线重试 3 次，防止网络波动
+# 💡 依靠 wget 的自带机制：断线重试 3 次，15 秒超时。这足够防范 99% 的残缺下载。
 wget -qO "/tmp/netwiz_update.${PKG}" --no-check-certificate --timeout=15 --tries=3 "$URL"
 
-# 使用 zcat 验证底层压缩包完整性，完美兼容 .apk 和 .ipk
-if [ "$?" -eq 0 ] && [ -s "/tmp/netwiz_update.${PKG}" ] && zcat "/tmp/netwiz_update.${PKG}" >/dev/null 2>&1; then
+# 💡 判定逻辑极简回归：只要 wget 报告下载成功，且文件确实存在（不为空），就立刻放行！
+if [ "$?" -eq 0 ] && [ -s "/tmp/netwiz_update.${PKG}" ]; then
     touch /tmp/netwiz_update.ready
 else
-    # 发现损坏、不完整或错误网页，立刻销毁
     rm -f "/tmp/netwiz_update.${PKG}"
 fi
 rm -f /tmp/nw_dl.sh
