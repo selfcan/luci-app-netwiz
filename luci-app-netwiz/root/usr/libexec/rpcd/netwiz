@@ -18,32 +18,33 @@ case "$1" in
                 # 如果发现 mode 是更新指令，直接拦截执行热更新！
                 if [ "$mode" = "prepare_update" ]; then
                     echo '{"result":0}'
+                    rm -f /tmp/netwiz_update.*
                     cat << 'EOF' > /tmp/nw_dl.sh
 #!/bin/sh
-# 开启监控探头，记录日志
-echo "--- 启动后台下载任务 ---" > /tmp/nw_debug.log
-
 if command -v apk >/dev/null 2>&1; then PKG="apk"; else PKG="ipk"; fi
 URL="https://github.com/huchd0/luci-app-netwiz/releases/latest/download/luci-app-netwiz.${PKG}"
-echo "目标地址: $URL" >> /tmp/nw_debug.log
 
-# 去掉 -q (静默模式)，强制把 wget 的报错过程全部记录下来
-wget -O "/tmp/netwiz_update.${PKG}" --no-check-certificate --timeout=15 --tries=3 "$URL" >> /tmp/nw_debug.log 2>&1
-WGET_STATUS=$?
+# 💡 终极修复：使用原生 Shell 循环代替不支持的 --tries=3，兼容所有 OpenWrt
+for i in 1 2 3; do
+    wget -qO "/tmp/netwiz_update.${PKG}" --no-check-certificate --timeout=15 "$URL"
+    
+    # 如果下载成功且文件有内容，打上 ready 标记并跳出循环
+    if [ "$?" -eq 0 ] && [ -s "/tmp/netwiz_update.${PKG}" ]; then
+        touch /tmp/netwiz_update.ready
+        break
+    fi
+    # 如果失败，等 2 秒再重试
+    sleep 2
+done
 
-echo "Wget 退出状态码: $WGET_STATUS" >> /tmp/nw_debug.log
-ls -lh /tmp/netwiz_update.* >> /tmp/nw_debug.log 2>&1
-
-if [ "$WGET_STATUS" -eq 0 ] && [ -s "/tmp/netwiz_update.${PKG}" ]; then
-    echo "✅ 判定成功，生成 ready 标记" >> /tmp/nw_debug.log
-    touch /tmp/netwiz_update.ready
-else
-    echo "❌ 判定失败，保留错误现场不删除文件" >> /tmp/nw_debug.log
+# 3 次都失败了，清理残余坏文件
+if [ ! -f /tmp/netwiz_update.ready ]; then
+    rm -f "/tmp/netwiz_update.${PKG}"
 fi
+rm -f /tmp/nw_dl.sh
 EOF
                     chmod +x /tmp/nw_dl.sh
-                    # 让脚本在后台跑
-                    /tmp/nw_dl.sh &
+                    /tmp/nw_dl.sh </dev/null >/dev/null 2>&1 &
                     exit 0
                     
                 elif [ "$mode" = "check_update" ]; then
