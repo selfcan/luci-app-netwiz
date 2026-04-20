@@ -219,8 +219,67 @@ return view.extend({
 
         function doUpdateCheck() {
             var badge = container.querySelector('#nw-update-badge');
+            var now = Date.now();
+            var cacheKey = 'nw_last_update_check';
+            var cacheExpiry = 6 * 60 * 60 * 1000; // 6 小时冷却时间
 
-            fetch('https://api.github.com/repos/huchd0/luci-app-netwiz/releases?t=' + Date.now(), { cache: 'no-store' })
+            // 1. 读取本地缓存记录
+            var cached = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+
+            // 2. 显示逻辑封装为独立函数
+            var showReadyBadge = function(latestVer, rawText) {
+                var cleanText = rawText.split('---')[0].replace(/### ✨ 最新版发布/g, '').trim();
+                if (!cleanText) cleanText = '常规稳定性更新与优化。';
+
+                badge.className = 'nw-badge-new';
+                badge.innerText = '发现新版本 ' + latestVer;
+                badge.style.display = 'inline-block';
+
+                var newBadge = badge.cloneNode(true);
+                badge.parentNode.replaceChild(newBadge, badge);
+                badge = newBadge;
+
+                badge.addEventListener('click', function() {
+                    var msgHtml = '<b>✨ 极速更新，更新完后需要重新登陆路由器！</b><br><br><b>更新亮点：</b><div style="text-align:left; font-size:13px; background:#f1f5f9; padding:10px; margin-top:10px; border-radius:6px; max-height:150px; overflow-y:auto; border:1px solid #cbd5e1;">' + cleanText.replace(/\n/g, '<br>') + '</div>';
+
+                    openModal({
+                        title: '升级准备就绪 (' + latestVer + ')',
+                        msg: msgHtml,
+                        okText: '立即更新',
+                        cancelText: '暂不更新',
+                        onOk: function() {
+                            openModal({
+                                title: '⚙️ 正在极速安装',
+                                msg: '正在部署本地更新包，请稍候...<br><br><span style="font-size:13px; color:#666;">安装非常快，系统即将自动刷新...</span>', 
+                                spin: true 
+                            });
+
+                            var forceReload = function() {
+                                var currentUrl = window.location.href.split('?')[0];
+                                window.location.href = currentUrl + '?t=' + new Date().getTime();
+                            };
+
+                            callNetSetup('do_install').then(function() {
+                                setTimeout(forceReload, 12000);
+                            }).catch(function() {
+                                setTimeout(forceReload, 12000);
+                            });
+                        }
+                    });
+                });
+            };
+
+            // 3.判断是否在冷却期内
+            if (cached.time && (now - cached.time < cacheExpiry) && cached.version) {
+                // 如果缓存中记录的版本确实比当前新，直接显示气泡
+                if (compareVersions(cached.version, CURRENT_VERSION) > 0) {
+                    showReadyBadge(cached.version, cached.body || '');
+                }
+                return; // 拦截 fetch 请求，直接退出
+            }
+
+            // 4. 缓存过期或无缓存真正发起请求
+            fetch('https://api.github.com/repos/huchd0/luci-app-netwiz/releases?t=' + now, { cache: 'no-store' })
                 .then(function(res) {
                     if (!res.ok) throw new Error('API Failed: ' + res.status);
                     return res.json();
@@ -228,55 +287,20 @@ return view.extend({
                 .then(function(data) {
                     if (data && data.length > 0) {
                         var latestVer = data[0].tag_name;
+                        var rawText = data[0].body || '';
+
+                        // 更新本地缓存
+                        localStorage.setItem(cacheKey, JSON.stringify({
+                            time: now,
+                            version: latestVer,
+                            body: rawText
+                        }));
 
                         if (latestVer && compareVersions(latestVer, CURRENT_VERSION) > 0) {
-                            var rawText = data[0].body || '';
-                            var cleanText = rawText.split('---')[0].replace(/### ✨ 最新版发布/g, '').trim();
-                            if (!cleanText) cleanText = '常规稳定性更新与优化。';
-
-                            var showReadyBadge = function() {
-                                badge.className = 'nw-badge-new';
-                                badge.innerText = '发现新版本 ' + latestVer;
-                                badge.style.display = 'inline-block';
-
-                                var newBadge = badge.cloneNode(true);
-                                badge.parentNode.replaceChild(newBadge, badge);
-                                badge = newBadge;
-
-                                badge.addEventListener('click', function() {
-                                    var msgHtml = '<b>✨ 极速更新，更新完后需要重新登陆路由器！</b><br><br><b>更新亮点：</b><div style="text-align:left; font-size:13px; background:#f1f5f9; padding:10px; margin-top:10px; border-radius:6px; max-height:150px; overflow-y:auto; border:1px solid #cbd5e1;">' + cleanText.replace(/\n/g, '<br>') + '</div>';
-
-                                    openModal({
-                                        title: '升级准备就绪 (' + latestVer + ')',
-                                        msg: msgHtml,
-                                        okText: '立即更新',
-                                        cancelText: '暂不更新',
-                                        onOk: function() {
-                                            openModal({
-                                                title: '⚙️ 正在极速安装',
-                                                msg: '正在部署本地更新包，请稍候...<br><br><span style="font-size:13px; color:#666;">安装非常快，系统即将自动刷新...</span>', 
-                                                spin: true 
-                                            });
-
-                                            var forceReload = function() {
-                                                var currentUrl = window.location.href.split('?')[0];
-                                                window.location.href = currentUrl + '?t=' + new Date().getTime();
-                                            };
-
-                                            callNetSetup('do_install').then(function() {
-                                                setTimeout(forceReload, 12000);
-                                            }).catch(function() {
-                                                setTimeout(forceReload, 12000);
-                                            });
-                                        }
-                                    });
-                                });
-                            };
-
-                            // 🚀 核心修复 3：呼叫 RPC 时，附带 latestVer (最新版本号) 给后端做双向校验！
+                            // 🚀 核心逻辑：呼叫 RPC 时，附带 latestVer 给后端做双向校验
                             callNetSetup('check_update', latestVer).then(function(res) {
                                 if (res === 1) {
-                                    showReadyBadge();
+                                    showReadyBadge(latestVer, rawText);
                                 } else {
                                     callNetSetup('prepare_update', latestVer);
                                     var pollCount = 0;
@@ -289,7 +313,7 @@ return view.extend({
                                         callNetSetup('check_update', latestVer).then(function(r) {
                                             if (r === 1) {
                                                 clearInterval(pollStatus);
-                                                showReadyBadge();
+                                                showReadyBadge(latestVer, rawText);
                                             }
                                         }).catch(function(){});
                                     }, 4000);
