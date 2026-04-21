@@ -414,6 +414,7 @@ function _t(key) {
 
 return view.extend({
     render: function () {
+
         if (!document.querySelector('meta[name="viewport"]')) {
             var meta = document.createElement('meta');
             meta.name = 'viewport';
@@ -430,13 +431,15 @@ return view.extend({
             '.nw-header { text-align: center; margin-bottom: 40px; background-color: #5e72e4; padding: 25px; margin-top: -100px; border-radius: 0 0 15px 15px; position: relative; }',
             '.nw-main-title { font-size: 35px; font-weight: 600; margin-bottom: 10px; color: #ffffff; letter-spacing: 2px; }',
             '.nw-header p { color: #ffffff; font-size: 16px; opacity: 0.9; margin: 0; letter-spacing: 1px; }',
+
             '#nw-lang-switch { position: absolute; top: -15px; left: 15px; z-index: 100; padding: 5px 10px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); font-size: 13px; outline: none; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s; }',
             '#nw-lang-switch:hover { background: rgba(255,255,255,0.25); }',
             '#nw-lang-switch option { color: #333; background: #fff; }',
-            '#nw-update-badge { position: absolute; top: 20px; right: -200px; white-space: nowrap; padding: 8px 16px; border-radius: 30px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; z-index: 10; display: none; }',
-            '.nw-badge-new { background: #facc15 !important; color: #854d0e !important; border: 2px solid #eab308 !important; animation: pulse 2s infinite; }',
-            '.nw-badge-new:hover { transform: scale(1.05); background: #fde047 !important; }',
-            '@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); } 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); } }',
+
+            '#nw-update-badge { position: absolute; top: 10px; right: -200px; white-space: nowrap; padding: 8px 16px; border-radius: 30px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; z-index: 10; display: none; background: rgba(255, 255, 255, 0.15);}',
+            '.nw-badge-new { color: #fff !important; border: 1px solid rgba(255, 255, 255, 0.3); animation: pulse 2s infinite; }',
+            '.nw-badge-new:hover { transform: scale(1.05);  background: rgba(255, 255, 255, 0.25); }',
+            '@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); } 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); } }',
             '.nw-step { width: 100%; max-width: 750px; text-align: center; animation: slideUp 0.4s ease-out; }',
             '@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }',
             '.nw-card-group { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }',
@@ -490,6 +493,7 @@ return view.extend({
             '.nw-modal-btn-danger:hover { background: #dc2626; }',
             '.nw-hl { color: #facc15; font-weight: bold; }',
 
+            /* max-width: 768px */
             '@media screen and (max-width: 768px) {',
             '  .nw-wrapper { padding-top: 3vh; padding-bottom: 5vh; }',
             '  .nw-header { margin-top: -30px; padding: 20px 15px; width: 92%; box-sizing: border-box; border-radius: 12px; }',
@@ -502,14 +506,15 @@ return view.extend({
             '  .nw-top-back { top: 12px; left: 12px; width: 32px; height: 32px; }',
             '  .nw-step-title { font-size: 18px; margin-top: 15px; margin-bottom: 20px; }',
             '  #current-mode-display { width: 92%; min-width: auto; padding: 15px; box-sizing: border-box; }',
-            '  #nw-lang-switch { top: -15px; left: 2px; font-size: 12px; padding: 4px 8px; }',
-            '  .nw-actions { width: 92%; margin: 20px auto 0; gap: 10px; }',
-            '  .nw-actions button { padding: 12px 10px; font-size: 14px; flex: 1; }',
-            '  #nw-global-modal .nw-modal-box { padding: 25px 20px; width: 85%; }',
-            '  #nw-global-btn-wrap { flex-direction: column; gap: 10px; }',
-            '  #nw-global-btn-wrap button { width: 100%; padding: 12px; }',
-            '  #nw-update-badge { right: -30px; top: -40px;}',
+            '  #nw-lang-switch { left: 10px; font-size: 12px; padding: 4px 8px; }',
             '  .nw-radio-group { flex-wrap: wrap; gap: 12px; }',
+            '  .nw-actions { width: 100%; margin: 20px auto 0; display: flex; flex-direction: row; gap: 12px; box-sizing: border-box; }',
+            '  .nw-actions button { flex: 1; padding: 12px 0; font-size: 15px; margin: 0; }',
+            '  #nw-global-modal .nw-modal-box { padding: 25px 20px; width: 85%; }',
+            '  #nw-global-btn-wrap { flex-direction: row; gap: 12px; }',
+            '  #nw-global-btn-wrap button { flex: 1; padding: 12px 0; margin: 0; }',
+            '  #nw-update-badge { top: -20px; right: -30px; }',
+
             '}',
             '</style>',
 
@@ -519,6 +524,7 @@ return view.extend({
             '    <option value="zh-tw">繁體中文</option>',
             '    <option value="en">English</option>',
             '  </select>',
+
             '  <div class="nw-header">',
             '    <div id="nw-update-badge"></div>',
             '    <div class="nw-main-title">{{TITLE}} <span style="font-size:14px; background:#67A57B; padding:4px 10px; border-radius:6px; vertical-align:middle;">' + CURRENT_VERSION + '</span></div>',
@@ -627,6 +633,7 @@ return view.extend({
         var modeTextEl = container.querySelector('#current-mode-text');
         var selectedMode = '';
 
+        // 语言切換
         var langSwitch = container.querySelector('#nw-lang-switch');
         if (langSwitch) {
             langSwitch.value = curLang;
@@ -737,7 +744,7 @@ return view.extend({
                     var rawIfaces = results[2] || {};
                     var ifaces = Array.isArray(rawIfaces.interface) ? rawIfaces.interface : (Array.isArray(rawIfaces) ? rawIfaces : []);
                     var wProto = safeUciGet('network', 'wan', 'proto', '').toLowerCase();
-                    
+
                     var activeWan = ifaces.find(function(i) { return i && (i.interface === 'wan' || i.proto === wProto || i.device === 'eth0' || i.device === 'wan'); }) || {};
                     var isWanUp = activeWan.up === true;
                     var liveWanIp = ((activeWan['ipv4-address'] && activeWan['ipv4-address'][0]) ? activeWan['ipv4-address'][0].address : '').split('/')[0];
@@ -756,7 +763,7 @@ return view.extend({
                     if (container.querySelector('#router-gw')) container.querySelector('#router-gw').value = (wGw !== _t('TXT_NOT_SET')) ? wGw : '';
                     if (container.querySelector('#lan-ip')) container.querySelector('#lan-ip').value = lIp;
                     if (container.querySelector('#lan-gw')) container.querySelector('#lan-gw').value = (lGw !== _t('TXT_NOT_SET')) ? lGw : '';
-                    
+
                     var bypassToggle = container.querySelector('#lan-bypass-toggle');
                     if (bypassToggle) {
                         bypassToggle.checked = isBypass;
@@ -798,7 +805,7 @@ return view.extend({
 
                     if (modeTextEl) {
                         modeTextEl.innerHTML = "<div style='font-size:17px; font-weight:600; margin-bottom:10px; color:#ffffff; font-family: monospace; display: flex; align-items: center; justify-content: center;'>" + sTitle + statusBadge + "</div>" +
-                                               "<div style='font-size:15px; font-weight:bold; color:#ffffff; font-family:monospace; letter-spacing:0.5px;'>" + sDetails + "</div>";
+                                                "<div style='font-size:15px; font-weight:bold; color:#ffffff; font-family:monospace; letter-spacing:0.5px;'>" + sDetails + "</div>";
                     }
                 }).catch(function(err) {
                     if (modeTextEl) modeTextEl.innerHTML = "<div style='color:#ef4444; font-weight:bold;'>" + _t('ERR_RD_SYS') + "</div>";
@@ -819,9 +826,9 @@ return view.extend({
         function calculateNetmask(ip) {
             if (!ip) return '255.255.255.0';
             var firstByte = parseInt(ip.split('.')[0], 10);
-            if (firstByte >= 1 && firstByte <= 126) return '255.0.0.0';       
-            if (firstByte >= 128 && firstByte <= 191) return '255.255.0.0';     
-            return '255.255.255.0'; 
+            if (firstByte >= 1 && firstByte <= 126) return '255.0.0.0';
+            if (firstByte >= 128 && firstByte <= 191) return '255.255.0.0';
+            return '255.255.255.0';
         }
 
         function isValidIP(ip) {
