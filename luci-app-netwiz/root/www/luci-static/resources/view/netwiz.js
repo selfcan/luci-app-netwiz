@@ -653,7 +653,7 @@ return view.extend({
         function doUpdateCheck() {
             var now = Date.now();
             var cacheKey = 'nw_last_update_check';
-            var cacheExpiry = 5 * 60 * 1000;
+            var cacheExpiry = 10 * 60 * 1000;
             var cached = JSON.parse(localStorage.getItem(cacheKey) || '{}');
 
             var showReadyBadge = function(latestVer, rawText) {
