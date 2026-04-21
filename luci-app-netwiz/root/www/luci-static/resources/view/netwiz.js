@@ -10,7 +10,7 @@
 'require uci';
 'require poll';
 
-var RAW_VERSION = 'v1.0.16';
+var RAW_VERSION = 'v1.0.0';
 
 function __cmp(v1, v2) {
     var p1 = String(v1).replace(/[^0-9\.]/g, '').split('.');
@@ -25,7 +25,7 @@ function __cmp(v1, v2) {
     return 0;
 }
 
-// 解决缓存
+// 缓存版本号标记
 var cachedVer = localStorage.getItem('nw_ver');
 if (!cachedVer || __cmp(RAW_VERSION, cachedVer) > 0) {
     cachedVer = RAW_VERSION;
@@ -46,7 +46,6 @@ var getWanStatus = rpc.declare({
     expect: { '': {} } 
 });
 
-// 多语言设置
 var savedLang = localStorage.getItem('nw_lang_override');
 var curLang = 'zh-cn';
 
@@ -180,7 +179,9 @@ var i18n = {
         'U_BTN_NOW': 'Update Now',
         'U_BTN_LATER': 'Not Now',
         'U_INST': 'Installing rapidly',
-        'U_INST_MSG': 'Deploying new version...<br><br><span style="font-size:13px; color:#10b981; font-weight:bold;">For security, re-login is required after install.</span><br><br><span style="font-size:12px; color:#666;">(Auto-redirect in 12s. If frozen, press Ctrl+F5)</span>'
+        'U_INST_MSG': 'Deploying new version...<br><br><span style="font-size:13px; color:#10b981; font-weight:bold;">Installing in background, please do not close.</span><br><br><span style="font-size:12px; color:#666;">(Estimated 12 seconds)</span>',
+        'U_DONE_TIT': 'Update Complete',
+        'U_DONE_MSG': 'The new version has been installed in the background.<br><br><span style="color:#059669; font-weight:bold;">The red dot has been cleared.</span><br><br><small>Note: New features will take effect on your next login or manual refresh.</small>'
     },
     'zh-tw': {
         'TITLE': '網 路 設 置 精 靈',
@@ -262,8 +263,8 @@ var i18n = {
         'M_FMT_GW': '您填寫的閘道器 IP 不合法，請檢查！',
         'M_LOGIC_TIT': '邏輯錯誤',
         'M_LOGIC_BYP': '開啟旁路由模式必須填寫上級閘道器 IP。',
-        'M_SAME_GW': 'WAN 埠靜態 IP 绝不能與閘道器相同！',
-        'M_SAME_BYP': '旁路由的【本機 IP】绝不能與【閘道器】相同！',
+        'M_SAME_GW': 'WAN 埠靜態 IP 絕不能與閘道器相同！',
+        'M_SAME_BYP': '旁路由的【本機 IP】絕不能與【閘道器】相同！',
         'M_NO_MOD_TIT': '無需修改',
         'M_NO_MOD_MSG': '您的設定與當前路由器底層配置完全一致。',
         'M_EXIT': '退出首頁',
@@ -298,12 +299,14 @@ var i18n = {
         'M_HIDDEN': '已隱藏',
         'M_IP_GW': 'IP及閘道器',
         'M_AUTO_UP': '由上級路由自動分配',
-        'U_NEW': '发现新版本 ',
+        'U_NEW': '發現新版本 ',
         'U_READY': '升級準備就绪 (',
         'U_BTN_NOW': '立即更新',
         'U_BTN_LATER': '暫不更新',
         'U_INST': '正在極速安裝',
-        'U_INST_MSG': '新版本部署中，底層權限系統正在重置...<br><br><span style="font-size:13px; color:#10b981; font-weight:bold;">安裝完成後，為確保安全，系統將要求您重新登入。</span><br><br><span style="font-size:12px; color:#666;">(網頁將在 15 秒後自動跳轉，若卡住請按 Ctrl+F5)</span>'
+        'U_INST_MSG': '新版本部署中...<br><br><span style="font-size:13px; color:#10b981; font-weight:bold;">正在背景靜默安裝，請勿關閉頁面。</span><br><br><span style="font-size:12px; color:#666;">(預計需要 12 秒)</span>',
+        'U_DONE_TIT': '更新完成',
+        'U_DONE_MSG': '新版本已在背景安裝完畢。<br><br><span style="color:#059669; font-weight:bold;">介面已標記為最新，小紅點已消除。</span><br><br><small>註：新功能將在您下次重新登入或刷新時生效。</small>'
     },
     'zh-cn': {
         'TITLE': '网 络 设 置 向 导',
@@ -426,7 +429,9 @@ var i18n = {
         'U_BTN_NOW': '立即更新',
         'U_BTN_LATER': '暂不更新',
         'U_INST': '正在极速安装',
-        'U_INST_MSG': '新版本部署中，底层权限系统正在重置...<br><br><span style="font-size:13px; color:#10b981; font-weight:bold;">安装完成后，为确保安全，系统将要求您重新登录。</span><br><br><span style="font-size:12px; color:#666;">(网页将在 15 秒后自动跳转，若卡住请按 Ctrl+F5)</span>'
+        'U_INST_MSG': '新版本部署中...<br><br><span style="font-size:13px; color:#10b981; font-weight:bold;">正在后台静默安装，请勿关闭页面。</span><br><br><span style="font-size:12px; color:#666;">(预计需要 12 秒)</span>',
+        'U_DONE_TIT': '更新完成',
+        'U_DONE_MSG': '新版本已在后台安装完毕。<br><br><span style="color:#059669; font-weight:bold;">界面已标记为最新，小红点已消除。</span><br><br><small>注：新功能将在您下次重新登录或刷新时生效。</small>'
     }
 };
 
@@ -457,7 +462,7 @@ return view.extend({
             '#nw-lang-switch:hover { background: rgba(255,255,255,0.25); }',
             '#nw-lang-switch option { color: #333; background: #fff; }',
 
-            /* 右上角红点与悬浮提示样式 */
+            /* 红点与悬浮提示 */
             '#update-red-dot { display: none; position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 4px rgba(239, 68, 68, 0.8); animation: pulse-dot 2s infinite; pointer-events: none; }',
             '@keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }',
             '#update-tooltip { display: none; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 13px; white-space: nowrap; pointer-events: none; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }',
@@ -518,7 +523,7 @@ return view.extend({
             '.nw-modal-btn-danger:hover { background: #dc2626; }',
             '.nw-hl { color: #facc15; font-weight: bold; }',
 
-            /* 响应式布局 */
+            /* 手机端 */
             '@media screen and (max-width: 768px) {',
             '  .nw-wrapper { padding-top: 3vh; padding-bottom: 5vh; }',
             '  .nw-header { margin-top: -30px; padding: 20px 15px; width: 92%; box-sizing: border-box; border-radius: 12px; }',
@@ -664,6 +669,7 @@ return view.extend({
             });
         }
 
+        // 检测更新
         function doUpdateCheck() {
             var now = Date.now();
             var cacheKey = 'nw_last_update_check';
@@ -672,7 +678,6 @@ return view.extend({
 
             var showReadyBadge = function(latestVer, rawText) {
                 var cleanText = rawText.split('---')[0].replace(/### ✨ 最新版发布/g, '').trim();
-                
                 var verWrapper = container.querySelector('#version-wrapper');
                 var redDot = container.querySelector('#update-red-dot');
                 var tooltip = container.querySelector('#update-tooltip');
@@ -696,16 +701,24 @@ return view.extend({
                         okText: _t('U_BTN_NOW'), cancelText: _t('U_BTN_LATER'),
                         onOk: function() {
                             try { poll.stop(); } catch(e) {}
-                            
-                            // 核心：点击更新时直接记住新版本号，跳过缓存期
-                            localStorage.setItem('nw_ver', latestVer);
-                            localStorage.removeItem('nw_last_update_check');
-
                             openModal({ title: _t('U_INST'), msg: _t('U_INST_MSG'), spin: true });
-                            var forceReload = function() { 
-                                window.location.href = window.location.href.split('?')[0] + '?t=' + new Date().getTime(); 
+                            
+                            // 安装完成后的静默处理：直接消灭红点，不强刷
+                            var finishUpdate = function() { 
+                                localStorage.setItem('nw_ver', latestVer);
+                                localStorage.removeItem('nw_last_update_check');
+                                
+                                var vWrap = container.querySelector('#version-wrapper');
+                                if (vWrap) vWrap.innerHTML = latestVer; // 消除红点，换上新版本号
+
+                                openModal({ 
+                                    title: '✅ ' + _t('U_DONE_TIT'), 
+                                    msg: _t('U_DONE_MSG'), 
+                                    okText: _t('M_CLOSE'),
+                                    onOk: function() { container.querySelector('#nw-global-modal').style.display = 'none'; }
+                                });
                             };
-                            callNetSetup('do_install').then(function() { setTimeout(forceReload, 15000); }).catch(function() { setTimeout(forceReload, 15000); });
+                            callNetSetup('do_install').then(function() { setTimeout(finishUpdate, 12000); }).catch(function() { setTimeout(finishUpdate, 12000); });
                         }
                     });
                 });
@@ -754,6 +767,7 @@ return view.extend({
             try { var val = uci.get(conf, sec, opt); return (val === null || val === undefined) ? def : String(val).trim(); } catch(e) { return def; }
         }
 
+        // 显示状态
         function updateStatusDisplay(isSilent) {
             try {
                 if (modeTextEl && !isSilent) {
@@ -875,6 +889,7 @@ return view.extend({
             return false;
         }
 
+        // 弹窗
         function openModal(options) {
             var m = container.querySelector('#nw-global-modal');
             container.querySelector('#nw-global-title').innerHTML = options.title || '';
@@ -924,6 +939,7 @@ return view.extend({
         container.querySelector('#btn-back-2').addEventListener('click', function () { step3.style.display = 'none'; step2.style.display = 'block'; });
         container.querySelector('#top-back-2').addEventListener('click', function () { step3.style.display = 'none'; step2.style.display = 'block'; });
 
+        // 下一步检测
         container.querySelector('#btn-next-2').addEventListener('click', function () {
             try {
                 var rTypeEl = container.querySelector('input[name="router_type"]:checked');
@@ -1019,6 +1035,7 @@ return view.extend({
             }
         });
 
+        // 提交配置
         container.querySelector('#btn-apply').addEventListener('click', function () {
             var actualMode = selectedMode, arg1 = '', arg2 = '', arg3 = '', arg4 = '';
             var rTypeEl = container.querySelector('input[name="router_type"]:checked');
