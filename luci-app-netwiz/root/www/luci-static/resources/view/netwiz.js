@@ -13,7 +13,7 @@
 var RAW_VERSION = 'v1.0.16';
 var CURRENT_VERSION = RAW_VERSION;
 
-// 全局版本號比對函數
+// 全局版本号比对函数
 function __cmp(v1, v2) {
     var p1 = String(v1).replace(/[^0-9\.]/g, '').split('.');
     var p2 = String(v2).replace(/[^0-9\.]/g, '').split('.');
@@ -27,14 +27,12 @@ function __cmp(v1, v2) {
     return 0;
 }
 
-// 核心修復機制：LuCI 快取擊穿防護
-// 退出登入不會清除 localStorage。若升級後載入了舊版快取，透過此標記自動偽裝並抑制紅點。
+// 核心修复机制：抵抗浏览器缓存，如果已经安装了新版但加载了旧脚本缓存，自动伪装版本并抑制红点
 var _pVer = localStorage.getItem('nw_pending_ver');
 if (_pVer) {
     if (__cmp(_pVer, RAW_VERSION) > 0) {
         CURRENT_VERSION = _pVer; 
     } else {
-        // 如果目前載入的真實檔案版本已經大於等於記錄的版本，說明快取已更新，清除標記
         localStorage.removeItem('nw_pending_ver'); 
     }
 }
@@ -46,12 +44,14 @@ var callNetSetup = rpc.declare({
     expect: { result: 0 }
 });
 
+// 使用万能通配符，防止数据异常导致页面崩溃
 var getWanStatus = rpc.declare({
     object: 'network.interface',
     method: 'dump',
     expect: { '': {} } 
 });
 
+// 自动语言检测与记忆
 var savedLang = localStorage.getItem('nw_lang_override');
 var curLang = 'zh-cn';
 
@@ -185,7 +185,7 @@ var i18n = {
         'U_BTN_NOW': 'Update Now',
         'U_BTN_LATER': 'Not Now',
         'U_INST': 'Installing rapidly',
-        'U_INST_MSG': 'Deploying new version...<br><br><span style="font-size:13px; color:#10b981; font-weight:bold;">For security, re-login is required after install.</span><br><br><span style="font-size:12px; color:#666;">(Auto-redirect in 15s. If frozen, press Ctrl+F5)</span>'
+        'U_INST_MSG': 'Deploying new version...<br><br><span style="font-size:13px; color:#10b981; font-weight:bold;">For security, re-login is required after install.</span><br><br><span style="font-size:12px; color:#666;">(Auto-redirect in 12s. If frozen, press Ctrl+F5)</span>'
     },
     'zh-tw': {
         'TITLE': '網 路 設 置 精 靈',
@@ -441,6 +441,22 @@ function _t(key) {
 
 return view.extend({
     render: function () {
+        // 核心修复机制：检查刷新标记，若存在则使用 fetch 强制绕过浏览器缓存，拉取最新底层文件
+        if (localStorage.getItem('nw_force_refresh') === '1') {
+            localStorage.removeItem('nw_force_refresh');
+            var loaderContainer = dom.create('div', { id: 'netwiz-container', style: 'padding: 50px; text-align: center; color: #555; font-family: sans-serif;' }, '<div style="width: 40px; height: 40px; border: 4px solid #f1f5f9; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div><div style="font-size: 16px; font-weight: bold;">正在同步最新界面缓存...</div><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>');
+            
+            // 使用 fetch 强行要求浏览器重新向路由器拿这个页面，不使用磁盘缓存
+            fetch(window.location.href, { cache: 'reload' })
+                .then(function() {
+                    window.location.replace(window.location.href.split('?')[0] + '?t=' + new Date().getTime());
+                })
+                .catch(function() {
+                    window.location.replace(window.location.href.split('?')[0] + '?t=' + new Date().getTime());
+                });
+            return loaderContainer;
+        }
+
         if (!document.querySelector('meta[name="viewport"]')) {
             var meta = document.createElement('meta');
             meta.name = 'viewport';
@@ -462,7 +478,7 @@ return view.extend({
             '#nw-lang-switch:hover { background: rgba(255,255,255,0.25); }',
             '#nw-lang-switch option { color: #333; background: #fff; }',
 
-            /* 右上角红點與懸浮提示樣式 */
+            /* 右上角红点与悬浮提示样式 */
             '#update-red-dot { display: none; position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 4px rgba(239, 68, 68, 0.8); animation: pulse-dot 2s infinite; pointer-events: none; }',
             '@keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }',
             '#update-tooltip { display: none; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 13px; white-space: nowrap; pointer-events: none; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }',
@@ -523,7 +539,7 @@ return view.extend({
             '.nw-modal-btn-danger:hover { background: #dc2626; }',
             '.nw-hl { color: #facc15; font-weight: bold; }',
 
-            /* 響應式佈局 */
+            /* 响应式布局 */
             '@media screen and (max-width: 768px) {',
             '  .nw-wrapper { padding-top: 3vh; padding-bottom: 5vh; }',
             '  .nw-header { margin-top: -30px; padding: 20px 15px; width: 92%; box-sizing: border-box; border-radius: 12px; }',
@@ -682,7 +698,7 @@ return view.extend({
                 var redDot = container.querySelector('#update-red-dot');
                 var tooltip = container.querySelector('#update-tooltip');
 
-                // 僅當遠端版本 > 偽裝/真實版本時，才顯示紅點
+                // 仅当远端版本 > 我们当前真实或伪装的版本时，才显示红点
                 if (__cmp(latestVer, CURRENT_VERSION) <= 0) return;
 
                 redDot.style.display = 'block';
@@ -690,7 +706,7 @@ return view.extend({
                 tooltip.className = 'has-update';
                 verWrapper.style.cursor = 'pointer';
 
-                // 防止多次綁定點擊事件
+                // 防止多次绑定点击事件
                 var newWrapper = verWrapper.cloneNode(true);
                 verWrapper.parentNode.replaceChild(newWrapper, verWrapper);
                 verWrapper = newWrapper;
@@ -703,8 +719,9 @@ return view.extend({
                         onOk: function() {
                             try { poll.stop(); } catch(e) {}
                             
-                            // 記錄即將安裝的版本到 localStorage，用於防禦快取
+                            // 记录待更新版本号，并写入强制无缓存刷新标记到 localStorage
                             localStorage.setItem('nw_pending_ver', latestVer);
+                            localStorage.setItem('nw_force_refresh', '1');
                             localStorage.removeItem('nw_last_update_check');
 
                             openModal({ title: _t('U_INST'), msg: _t('U_INST_MSG'), spin: true });
@@ -1052,6 +1069,9 @@ return view.extend({
             
             var handleSuccess = function() {
                 var currentHost = window.location.hostname, cleanUrl = window.location.href.split('?')[0], ts = new Date().getTime();
+                
+                // 写入强制刷新标记，使用 localStorage 确保即使退出登录也不会被清除
+                localStorage.setItem('nw_force_refresh', '1');
 
                 if (selectedMode === 'lan' && arg1 && arg1 !== currentHost) {
                     openModal({ title: _t('M_SUCC_TIT'), msg: _t('M_SUCC_MSG1') + arg1 + _t('M_SUCC_MSG2'), spin: true });
