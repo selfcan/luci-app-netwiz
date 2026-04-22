@@ -4,22 +4,71 @@
 
 ![OpenWrt](https://img.shields.io/badge/OpenWrt-23.05_|_25.x+-blue.svg) ![ImmortalWrt](https://img.shields.io/badge/ImmortalWrt-Supported-orange.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-green.svg) ![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
 
-## ✨ 核心特性
+# luci-app-netwiz
 
-对于刚装完系统的玩家，需要网络设置才能上网，但系统自带的设置隐藏比较深，且容易配置错误，现有的网络向导往往会无脑和暴力重置整个网络配置文件，清空路由的已配置清单，导致精心设置的网桥（Bridge）、VLAN 和物理网卡绑定瞬间崩溃或引发**莫名其妙**的网络断流。**NetWiz 专为解决此痛点而生。**
-
-* 🛡️ **底层安全锁 (Safe-Write)**：精准覆盖 WAN/LAN 接口的协议层核心参数，**绝对不破坏**原有的 `br-lan` 物理网卡绑定关系及高级定制规则。
-* 📦 **跨世代兼容**：完美兼容 OpenWrt 23.05 及更早系统 (`.ipk`) 与 OpenWrt 25.x 新系统 (`.apk`)。
-* 🎨 **次世代 UI 体验**：告别原生的枯燥表单，采用现代化的悬浮卡片与全息数据面板设计，支持色彩流转与优雅的动画交互。
-* ⚡ **极速场景切换**：化繁为简，提炼三大最高频网络接入场景，点击即用，自带防呆校验（如网段冲突拦截、网关校验...），免去繁杂排错。
-* 🧹 **零乱码架构**：彻底重构前端资源加载逻辑与文件编码格式，完美适配最新版 LuCI 引擎，告别 404 与 ACL 权限缓存报错。
+[English](#english) | [简体中文](#简体中文)
 
 ---
 
-## 📖 使用说明
+## English
 
-安装完成后，刷新路由器后台网页（建议使用 `Ctrl + F5` 强制刷新或在无痕模式下打开），即可在导航栏找到对应入口：
-👉 **系统 (System) -> 网络向导**
+### Description
+`luci-app-netwiz` (Network Setup Wizard) is a minimalist, safe, and non-destructive network configuration interface for OpenWrt/ImmortalWrt. 
+
+It is designed to be highly user-friendly for novices setting up secondary routers (DHCP/Static IP) or bypass routers.
+
+### Key Features
+* **Pure CSR Architecture:** Built with modern Client-Side Rendering.
+* **Safe Configuration:** Prevents routing loops and network conflicts (e.g., stops users from putting WAN and LAN in the same subnet).
+* **Bypass Router Mode (旁路由):** Auto-configures DHCP and gateway settings safely.
+* **Smooth UX:** Replaces traditional dirty hacks with standard `ubus call luci reload` to solve SPA cache issues without interrupting the user session.
+* **Multi-language:** Built-in i18n support (English, zh-Hans, zh-Hant).
+* **Strict ACL:** Frontend has zero direct write access to UCI. All modifications are safely encapsulated within the backend `rpcd` script.
+
+### Installation
+* You can compile it directly via the OpenWrt SDK or download the pre-compiled `.apk` / `.ipk` from the [Releases](../../releases) page.
+Core Supported Modules
+
+🌐 **Secondary Router Mode (DHCP / Static IP)**
+   * Use Case: When the upstream modem (ONT) already handles PPPoE dialing, or an existing primary router is present. This device operates as a secondary router or segmented subnet router.
+   * Behavior: Supports both dynamic IP assignment (DHCP) and static IP configuration. Automatically provisions WAN interface settings and performs intelligent subnet validation to prevent routing loops or address conflicts.
+
+🔌 **Broadband Dial-Up (PPPoE)**
+   * Use Case: When the modem is configured in full bridge mode and this router is responsible for establishing the PPPoE connection, acting as the primary network gateway.
+   * Behavior: Accurately applies PPPoE credentials (username and password), removes residual gateway configurations, and safely restarts the underlying dialer process to ensure a clean connection.
+
+🏠 **LAN Configuration (Primary / Bypass Router Switching)**
+   * Use Case: For modifying the device’s LAN management IP, or when a primary router already exists and this device functions as an auxiliary gateway (bypass router).
+   * Behavior: One-click activation of “Bypass Router Mode” automatically disables the local DHCP service and enforces manual configuration of the upstream gateway. In primary router mode, safeguards ensure the gateway field remains empty, preventing disruption to the existing LAN topology.
+
+   A bypass router lets you add advanced features without touching the main network. The primary router keeps handling DHCP and NAT, while the bypass router processes selected traffic for tasks like policy routing or proxies. This keeps the network stable while giving you more control.
+
+**A simple, common example:**
+   
+   * You have a main router providing Wi-Fi and DHCP for your home. You add a bypass router and set only your laptop’s gateway to it. Now, your laptop’s traffic goes through the bypass router (e.g., for proxy or special routing), while all other devices continue using the main router normally. This way, you get advanced control on one device without affecting the rest of the network.
+---
+
+## 简体中文
+
+### 📖简介
+
+`luci-app-netwiz` (网络设置向导) 是一款专为 OpenWrt / ImmortalWrt 设计的极简、安全且“零破坏”的网络配置界面。
+
+它极其适合新手用户，能够一键安全地配置二级路由（动态/静态 IP）以及旁路由环境。对于刚装完系统的玩家，需要网络设置才能上网，但自带的设置隐藏比较深，且容易配置错误，无脑和暴力重置整个网络配置文件，清空路由的已配置清单，会导致精心设置的网桥（Bridge）、VLAN 和物理网卡绑定瞬间崩溃或引发**莫名其妙**的网络断流。**NetWiz 专为解决此痛点而生。**
+
+### ✨核心特性
+* **纯 CSR 架构：** 采用现代前端渲染技术构建，响应迅速。
+* **防呆与冲突拦截：** 严格的输入校验，防止网段冲突或路由死循环（例如：拦截 WAN 口与 LAN 口处于同一网段的错误操作）。
+* **旁路由向导：** 自动化处理旁路由的网关与 DHCP 设置，避免全屋断网。
+* **无缝刷新体验：** 摒弃了传统的暴力刷新手段，采用标准 `ubus call luci reload` 解决缓存问题，配置生效全程平滑过渡。
+* **多语言支持：** 原生支持自动切换英文、简体中文与繁体中文。
+* **严格的权限控制 (ACL)：** 前端页面剥离了 UCI 写入权限，所有底层修改均由后端的 `rpcd` 脚本安全执行，彻底杜绝越权风险。
+
+### 安装方法
+您可以通过 OpenWrt 官方 SDK 编译此插件，或者直接前往 [Releases](../../releases) 页面下载编译好的 `.apk` 或 `.ipk` 安装包，并在路由器后台上传安装，即可在👉 **系统 (System) -> 网络向导**找到。
+
+---
+
 
 ### 核心支持的三大模块：
 
