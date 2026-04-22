@@ -29,6 +29,9 @@ It is designed to be highly user-friendly for novices setting up secondary route
 * You can compile it directly via the OpenWrt SDK or download the pre-compiled `.apk` / `.ipk` from the [Releases](../../releases) page.
 Core Supported Modules
 
+### Breadcrumb Trail
+* 👉 **System -> Network Wizard**。
+  
 🌐 **Secondary Router Mode (DHCP / Static IP)**
    * Use Case: When the upstream modem (ONT) already handles PPPoE dialing, or an existing primary router is present. This device operates as a secondary router or segmented subnet router.
    * Behavior: Supports both dynamic IP assignment (DHCP) and static IP configuration. Automatically provisions WAN interface settings and performs intelligent subnet validation to prevent routing loops or address conflicts.
@@ -66,6 +69,9 @@ Core Supported Modules
 
 ### 安装方法
 您可以通过 OpenWrt 官方 SDK 编译此插件，或者直接前往 [Releases](../../releases) 页面下载编译好的 `.apk` 或 `.ipk` 安装包，并在路由器后台上传安装，即可在👉 **系统 (System) -> 网络向导**找到。
+
+### 导航路径
+👉 **系统 (System) -> 网络向导**。
 
 ---
 
