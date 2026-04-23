@@ -1,6 +1,5 @@
 name: 🔄 手动同步到 ImmortalWrt 官方库
 
-# workflow_dispatch手动触发，去掉了所有的 push 触发
 on:
   workflow_dispatch: 
 
@@ -16,39 +15,42 @@ jobs:
       - name: 2. 检出目标仓库 (ImmortalWrt Fork)
         uses: actions/checkout@v4
         with:
-          repository: huchd0/luci  # ⚠️ 请确认这是您的 fork 仓库地址
-          token: ${{ secrets.SYNC_TOKEN }} # 使用刚才配置的跨仓库钥匙
+          repository: huchd0/luci  # 您的 fork 仓库地址
+          token: ${{ secrets.SYNC_TOKEN }}
           path: dest-repo
-          ref: master # ⚠️ immortalwrt/luci 的主分支通常是 master，根据实际情况修改
+          fetch-depth: 0 # 必须拉取历史记录以便执行分支重置
 
-      - name: 3. 同步执行
-        run: |
-          echo "🧹 清空目标仓库的旧文件..."
-          rm -rf dest-repo/applications/luci-app-netwiz/*
-          mkdir -p dest-repo/applications/luci-app-netwiz/
-          
-          echo "📦 复制最新代码..."
-          rsync -av --exclude='.git/' --exclude='.github/' source-repo/luci-app-netwiz/ dest-repo/applications/luci-app-netwiz/
-
-      - name: 4. 提交并推送到 Fork 仓库的专属分支
+      - name: 3. 同步官方纯净分支并提交
         run: |
           cd dest-repo
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 创建一个专门用于提交 PR 的分支
+          echo "🔄 正在连接 ImmortalWrt 官方仓库获取最纯净的底层代码..."
+          git remote add upstream https://github.com/immortalwrt/luci.git
+          git fetch upstream master
+          
           BRANCH_NAME="add-luci-app-netwiz"
-          git checkout -B $BRANCH_NAME
+          # 【核弹级操作】直接基于官方最新的纯净 master 创建分支，彻底抛弃您的所有历史包袱！
+          git checkout -B $BRANCH_NAME upstream/master
+          
+          echo "🧹 清理目标文件夹..."
+          rm -rf applications/luci-app-netwiz/*
+          mkdir -p applications/luci-app-netwiz/
+          
+          echo "📦 复制核心仓库代码..."
+          # 注意这里的源路径是 ../source-repo/luci-app-netwiz/
+          rsync -av --exclude='.git/' --exclude='.github/' ../source-repo/luci-app-netwiz/ applications/luci-app-netwiz/
           
           git add applications/luci-app-netwiz/
           
           if git diff --cached --quiet; then
             echo "✅ 代码完全一致，不需要重复同步。"
           else
-            # commit message 直接写成官方要求的格式
+            # 标准提交格式
             git commit -m "luci-app-netwiz: add new application"
             
-            # 推送到您的 Fork 仓库的这个新分支
+            # 推送到您的 fork 仓库，覆盖旧数据
             git push -f origin $BRANCH_NAME
             echo "🚀 成功推送到 Fork 仓库的 $BRANCH_NAME 分支！"
           fi
