@@ -233,7 +233,7 @@ return view.extend({
             '  .nw-form-area, .nw-confirm-board { width: 92%; padding: 25px 20px; box-sizing: border-box; }',
             '  .nw-top-back { top: 12px; left: 12px; width: 32px; height: 32px; }',
             '  .nw-step-title { font-size: 18px; margin-top: 15px; margin-bottom: 20px; }',
-            '  #current-mode-display { width: 92%; min-width: auto; padding: 15px; box-sizing: border-box; }',
+            '  #current-mode-display { width: 100%; max-width: 320px; min-width: auto; padding: 15px; box-sizing: border-box; margin: 20px auto 0; display: block; }',
             '  .nw-actions { width: 100%; margin: 20px auto 0; display: flex; flex-direction: row; gap: 12px; box-sizing: border-box; }',
             '  .nw-actions button { flex: 1; padding: 12px 0 !important; font-size: 15px; margin: 0; min-width: 0 !important; }',
             '  #nw-global-modal .nw-modal-box { padding: 25px 20px; width: 85%; }',
