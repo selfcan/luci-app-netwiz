@@ -2,13 +2,10 @@
 # Copyright (C) 2026 huchd0 <https://github.com/huchd0/luci-app-netwiz>
 # Licensed under the GNU General Public License v3.0
 
+#!/bin/sh
 [ "$ACTION" = "change" ] || [ "$ACTION" = "add" ] || exit 0
 
-WAN_DEV=$(uci -q get network.wan.device)
-[ -z "$WAN_DEV" ] && WAN_DEV=$(uci -q get network.wan.ifname)
-[ -z "$WAN_DEV" ] && WAN_DEV="eth0"
+if [ "$(cat /sys/class/net/$INTERFACE/carrier 2>/dev/null)" = "1" ]; then
 
-[ "$INTERFACE" = "$WAN_DEV" ] || exit 0
-
-[ "$(cat /sys/class/net/$INTERFACE/carrier 2>/dev/null)" = "1" ] || exit 0
-/usr/libexec/netwiz-autodetect.sh &
+    /usr/libexec/netwiz-autodetect.sh >/dev/null 2>&1 </dev/null &
+fi
