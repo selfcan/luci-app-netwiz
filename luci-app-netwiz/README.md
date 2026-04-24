@@ -48,7 +48,7 @@ It is designed to be highly user-friendly for novices setting up secondary route
 
 ```bash
 luci-app-netwiz/
-├── Makefile                          # OpenWrt standard Makefile (package definition, dependencies)
+├── Makefile                          # standard Makefile (package definition, dependencies)
 ├── htdocs/
 │   └── luci-static/
 │       └── resources/
