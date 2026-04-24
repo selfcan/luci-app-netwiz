@@ -11,7 +11,7 @@
 ## English
 
 ### Description
-`luci-app-netwiz` (Network Setup Wizard) is a minimalist, safe, and non-destructive network configuration interface for OpenWrt/ImmortalWrt. 
+`luci-app-netwiz` (Network Wizard) is a minimalist, safe, and non-destructive network configuration interface for OpenWrt/ImmortalWrt. 
 
 It is designed to be highly user-friendly for novices setting up secondary routers (DHCP/Static IP) or bypass routers.
 
