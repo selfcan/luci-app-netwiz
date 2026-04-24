@@ -46,7 +46,8 @@ It is designed to be highly user-friendly for novices setting up secondary route
 
 ---
 
-luci-app-netwiz/luci-app-netwiz/
+```bash
+luci-app-netwiz/
 ├── Makefile
 ├── htdocs/
 │   └── luci-static/
@@ -77,7 +78,8 @@ luci-app-netwiz/luci-app-netwiz/
     │   └── netwiz.po
     └── zh_Hant/
         └── netwiz.po
-        
+```
+ 
 ---
 
 ## 简体中文
