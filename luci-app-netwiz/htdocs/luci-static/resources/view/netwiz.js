@@ -159,6 +159,13 @@ return view.extend({
             '.nw-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 80vh; padding-top: 10vh; padding-bottom: 10vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }',
             '.nw-header { text-align: center; margin-bottom: 40px; background-color: #5e72e4; padding: 25px; margin-top: -90px; border-radius: 0 0 15px 15px; position: relative; }',
             '.nw-main-title { font-size: 35px; font-weight: 600; margin-bottom: 10px; color: #ffffff; letter-spacing: 2px; }',
+
+            '.nw-title-wrap { position: relative; display: inline-block; cursor: pointer; }',
+            '.nw-version-tag { position: absolute; top: 120%; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.85); color: #f8fafc; font-size: 13px; font-weight: 500; padding: 5px 12px; border-radius: 6px; opacity: 0; pointer-events: none; transition: all 0.25s ease; font-family: monospace; z-index: 50; box-shadow: 0 4px 15px rgba(0,0,0,0.15); white-space: nowrap; border: 1px solid rgba(255,255,255,0.1); }',
+            '.nw-title-wrap:hover .nw-version-tag { opacity: 1; top: 100%; }',
+            /* red */
+            '.nw-version-dot { position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.9); display: block; }',
+
             '.nw-header p { color: #ffffff; font-size: 16px; opacity: 0.9; margin: 0; letter-spacing: 1px; }',
             '.nw-step { width: 100%; max-width: 750px; text-align: center; animation: slideUp 0.4s ease-out; }',
             '@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }',
@@ -246,7 +253,10 @@ return view.extend({
             // 主界面 HTML 结构
             '<div class="nw-wrapper">',
             '  <div class="nw-header">',
-            '    <div class="nw-main-title">{{TITLE}}</div>',
+            '    <div class="nw-title-wrap">',
+            '      <div class="nw-main-title">{{TITLE}}</div>',
+            '      <div class="nw-version-tag">v1.0.0 <div class="nw-version-dot" style="display: none;"></div></div>',
+            '    </div>',
             '    <p>{{SUBTITLE}}</p>',
             '  </div>',
             '  <div id="nw-global-modal" style="display:none;">',
