@@ -126,6 +126,16 @@ var T = {
     'M_IP_GW': _('IP & Gateway'),
     'M_AUTO_UP': _('Auto-assigned by upstream router')
     'M_SUCC_ROLLBACK': _('Connection to new IP timed out, automatically rolled back configuration, reconnecting...')
+
+    'ACT_LAN': _('Modifying LAN IP'),
+    'ACT_BYPASS': _('Switching to Bypass Mode'),
+    'ACT_WAN_DHCP': _('Switching WAN to DHCP'),
+    'ACT_WAN_STATIC': _('Switching WAN to Static IP'),
+    'ACT_PPPOE': _('Applying PPPoE Dial-up'),
+    'MSG_WRITING': _('Writing configuration to system, please do not close the page...'),
+    'MSG_KNOCKING': _('Knocking on the new IP door... Elapsed: '),
+    'MSG_WAIT_NET': _('Waiting for network service to restart... Elapsed: '),
+    'MSG_WAIT_OLD': _('Waiting for old IP to recover... Elapsed: ')
 };
 
 // 声明后端的 RPC 接口调用
@@ -506,44 +516,65 @@ return view.extend({
             } else if (selectedMode === 'pppoe') { a1 = container.querySelector('#pppoe-user').value; a2 = container.querySelector('#pppoe-pass').value; }
 
             openModal({title:T['M_APP_TIT'], msg:T['M_APP_MSG'], spin:true});
+            // 1. 动态判断当前正在执行什么操作
+            var dynamicTitle = "";
+            var actionDetail = "";
+            
+            if (selectedMode === 'lan') {
+                dynamicTitle = (a4 === '1') ? T['ACT_BYPASS'] : T['ACT_LAN'];
+                actionDetail = '<b style="color:#3b82f6;">' + a1 + '</b>';
+            } else if (selectedMode === 'router') {
+                dynamicTitle = (rType === 'dhcp') ? T['ACT_WAN_DHCP'] : T['ACT_WAN_STATIC'];
+                actionDetail = (rType === 'dhcp') ? 'Auto IP' : '<b style="color:#10b981;">' + a1 + '</b>';
+            } else if (selectedMode === 'pppoe') {
+                dynamicTitle = T['ACT_PPPOE'];
+                actionDetail = '<b style="color:#9333ea;">' + a1 + '</b>'; // 账号名
+            }
+
+            // 2. 弹出带有实际操作内容的初始面板
+            var initMsg = '<div style="font-size: 16px; margin-bottom: 10px;">Target: ' + actionDetail + '</div><div style="color: #64748b; font-size: 14px;">' + T['MSG_WRITING'] + '</div>';
+            openModal({ title: dynamicTitle, msg: initMsg, spin: true });
+            
             var start = Date.now(), done = false;
+            
+            // 3. 异步探测与秒表读秒逻辑
             var succ = function() {
                 var h = window.location.hostname, ts = new Date().getTime();
+                var sec = 0; // 秒表计步器
                 
-                // 重定向至新地址
                 if (selectedMode === 'lan' && a1 && a1 !== h) { 
-                    var succHtml = T['M_SUCC_MSG1'].replace('{ip}', '<b style="color:#3b82f6;">' + a1 + '</b>') + '<br>' + T['M_SUCC_MSG2'] + '<br><br><small>' + T['M_SUCC_MSG3'] + '</small><br><br><div style="background:#fef2f2; border:1px solid #fecaca; color:#ef4444; padding:10px; border-radius:8px; font-size:13px; line-height:1.5;">' + T['M_SUCC_MSG4'] + '</div>';
-                    openModal({ title: T['M_SUCC_TIT'], msg: succHtml, spin: true }); 
-                    
-                    // --- IP 探測 ---
-                    var startTime = Date.now();
-                    var bombTime = 120 * 1000; // 120秒倒計時
-                    var checkInterval = 2000;  // 每2秒开一次門
+                    // [A] 更改了 LAN IP，启动新 IP 探雷器
+                    var bombTime = 120 * 1000; 
+                    var checkInterval = 2000;  
 
                     var checkNewIpTimer = setInterval(function() {
-                        var elapsed = Date.now() - startTime;
-                        if (elapsed < bombTime) {
+                        var elapsed = Date.now() - start;
+                        sec += 2;
+                        
+                        // 动态更新面板上的秒表！
+                        var knockingMsg = '<div style="font-size: 16px; margin-bottom: 10px;">Target: <b style="color:#3b82f6;">' + a1 + '</b></div><div style="color: #10b981; font-size: 14px; font-weight: bold;">' + T['MSG_KNOCKING'] + sec + 's</div>';
+                        document.getElementById('nw-global-msg').innerHTML = knockingMsg;
 
+                        if (elapsed < bombTime) {
                             fetch('http://' + a1 + '/cgi-bin/luci/?v=' + ts, { mode: 'no-cors', cache: 'no-store' })
                             .then(function() {
                                 clearInterval(checkNewIpTimer);
-
                                 window.location.href = 'http://' + a1 + '/cgi-bin/luci/';
-                            }).catch(function() {
-
-                            });
+                            }).catch(function() {});
                         } else {
-
+                            // 超时回退，面板变红，启动老 IP 探雷器
                             clearInterval(checkNewIpTimer);
-                            var rollbackHtml = '<div style="color:#ef4444; font-weight:bold; font-size:15px; margin-bottom:10px;">' + T['M_SUCC_ROLLBACK'] + '</div><div style="font-size:13px; color:#666;">Please do not close this page.</div>';
-                            openModal({ title: T['M_RST_TIT'], msg: rollbackHtml, spin: true });
-
-
+                            var rollbackSec = 0;
+                            
                             var checkOldIpTimer = setInterval(function() {
+                                rollbackSec += 2;
+                                var rollbackHtml = '<div style="color:#ef4444; font-weight:bold; font-size:15px; margin-bottom:10px;">' + T['M_SUCC_ROLLBACK'] + '</div><div style="font-size:14px; color:#666; font-weight:bold;">' + T['MSG_WAIT_OLD'] + rollbackSec + 's</div>';
+                                document.getElementById('nw-global-title').innerHTML = T['M_RST_TIT'];
+                                document.getElementById('nw-global-msg').innerHTML = rollbackHtml;
+
                                 fetch('http://' + h + '/cgi-bin/luci/?v=' + Date.now(), { mode: 'no-cors', cache: 'no-store' })
                                 .then(function() {
                                     clearInterval(checkOldIpTimer);
-
                                     window.location.reload();
                                 }).catch(function() {});
                             }, 2000);
@@ -551,19 +582,24 @@ return view.extend({
                     }, checkInterval);
 
                 } else { 
-
-                    openModal({ title: T['M_RST_TIT'], msg: T['M_RST_MSG'], spin: true }); 
-                    
+                    // [B] 没有改 LAN IP (改了 WAN 口)，启动原地探雷器
                     var checkSameTimer = setInterval(function() {
-                         fetch('http://' + h + '/cgi-bin/luci/?v=' + Date.now(), { mode: 'no-cors', cache: 'no-store' })
-                         .then(function() {
-                             clearInterval(checkSameTimer);
+                        sec += 2;
+                        
+                        // 动态更新面板秒表
+                        var waitNetMsg = '<div style="font-size: 16px; margin-bottom: 10px;">Target: ' + actionDetail + '</div><div style="color: #059669; font-size: 14px; font-weight: bold;">' + T['MSG_WAIT_NET'] + sec + 's</div>';
+                        document.getElementById('nw-global-msg').innerHTML = waitNetMsg;
 
-                             window.location.reload();
-                         }).catch(function() {});
+                        fetch('http://' + h + '/cgi-bin/luci/?v=' + Date.now(), { mode: 'no-cors', cache: 'no-store' })
+                        .then(function() {
+                            clearInterval(checkSameTimer);
+                            window.location.reload();
+                        }).catch(function() {});
                     }, 2000);
                 }
             };
+
+            // 发起 RPC 调用
             callNetSetup(mode, a1, a2, a3, a4).then(function() { done = true; succ(); }).catch(function(e){ 
                 if (Date.now() - start < 1500) { 
                     done = true; 
