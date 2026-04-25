@@ -624,13 +624,25 @@ return view.extend({
                 }
             };
 
-            callNetSetup(mode, a1, a2, a3, a4).then(function() { done = true; succ(); }).catch(function(e){ 
-                if (Date.now() - start < 1500) { 
-                    done = true; 
-                    var failHtml = T['M_FAIL_MSG'] + '<br><small>' + T['M_FAIL_CODE'].replace('{code}', (e.message || 'Unknown')) + '</small>';
+            callNetSetup(mode, a1, a2, a3, a4).then(function() { 
+                done = true; succ(); 
+            }).catch(function(e) { 
+                done = true;
+                var errMsg = e.message || '';
+                
+                // 网络断开、中止等预期内的错误，视为成功并进入探测流程
+                if (errMsg.indexOf('aborted') !== -1 || errMsg.indexOf('NetworkError') !== -1 || errMsg.indexOf('Failed to fetch') !== -1) {
+                    console.log("捕获到预期的网络断开，继续执行跳转探测逻辑...");
+                    succ();
+                } 
+                // 其他真实的底层逻辑报错（且发生得极快），才弹窗提示
+                else if (Date.now() - start < 1500) { 
+                    var failHtml = T['M_FAIL_MSG'] + '<br><small>' + T['M_FAIL_CODE'].replace('{code}', errMsg) + '</small>';
                     openModal({ title: T['M_FAIL_TIT'], msg: failHtml, okText: T['M_CLOSE'], isDanger: true }); 
-                } else { 
-                    done = true; succ(); 
+                } 
+                // 超过 1.5 秒的超时报错，大概率也是网络已断开，进入探测流程
+                else { 
+                    succ(); 
                 } 
             });
             setTimeout(function() { if (!done) succ(); }, 8000);
