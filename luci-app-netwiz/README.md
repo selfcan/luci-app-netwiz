@@ -66,8 +66,8 @@ chmod +x luci-app-netwiz/root/etc/init.d/netwiz-recovery
 ```bash
 luci-app-netwiz/
 ├── Makefile                              # OpenWrt standard Makefile (package definition, dependencies)
-├── LICENSE                              # Open-source license (declares code usage rights)
-├── Makefile                             # OpenWrt/ImmortalWrt standard Makefile (package definition, dependencies)
+├── LICENSE                               # Open-source license (declares code usage rights)
+├── Makefile                              # OpenWrt/ImmortalWrt standard Makefile (package definition, dependencies)
 ├── htdocs/
 │   └── luci-static/
 │       └── resources/
