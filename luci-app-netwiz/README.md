@@ -8,13 +8,24 @@
 
 It is designed to be highly user-friendly for novices setting up secondary routers (DHCP/Static IP) or bypass routers.
 
-### Key Features
-* **Pure CSR Architecture:** Built with modern Client-Side Rendering.
-* **Safe Configuration:** Prevents routing loops and network conflicts (e.g., stops users from putting WAN and LAN in the same subnet).
-* **Bypass Router Mode (旁路由):** Auto-configures DHCP and gateway settings safely.
-* **Smooth UX:** Replaces traditional dirty hacks with standard `ubus call luci reload` to solve SPA cache issues without interrupting the user session.
-* **Multi-language:** Built-in i18n support (English, zh-Hans, zh-Hant).
-* **Strict ACL:** Frontend has zero direct write access to UCI. All modifications are safely encapsulated within the backend `rpcd` script.
+### 🌟 Key Features
+
+**🛡️ Enterprise-Grade Fail-Safes**
+* **Persistent Power-Loss Recovery:** Backups are written to non-volatile flash (`/etc/config`). An early-boot `init.d` script guarantees an automatic network restoration even if the router loses power mid-test.
+* **Smart Concurrency Radar (LAN Auto-Defuse):** The 120-second rollback bomb uses `netstat` to count concurrent connections, accurately distinguishing true browser access (Conns ≥ 2) from background IoT probes to prevent false-positive defusals.
+* **Smart WAN Auto-Detect (Anti-Jitter):** Features a time-based debounce algorithm that requires 3 continuous down-cycles to confirm a physical cable unplug, safely ignoring temporary software interface bounces.
+* **Flash-Friendly Safe Logging:** Includes a persistent, auto-trimming logging system (`/etc/netwiz.log`) that survives reboots but strictly caps file size to protect the router's flash memory lifespan.
+
+**⚙️ Core Architecture & Security**
+* **Zero-Zombie `procd` Daemon:** Replaces unreliable `hotplug` tricks with a single, ultra-lightweight native OpenWrt daemon (`netwiz-monitor`) that reads `ubus` states with near 0% CPU footprint.
+* **Strict ACL:** The frontend has zero direct write access to UCI. All modifications are safely encapsulated and validated within the backend `rpcd` script.
+* **Safe Configuration:** Strictly prevents routing loops and network conflicts (e.g., actively stops users from putting WAN and LAN in the same subnet).
+
+**🚀 Smooth UX & Frontend**
+* **Pure CSR Architecture:** Built with modern Client-Side Rendering for a blazing-fast, app-like experience.
+* **Asynchronous UI & Hot-Reload:** Eliminates traditional blind wait times. The UI asynchronously "knocks" on the new IP with a real-time stopwatch. The backend applies changes via `reload` instead of a full `restart` to prevent Wi-Fi dropouts.
+* **Bypass Router Mode:** One-click deployment that auto-configures complex DHCP, DNS, and gateway settings flawlessly.
+* **Multi-language:** Native built-in i18n support, automatically adapting to English, zh-Hans, and zh-Hant.
 
 ### Breadcrumb Trail
 * 👉 **System -> Network Wizard**。
