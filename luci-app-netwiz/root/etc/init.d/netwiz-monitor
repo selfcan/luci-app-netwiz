@@ -1,5 +1,6 @@
 #!/bin/sh /etc/rc.common
-
+# Copyright (C) 2026 huchd0 <https://github.com/huchd0/luci-app-netwiz>
+# Licensed under the GNU General Public License v3.0
 START=99
 USE_PROCD=1
 
