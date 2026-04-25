@@ -535,26 +535,55 @@ return view.extend({
             var start = Date.now(), done = false;
             
             // 3. 异步跳转逻辑
+            // 3. 带倒计时 UI 与手动拆弹的安全逻辑
             var succ = function() {
                 var h = window.location.hostname;
                 var sec = 0;
                 
                 if (selectedMode === 'lan' && a1 && a1 !== h) { 
-                    // 🌟 终极逻辑：取消所有后台探活，采用倒计时 15 秒强制盲跳
+                    var bombTime = 120; // 120秒防失联倒计时
+                    
                     var countdownTimer = setInterval(function() {
                         sec++;
-                        var msgHtml = '<div style="font-size: 16px; margin-bottom: 15px;">' + T['LBL_TARGET'] + ' <b style="color:#3b82f6;">' + a1 + '</b></div>' +
-                                      '<div style="color: #10b981; font-size: 16px; font-weight: bold; margin-bottom: 10px;">配置已写入，正在重启网络服务...</div>' +
-                                      '<div style="color: #475569; font-size: 14px;">将在 <b style="color:#ef4444; font-size: 16px;">' + (15 - sec) + '</b> 秒后自动尝试跳转到新地址</div>';
-                        document.getElementById('nw-global-msg').innerHTML = msgHtml;
-
-                        if (sec >= 15) {
+                        var remaining = bombTime - sec;
+                        
+                        // 阶段 1：倒计时等待用户主动确认
+                        if (remaining > 0) {
+                            var msgHtml = '<div style="font-size: 16px; margin-bottom: 12px;">' + T['LBL_TARGET'] + ' <b style="color:#3b82f6; font-size: 18px;">' + a1 + '</b></div>' +
+                                          '<div style="color: #10b981; font-size: 15px; font-weight: bold; margin-bottom: 15px;">网络配置已下发，防失联保护中...</div>' +
+                                          '<div style="background: #fef2f2; border: 1px solid #fca5a5; padding: 10px; border-radius: 8px; margin-bottom: 20px;">' +
+                                          '  <div style="color: #ef4444; font-size: 14px; font-weight: bold; margin-bottom: 5px;">若倒计时结束前未进入新后台，将自动回退！</div>' +
+                                          '  <div style="color: #ef4444; font-size: 20px; font-weight: bold;">' + remaining + ' <span style="font-size: 14px;">秒</span></div>' +
+                                          '</div>' +
+                                          '<div style="color: #64748b; font-size: 13px; margin-bottom: 15px;">(若电脑未自动获取新 IP，请尝试重新插拔网线或重连 Wi-Fi)</div>' +
+                                          // 只有用户主动点击这个按钮，跳转过去，后端雷达才会抓到流量并拆弹！
+                                          '<button onclick="window.location.href=\'http://' + a1 + '/cgi-bin/luci/\'" style="background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(59,130,246,0.3);">我已连上，前往新后台</button>';
+                            
+                            document.getElementById('nw-global-msg').innerHTML = msgHtml;
+                        } 
+                        // 阶段 2：时间到！用户没点按钮，前端开始配合后端回退
+                        else {
                             clearInterval(countdownTimer);
-                            // 直接跳转！落地后产生的真实浏览器连接，才是触发后端雷达拆弹的唯一信号！
-                            window.location.href = 'http://' + a1 + '/cgi-bin/luci/';
+                            var rollbackSec = 0;
+                            var checkOldIpTimer = setInterval(function() {
+                                rollbackSec += 2;
+                                var rollbackHtml = '<div style="color:#ef4444; font-weight:bold; font-size:16px; margin-bottom:10px;">时间到！正在执行安全回退...</div>' + 
+                                                   '<div style="font-size:15px; color:#666; font-weight:bold;">' + T['MSG_WAIT_OLD'].replace('{sec}', rollbackSec) + '</div>';
+                                document.getElementById('nw-global-title').innerHTML = T['M_RST_TIT'];
+                                document.getElementById('nw-global-msg').innerHTML = rollbackHtml;
+
+                                // 不断探测旧 IP，只要后端回退完成了，旧 IP 就会复活，页面自动刷新
+                                fetch('http://' + h + '/cgi-bin/luci/?v=' + Date.now(), { mode: 'no-cors', cache: 'no-store' })
+                                .then(function() {
+                                    clearInterval(checkOldIpTimer);
+                                    window.location.reload();
+                                }).catch(function() {});
+                            }, 2000);
                         }
                     }, 1000);
+
                 } else { 
+                    // 没改 IP 的情况，原地等待重启完成
                     var checkSameTimer = setInterval(function() {
                         sec += 2;
                         var waitNetMsg = '<div style="font-size: 16px; margin-bottom: 10px;">' + T['LBL_TARGET'] + ' ' + actionDetail + '</div><div style="color: #059669; font-size: 16px; font-weight: bold;">' + T['MSG_WAIT_NET'].replace('{sec}', sec) + '</div>';
