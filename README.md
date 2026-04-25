@@ -133,14 +133,14 @@ rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* && /etc/init.d/rpcd restart
 
 📁 **1、查看 Netwiz 专属日志 (/etc/netwiz.log)**
 
-**普通查看**
-```bash
-cat /etc/netwiz.log
-```
-
 ⚡ **实时监控：**
 ```bash
 tail -f /etc/netwiz.log
+```
+
+**普通查看**
+```bash
+cat /etc/netwiz.log
 ```
 
 ```bash
