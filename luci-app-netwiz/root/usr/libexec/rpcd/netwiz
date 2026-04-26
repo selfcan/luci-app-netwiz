@@ -38,6 +38,7 @@ case "$1" in
                 arg4=$(echo "$input" | jsonfilter -e '@.arg4')
                 arg5=$(echo "$input" | jsonfilter -e '@.arg5') # 接收 arg5
 
+                # 只允許数字和点
                 validate_ip_format() {
                     if [ -n "$1" ] && ! echo "$1" | grep -Eq '^[0-9.]+$'; then
                         log "安全拦截：前端参数 '$1' 包含非法字元，已制止操作"
