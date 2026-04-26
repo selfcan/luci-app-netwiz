@@ -394,7 +394,7 @@ msgstr "網路已連通！正在為您自動跳轉..."
 msgid "Force Apply (Recommended OFF)"
 msgstr "強制生效 (建議關閉，防失聯)"
 
-msgid "If enabled, the 120s rollback timer is bypassed, and changes apply immediately."
+msgid "If enabled, the 120s rollback timer is bypassed."
 msgstr "開啟後跳過 120 秒防失聯機制，配置立刻生效。"
 
 msgid "Safe mode bypassed. Applying immediately..."
