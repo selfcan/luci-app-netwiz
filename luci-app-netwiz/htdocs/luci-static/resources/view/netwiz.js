@@ -211,7 +211,7 @@ return view.extend({
             '.nw-radio-btn input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; margin: 0; }',
             '.nw-radio-btn-text { display: flex; align-items: center; justify-content: center; height: 100%; padding: 12px 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14.5px; color: #475569; background: #fff; transition: all 0.25s ease; position: relative; overflow: hidden; font-weight: normal; box-sizing: border-box; line-height: 1.3; text-align: center; }',
             '.nw-radio-btn:hover .nw-radio-btn-text { border-color: #3b82f6; color: #3b82f6; background: #f8fafc; }',
-            '.nw-radio-btn input[type="radio"]:checked + .nw-radio-btn-text { border-color: #3b82f6; color: #3b82f6; font-weight: 600; box-shadow: 0 0 0 1px #3b82f6; background: #eff6ff; }',
+            '.nw-radio-btn input[type="radio"]:checked + .nw-radio-btn-text { border-color: #3b82f6; color: #ff0000; font-weight: 600; box-shadow: 0 0 0 1px #3b82f6; background: #eff6ff; }',
             '.nw-radio-btn-text::after { content: ""; position: absolute; right: 0; bottom: 0; width: 0; height: 0; border-bottom: 24px solid #3b82f6; border-left: 24px solid transparent; opacity: 0; transition: opacity 0.2s ease; }',
             '.nw-radio-btn-text::before { content: ""; position: absolute; right: 5px; bottom: 5px; width: 4px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); opacity: 0; transition: opacity 0.2s ease; z-index: 2; }',
             '.nw-radio-btn input[type="radio"]:checked + .nw-radio-btn-text::after, .nw-radio-btn input[type="radio"]:checked + .nw-radio-btn-text::before { opacity: 1; }',
