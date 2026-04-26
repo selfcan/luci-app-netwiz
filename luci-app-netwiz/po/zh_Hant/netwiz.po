@@ -391,7 +391,7 @@ msgstr "✅ 偵察握手成功"
 msgid "Network connected! Automatically redirecting..."
 msgstr "網路已連通！正在為您自動跳轉..."
 
-msgid "Apply Immediately (Bypass Safe Mode)"
+msgid "Force Apply (Recommended OFF)"
 msgstr "強制生效 (建議關閉，防失聯)"
 
 msgid "If enabled, the 120s rollback timer is bypassed, and changes apply immediately."
