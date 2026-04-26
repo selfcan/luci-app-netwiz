@@ -164,9 +164,8 @@ return view.extend({
         var htmlTemplate = [
             '<style>',
             // 强制显示滚动条占位
-            'html, body, #maincontent, .main-right { overflow-y: auto !important; scrollbar-width: none !important; -ms-overflow-style: none !important; }',
-            'html::-webkit-scrollbar, body::-webkit-scrollbar, #maincontent::-webkit-scrollbar, .main-right::-webkit-scrollbar { display: none !important; }',
-
+            '#maincontent, .main-right { overflow-y: auto !important; scrollbar-width: none !important; -ms-overflow-style: none !important; }',
+            '#maincontent::-webkit-scrollbar, .main-right::-webkit-scrollbar { display: none !important; }',
             '.nw-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 101vh; padding-bottom: 10vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }',
             '.nw-header { text-align: center; margin-bottom: 40px; background-color: #5e72e4; padding: 25px; border-radius: 16px; position: relative; width: 100%; max-width: 750px; box-sizing: border-box; box-shadow: 0 10px 25px rgba(94, 114, 228, 0.15); z-index: 20; }',
         
