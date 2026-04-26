@@ -229,7 +229,7 @@ return view.extend({
             
             '@media screen and (max-width: 768px) {',
             '  .nw-wrapper { padding-top: 3vh; padding-bottom: 5vh; }',
-            '  .nw-header { margin: -45px auto 15px !important; padding: 20px 15px !important; width: 100% !important; max-width: 320px !important; box-sizing: border-box !important; border-radius: 12px; }',
+            '  .nw-header { margin: -35px auto 15px !important; padding: 20px 15px !important; width: 100% !important; max-width: 320px !important; box-sizing: border-box !important; border-radius: 12px; }',
             '  .nw-main-title { font-size: 22px; line-height: 1.3; }',
             '  .nw-header p { font-size: 13px; }',
             '  .nw-card-group { flex-direction: column; align-items: center; gap: 15px; margin-top: 0; }',
