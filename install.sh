@@ -54,7 +54,7 @@ for FILE in $FILES; do
     FILE_SIZE=$(ls -l "/tmp/${TARGET_FILE}" 2>/dev/null | awk '{print $5}')
     if [ -s "/tmp/${TARGET_FILE}" ] && [ "$FILE_SIZE" -gt 1000 ]; then
         DOWNLOAD_SUCCESS=$((DOWNLOAD_SUCCESS + 1))
-        echo "👉 👉 👉 ✅ ${TARGET_FILE} 下载成功！"
+        echo "👉 👉 👉 ✅ ${TARGET_FILE} 下载成功！✅"
     else
         echo "❌ 警告: ${TARGET_FILE} 下载失败！"
         rm -f "/tmp/${TARGET_FILE}" # 删除损坏的空文件
