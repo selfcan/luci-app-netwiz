@@ -107,7 +107,7 @@ case "$1" in
                     log "========== 开始执行 Wi-Fi 阵列群组写入逻辑 =========="
                     log "开始扫描并归类系统内的所有无线物理芯片..."
                     
-                    # 🌟 無限晶片陣列變數
+                    # 无限芯片阵列
                     list_2g=""
                     list_5g=""
                     dev_list=$(uci show wireless 2>/dev/null | grep '=wifi-device' | cut -d'.' -f2 | cut -d'=' -f1 || true)
@@ -216,9 +216,9 @@ case "$1" in
                              configure_physical_radio "$single_dev" "radio_2g" "wifinet_0" "2g"
                         fi
                     else
-                        # 🌟 核心：无限量多芯片编织逻辑！
+                        # 无限量多芯片逻辑！
                         if [ "$smart" = "true" ]; then
-                            log " => [多频合一] 模式：将路由器上所有物理芯片统一编织为同一网络..."
+                            log " => [多频合一] 模式：将路由器上所有物理芯片统一为同一网络..."
                             idx=0
                             for dev in $dev_list; do
                                 if echo " $list_5g " | grep -q " $dev "; then
