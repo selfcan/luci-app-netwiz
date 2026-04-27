@@ -262,6 +262,9 @@ msgstr "WAN 埠不能與區域網路 ({ip}) 處於同一網段！"
 msgid "This causes a routing loop."
 msgstr "這會導致嚴重的路由迴圈。"
 
+msgid "Suggestion: Your upstream network uses the same IP subnet. Please go to [LAN Settings] first and change your Device LAN IP (e.g. to 192.168.10.1) to prevent network crash."
+msgstr "建議：您的上級網路使用了相同的 IP 網段。請先前往【區域網路設定】，修改本設備的區域網路 IP（例如改為 192.168.10.1）以防止網路癱瘓。"
+
 msgid "Subnet Error"
 msgstr "網段錯誤"
 
