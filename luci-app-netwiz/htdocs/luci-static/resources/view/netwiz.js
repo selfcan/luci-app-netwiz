@@ -778,7 +778,7 @@ return view.extend({
                         container.querySelector('#nw-global-modal').style.display = 'none';
                     },
                     onOk: function() {
-                        // 用户执意修改，放行
+                        // 强制修改后，放行
                         container.querySelector('#nw-global-modal').style.display = 'none';
                     }
                 });
