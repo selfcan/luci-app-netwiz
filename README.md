@@ -38,7 +38,7 @@ It is designed to be highly user-friendly for novices setting up secondary route
 * **Bypass Router Mode:** One-click deployment that auto-configures complex DHCP, DNS, and gateway settings flawlessly.
 * **Multi-language:** Native built-in i18n support, automatically adapting to English, zh-Hans, and zh-Hant.
 
-### 📶 Powerful Smart Wi-Fi Engine
+### 📶 Powerful Smart Wi-Fi Engine（Auto-hide when Wi-Fi is unavailable）
 * **Infinite Chip Array Detection:** Breaks the rigid limits of traditional single/dual-chip plugins. Automatically scans and takes over all physical wireless adapters in the system. Perfectly adapts to single-band, dual-band, tri-band, or even multi-band routers, ensuring no hardware is left idle.
 * **Ultimate Low-Level Override:** Designed for incomplete, conflicting, or misconfigured underlying settings (e.g., a single chip stuck in 5G mode). Features an exclusive "Will Override Rule" that ignores residual hardware history, forcibly cleansing and rewriting the correct physical protocols and channels to guarantee a 100% successful application.
 * **Smart Bandwidth Unleashed:** Say goodbye to crippled networks! When applying configurations, it intelligently identifies hardware limits and silently maximizes channel width (e.g., boosting 2.4G to HT40 and 5G to VHT80). It safely preserves existing Wi-Fi 6 (HE) configurations, ensuring effortless gigabit speeds.
@@ -71,7 +71,7 @@ Core Supported Modules
    
    * You have a main router providing Wi-Fi and DHCP for your home. You add a bypass router and set only your laptop’s gateway to it. Now, your laptop’s traffic goes through the bypass router (e.g., for proxy or special routing), while all other devices continue using the main router normally. This way, you get advanced control on one device without affecting the rest of the network.
 
-📶 **Wi-Fi Settings (Smart Connect / Separate Bands)**
+📶 **Wi-Fi Settings（Auto-hide when Wi-Fi is unavailable）**
 * **Use Case**: Initial wireless network setup, or modifying the SSID, password, and encryption protocols for your whole-home network.
 * **Behavior**: Intelligently detects the number of underlying physical chips to dynamically render the UI. Supports one-click "Smart Connect (All Bands)" to build a seamless roaming network, or splits into independent 2.4G/5G networks. Perfectly backwards compatible with legacy 802.11b IoT devices.
 
