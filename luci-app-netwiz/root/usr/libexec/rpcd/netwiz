@@ -31,9 +31,9 @@ case "$1" in
                 exit 0
                 ;;
             confirm)
-                if [ -f /tmp/netwiz_rollback_time ] || [ -f /tmp/netwiz_target_ip ]; then
-                    rm -f /tmp/netwiz_rollback_time /tmp/netwiz_target_ip /tmp/network.netwiz_bak /tmp/dhcp.netwiz_bak
-                    log "成功：前端连通并下发确认指令，已手动拆除回退定时装置"
+                if [ -f /tmp/netwiz_rollback_time ] || [ -f /tmp/netwiz_target_ip ] || [ -f /etc/config/network.netwiz_bak ]; then
+                    rm -f /tmp/netwiz_rollback_time /tmp/netwiz_target_ip /etc/config/network.netwiz_bak /etc/config/dhcp.netwiz_bak
+                    log "成功：前端连通并下发确认指令，已手动拆除回退定时装置与备份文件"
                 fi
                 echo '{"result":0}'
                 exit 0
@@ -74,10 +74,12 @@ case "$1" in
                 if [ "$mode" = "lan" ] && [ -n "$arg1" ] && [ "$arg1" != "$CURRENT_LAN_IP" ]; then
                     if [ "$arg5" != "0" ]; then
                         log "LAN IP 即将修改为 $arg1，安放 120 秒防失联回退装置"
-                        
-                        cp -f /etc/config/network /etc/config/network.netwiz_bak
-                        cp -f /etc/config/dhcp /etc/config/dhcp.netwiz_bak
 
+                        if [ ! -f /etc/config/network.netwiz_bak ]; then
+                            cp -f /etc/config/network /etc/config/network.netwiz_bak
+                            cp -f /etc/config/dhcp /etc/config/dhcp.netwiz_bak
+                        fi
+                        
                         echo "$arg1" > /tmp/netwiz_target_ip
                         echo $(($(date +%s) + 120)) > /tmp/netwiz_rollback_time
                     else
