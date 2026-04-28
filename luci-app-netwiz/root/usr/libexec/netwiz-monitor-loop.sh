@@ -2,7 +2,7 @@
 # Copyright (C) 2026 huchd0 <https://github.com/huchd0/luci-app-netwiz>
 # Licensed under the GNU General Public License v3.0
 # 日志路存放在 /etc/ 下
-LOG_FILE="/etc/netwiz.log"
+LOG_FILE="/tmp/netwiz.log"
 LOCK_FILE="/var/run/netwiz_autodetect.lock"
 
 # 定义最大保留500行
