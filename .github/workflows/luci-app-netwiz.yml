@@ -126,12 +126,11 @@ jobs:
       - name: 提取并强制分类命名
         run: |
           mkdir -p release_pkgs
-          # 分别处理主程序、简中、繁中、英文，加上类型前缀强制排序
+          # 分别处理主程序、简中、繁中，加上类型前缀强制排序（无需英文，主程序自带）
           for ext in apk ipk; do
             find bin/ -name "luci-app-netwiz*.$ext" -exec cp {} release_pkgs/${ext}_luci-app-netwiz.$ext \;
             find bin/ -name "luci-i18n-netwiz-zh-cn*.$ext" -exec cp {} release_pkgs/${ext}_luci-i18n-netwiz-zh-cn.$ext \;
             find bin/ -name "luci-i18n-netwiz-zh-tw*.$ext" -exec cp {} release_pkgs/${ext}_luci-i18n-netwiz-zh-tw.$ext \;
-            find bin/ -name "luci-i18n-netwiz-en*.$ext" -exec cp {} release_pkgs/${ext}_luci-i18n-netwiz-en.$ext \;
           done
 
       - name: 上传临时产物
@@ -173,16 +172,14 @@ jobs:
             ### 📥 下载指南
             
             #### 📦 如果您的系统使用 APK 格式 (推荐/新版系统)：
-            * **所有人必装主程序**：`apk_luci-app-netwiz.apk`
+            * **所有人必装主程序**：`apk_luci-app-netwiz.apk` *(注: 主程序默认包含英文/English)*
             * **需要简体中文界面的用户**：额外下载 `apk_luci-i18n-netwiz-zh-cn.apk`
             * **需要繁體中文介面的用戶**：額外下載 `apk_luci-i18n-netwiz-zh-tw.apk`
-            * **需要英文界面的用户 (English)**：额外下载 `apk_luci-i18n-netwiz-en.apk`
 
             #### 📦 如果您的系统使用 IPK 格式 (传统/老固件)：
-            * **所有人必装主程序**：`ipk_luci-app-netwiz.ipk`
+            * **所有人必装主程序**：`ipk_luci-app-netwiz.ipk` *(注: 主程序默认包含英文/English)*
             * **需要简体中文界面的用户**：额外下载 `ipk_luci-i18n-netwiz-zh-cn.ipk`
             * **需要繁體中文介面的用戶**：額外下載 `ipk_luci-i18n-netwiz-zh-tw.ipk`
-            * **需要英文界面的用户 (English)**：额外下载 `ipk_luci-i18n-netwiz-en.ipk`
             
             ---
             
