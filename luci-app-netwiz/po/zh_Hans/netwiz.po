@@ -382,8 +382,8 @@ msgstr "正在尝试连接新 IP... 失联超时将会自动回滚配置"
 msgid "Waiting for network service to restart... Elapsed: {sec}s"
 msgstr "正在等待网络服务重启... 已耗时：{sec}秒"
 
-msgid "Waiting for old IP to recover... Elapsed: {sec}s"
-msgstr "正在等待旧 IP 恢复... 已耗时：{sec}秒"
+msgid "Waiting for router to safely restore... Elapsed: {sec}s"
+msgstr "正在等待路由器安全恢复... 已用时间：{sec}秒"
 
 msgid "Preparing environment..."
 msgstr "正在准备环境..."
