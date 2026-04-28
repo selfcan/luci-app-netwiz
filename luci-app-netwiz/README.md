@@ -57,7 +57,7 @@ It is designed to be highly user-friendly for novices setting up secondary route
    
    * You have a main router providing Wi-Fi and DHCP for your home. You add a bypass router and set only your laptop’s gateway to it. Now, your laptop’s traffic goes through the bypass router (e.g., for proxy or special routing), while all other devices continue using the main router normally. This way, you get advanced control on one device without affecting the rest of the network.
 
-📶 **Wi-Fi Settings (Smart Connect / Separate Bands)**
+📶 **Wi-Fi Settings（Auto-hide when Wi-Fi is unavailable.）**
 * **Use Case**: Initial wireless network setup, or modifying the SSID, password, and encryption protocols for your whole-home network.
 * **Behavior**: Intelligently detects the number of underlying physical chips to dynamically render the UI. Supports one-click "Smart Connect (All Bands)" to build a seamless roaming network, or splits into independent 2.4G/5G networks. Perfectly backwards compatible with legacy 802.11b IoT devices.
 
