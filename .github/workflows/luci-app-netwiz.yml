@@ -166,6 +166,8 @@ jobs:
             ```bash
             wget -qO- https://raw.githubusercontent.com/${{ github.repository }}/master/install.sh | sh
             ```
+
+            ### 新版 25.x 由于签名限制，网页直接上传会报 Error 99 错误，请使用上方的命令行安装
             
             ---
             
