@@ -1340,11 +1340,16 @@ return view.extend({
                                         btnScanLive.style.display = 'none';
                                     }
                                     
-                                    // 5. 延时对焦，防止在部分浏览器中引发卡顿
+                                    // 5. 光标对焦自动全选
                                     setTimeout(function() {
                                         var pwdInput = container.querySelector('#wisp-target-key');
-                                        if (pwdInput && encVal !== 'none') pwdInput.focus();
-                                    }, 100);
+                                        // 只要选中的不是“无密码(none)”的 Wi-Fi
+                                        if (pwdInput && encVal !== 'none') {
+                                            pwdInput.focus();
+                                            // 全选框内的旧内容
+                                            pwdInput.select(); 
+                                        }
+                                    }, 300); // 延时改为 300 毫秒，确保动画和 CSS 完全渲染完
                                     
                                 } catch(err) {
                                     console.error("选取 Wi-Fi 时发生错误:", err);
