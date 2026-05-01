@@ -1420,50 +1420,31 @@ return view.extend({
                             li.onmouseover = function() { this.style.background = '#f8fafc'; };
                             li.onmouseout = function() { this.style.background = 'transparent'; };
                             
-                            li.onclick = function() {
+                            li.onclick = function(e) {
+                                if (e) { e.preventDefault(); e.stopPropagation(); }
+                                
                                 try {
-                                    // 1. 填入 SSID
+                                    // 1. 填入 SSID 和参数
                                     container.querySelector('#wisp-target-ssid').value = net.ssid || '';
-                                    
-                                    // 2. 加密类型解析
                                     var encVal = 'none';
                                     if (net.encryption) {
                                         var desc = typeof net.encryption === 'string' ? net.encryption : (net.encryption.description || '');
                                         desc = desc.toLowerCase();
-                                        if (desc.indexOf('wpa3') !== -1 || desc.indexOf('sae') !== -1) {
-                                            encVal = 'sae-mixed';
-                                        } else if (desc.indexOf('wpa') !== -1 || desc.indexOf('psk') !== -1 || desc.indexOf('mixed') !== -1) {
-                                            encVal = 'psk2';
-                                        }
+                                        if (desc.indexOf('wpa3') !== -1 || desc.indexOf('sae') !== -1) encVal = 'sae-mixed';
+                                        else if (desc.indexOf('wpa') !== -1 || desc.indexOf('psk') !== -1 || desc.indexOf('mixed') !== -1) encVal = 'psk2';
                                     }
                                     container.querySelector('#wisp-target-enc').value = encVal;
-                                    
-                                    // 3. 填入绑定的物理网卡
                                     container.querySelector('#wisp-target-device').value = scanDevice; 
                                     container.querySelector('#wisp-target-bssid').value = net.bssid || '';
                                     
-                                    // 4. 显示输入密码区域并关闭弹窗
+                                    // 2. 隐藏弹窗，显示密码框区域
+                                    wispModal.style.display = 'none'; 
                                     container.querySelector('#wisp-selected-info').style.display = 'block';
-                                    wispModal.style.display = 'none';
                                     var btnScanLive = container.querySelector('#btn-wisp-scan');
-                                    if (btnScanLive) {
-                                        btnScanLive.style.display = 'none';
-                                    }
-                                    
-                                    // 5. 混合双重对焦
-                                    var pwdInput = container.querySelector('#wisp-target-key');
-                                    if (pwdInput && encVal !== 'none') {
-                                        // 在点击的同步线程焦点
-                                        pwdInput.focus();
-                                        
-                                        setTimeout(function() {
-                                            pwdInput.focus();
-                                            pwdInput.select(); // 密码框仅支持原生 select()
-                                        }, 50); 
-                                    }
+                                    if (btnScanLive) btnScanLive.style.display = 'none';
                                     
                                 } catch(err) {
-                                    console.error("选取 Wi-Fi 时发生错误:", err);
+                                    console.error("选取 Wi-Fi 時發生錯誤:", err);
                                 }
                             };
                             
