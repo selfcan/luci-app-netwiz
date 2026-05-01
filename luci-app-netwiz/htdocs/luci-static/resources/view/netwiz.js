@@ -334,7 +334,7 @@ return view.extend({
             '  <div id="wisp-scan-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999999; align-items:center; justify-content:center;">',
             '    <div style="background:#fff; width:90%; max-width:400px; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; max-height:80vh;">',
             '      <div style="padding:15px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">',
-            '         <h3 style="margin:0; font-size:16px; color:#0f172a;">{{MODAL_WISP_TITLE}}</h3>',
+            '         <h3 style="margin:0; font-size:16px; color:#0f172a; background: #eee;">{{MODAL_WISP_TITLE}}</h3>',
             '         <span id="wisp-modal-close" style="font-size:24px; cursor:pointer; color:#94a3b8;">&times;</span>',
             '      </div>',
             '      <div style="padding:0; overflow-y:auto; flex:1;">',
