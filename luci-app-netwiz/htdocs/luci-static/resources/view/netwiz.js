@@ -184,7 +184,7 @@ var T = {
     'TXT_ROAMING_ON': _('Roaming Enabled'),
     'TXT_CLICK_FIX': _('Click to Fix'),
     'TXT_CLICK_GOTO': _('Click to Settings'),
-    'MSG_WAN_AUTODETECT': _('Smart detection of WAN port access (unplug the cable for 10 seconds and then reconnect to enable the automatic protocol detection engine).'),
+    'MSG_WAN_AUTODETECT': _('WAN Blind-Switch: Unplug the WAN cable for 10 seconds and reconnect to auto-detect and switch the connection type.'),
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
