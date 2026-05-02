@@ -288,7 +288,7 @@ return view.extend({
             '.nw-hl { color: #facc15; font-weight: bold; margin-left: 6px; }',
             
             /* 高级设置面板样式 */
-            '.nw-adv-btn { text-align: center; margin-top: 5px; cursor: pointer; color: #64748b; font-size: 14px; font-weight: bold; user-select: none; transition: color 0.25s ease; padding: 10px 0; border-top: 1px dashed #e2e8f0; }',
+            '.nw-adv-btn { text-align: center; margin-top: 5px; cursor: pointer; color: #64748b; font-size: 14px; font-weight: bold; user-select: none; transition: color 0.25s ease; padding: 10px 6px 0 6px; border-top: 1px dashed #e2e8f0; }',
             '.nw-adv-btn:hover { color: #3b82f6; }',
             '.nw-adv-panel { background: rgba(241, 245, 249, 0.5); border-radius: 12px; padding: 20px; margin-top: 15px; border: 1px solid #e2e8f0; animation: fadeIn 0.3s ease; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }',
             '@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }',
@@ -525,7 +525,7 @@ return view.extend({
             '           </div>',
             '        </div>',
             // 中继 (WISP) UI 开关
-            '        <div style="margin-top: 25px; padding-top: 20px; border-top: 2px dashed #cbd5e1;">',
+            '        <div style="margin-top: 10px; padding-top: 20px; border-top: 2px dashed #cbd5e1;">',
             '           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">',
             '              <div style="font-weight: 600; color: #059669; font-size: 16px;">{{LBL_WISP_EN}}</div>',
             '              <label class="nw-switch"><input type="checkbox" id="wisp-toggle"><span class="nw-slider"></span></label>',
@@ -968,7 +968,7 @@ return view.extend({
 
                                     if (rOn) {
                                         if (isDirty) {
-                                            statRow.innerHTML = "<span title='" + T['DESC_ROAM_DIRTY'] + "' style='display:inline-flex; align-items:center; justify-content:center; background:rgba(16, 185, 129, 0.15); color:#10b981; border: 1px solid #10b981; font-size:14px; padding:6px 6px; border-radius:8px; font-family:sans-serif; cursor:pointer; font-weight:bold; white-space:nowrap; transition:all 0.25s ease; margin:0 auto;'>" + T['TXT_ROAMING_ON'] + "<b style='display:inline-flex; align-items:center; justify-content:center; background:#ef4444; color:#ffffff; width:18px; height:18px; border-radius:50%; font-size:14px; font-family:Arial,sans-serif; font-weight:900; margin-left:6px; line-height:1;'>!</b> <span style='font-size:14px; font-weight:bold; color:#ef4444; margin-left:5px; text-decoration:underline;'>" + T['TXT_CLICK_FIX'] + "</span></span>";
+                                            statRow.innerHTML = "<span title='" + T['DESC_ROAM_DIRTY'] + "' style='display:inline-flex; align-items:center; justify-content:center; background:rgba(16, 185, 129, 0.15); color:#10b981; border: 1px solid #10b981; font-size:14px; padding:6px 16px; border-radius:8px; font-family:sans-serif; cursor:pointer; font-weight:bold; white-space:nowrap; transition:all 0.25s ease; margin:0 auto;'>" + T['TXT_ROAMING_ON'] + "<b style='display:inline-flex; align-items:center; justify-content:center; background:#ef4444; color:#ffffff; width:18px; height:18px; border-radius:50%; font-size:14px; font-family:Arial,sans-serif; font-weight:900; margin-left:6px; line-height:1;'>!</b> <span style='font-size:14px; font-weight:bold; color:#ef4444; margin-left:5px; text-decoration:underline;'>" + T['TXT_CLICK_FIX'] + "</span></span>";
                                         } else {
                                             statRow.innerHTML = "<span style='display:inline-flex; align-items:center; justify-content:center; background:rgba(16, 185, 129, 0.15); color:#10b981; border: 1px solid #10b981; font-size:14px; padding:6px 16px; border-radius:8px; font-family:sans-serif; font-weight:bold; white-space:nowrap; cursor:pointer; transition:all 0.25s ease; margin:0 auto;'>" + T['TXT_ROAMING_ON'] + "</span>";
                                         }
