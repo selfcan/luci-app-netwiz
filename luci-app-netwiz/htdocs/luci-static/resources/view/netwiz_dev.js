@@ -177,7 +177,7 @@ return view.extend({
             '   <div class="nw-header">',
             '      <div class="nw-title-wrap">',
             '         <div class="nw-main-title">{{NW_TITLE}}</div>',
-            '         <div class="nw-version-tag">v1.4.0 <div class="nw-version-dot" style="display: none;"></div></div>',
+            '         <div class="nw-version-tag">{{APP_VERSION}} <div class="nw-version-dot" style="display: none;"></div></div>',
             '      </div>',
             '      <p>{{NW_SUBTITLE}}</p>',
             '   </div>',
