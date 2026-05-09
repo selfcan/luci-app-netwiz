@@ -964,12 +964,12 @@ return view.extend({
             
             var row1Title = smartFilterByIp ? T['LBL_ROW_TYPE_SMART'] : T['LBL_ROW_TYPE_NAME'];
             tabsHtml += '<div style="display:flex; gap:8px; width:max-content; align-items:center; margin-bottom:10px;">';
-            tabsHtml += '<div style="font-size:12px; font-weight:bold; color:#94a3b8; background:#f1f5f9; padding:5px 10px; border-radius:6px; margin-right:4px; border: 1px solid #e2e8f0;">' + row1Title + '</div>';
+            tabsHtml += '<div style="font-size:14px; font-weight:bold; color:#3b82f6 ; background:#f1f5f9; padding:5px 10px; border-radius:6px; margin-right:4px; border: 1px solid #3b82f6;">' + row1Title + '</div>';
             tabsHtml += btnAll + btnMob + btnPc + btnIot + btnTypeOth;
             tabsHtml += '</div>';
 
             tabsHtml += '<div style="display:flex; gap:8px; width:max-content; align-items:center;">';
-            tabsHtml += '<div style="font-size:12px; font-weight:bold; color:#94a3b8; background:#f1f5f9; padding:5px 10px; border-radius:6px; margin-right:4px; border: 1px solid #e2e8f0;">' + T['LBL_ROW_CUSTOM'] + '</div>';
+            tabsHtml += '<div style="font-size:14px; font-weight:bold; color:#3b82f6; background:#f1f5f9; padding:5px 10px; border-radius:6px; margin-right:4px; border: 1px solid #3b82f6;">' + T['LBL_ROW_CUSTOM'] + '</div>';
             tabsHtml += deptBtns + btnDeptOth + btnMgr;
             tabsHtml += '</div>';
             
