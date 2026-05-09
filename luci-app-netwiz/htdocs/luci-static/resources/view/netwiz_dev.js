@@ -983,6 +983,11 @@ return view.extend({
                     try { devices = JSON.parse(res).devices || []; } catch(e){}
                 }
                 
+                var currentHostIp = window.location.hostname;
+                devices.forEach(function(d) {
+                    if (d.ip === currentHostIp) d.is_local = true;
+                });
+
                 globalDevices = devices;
                 
                 var gwDev = globalDevices.find(function(d) { return d.is_gw === 'true' || d.is_local === 'true'; });
