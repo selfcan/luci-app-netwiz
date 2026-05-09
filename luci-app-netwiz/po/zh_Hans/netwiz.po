@@ -817,5 +817,8 @@ msgstr "已过期"
 msgid "Terminal Device & IP Binding"
 msgstr "终端设备与 IP 绑定"
 
-msgid "Current Device"
-msgstr "正在访问"
+msgid "Managing"
+msgstr "当前访问"
+
+msgid "Pending"
+msgstr "待生效"
