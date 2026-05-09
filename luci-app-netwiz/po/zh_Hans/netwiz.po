@@ -876,3 +876,9 @@ msgstr "从自定义的分组网段中分配 IP，实现逻辑层面的分类管
 
 msgid "Target Department"
 msgstr "目标分组"
+
+msgid "Department Subnet"
+msgstr "自定义分组网段"
+
+msgid "❌ The IP pool for the selected department is full! Please expand the range."
+msgstr "❌ 该分组的 IP 池已全部分配完毕！请前往“管理分组”扩大网段范围。"
