@@ -99,23 +99,24 @@ jobs:
           chmod +x luci-app-netwiz/root/etc/init.d/netwiz-monitor
           chmod +x luci-app-netwiz/root/etc/init.d/netwiz-recovery
           
-          # 自动提取版本号并注入前端 js
+          # 自动提取版本号并注入前端 js (循环处理多个文件)
           echo "🏷️ 准备将版本号 v${{ needs.prepare.outputs.pkg_version }} 注入前端..."
-          JS_FILE="luci-app-netwiz/htdocs/luci-static/resources/view/netwiz.js"
           
-          if [ -f "$JS_FILE" ]; then
-            echo "✅ 找到目标文件。注入前状态："
-            grep "{{APP_VERSION}}" "$JS_FILE" || echo "⚠️ 警告：文件中没有找到 {{APP_VERSION}} 占位符！"
-            
-            # 执行替换
-            sed -i "s/{{APP_VERSION}}/v${{ needs.prepare.outputs.pkg_version }}/g" "$JS_FILE"
-            
-            echo "✅ 注入完成。注入后状态："
-            grep "nw-version-tag" "$JS_FILE"
-          else
-            echo "❌ 找不到目标 JS 文件！路径错误！请检查 htdocs 目录结构。"
-            exit 1
-          fi
+          for JS_FILE in "luci-app-netwiz/htdocs/luci-static/resources/view/netwiz.js" "luci-app-netwiz/htdocs/luci-static/resources/view/netwiz_dev.js"; do
+            if [ -f "$JS_FILE" ]; then
+              echo "✅ 找到目标文件: $JS_FILE"
+              grep "{{APP_VERSION}}" "$JS_FILE" || echo "⚠️ 警告：该文件中没有找到 {{APP_VERSION}} 占位符！"
+              
+              # 执行替换
+              sed -i "s/{{APP_VERSION}}/v${{ needs.prepare.outputs.pkg_version }}/g" "$JS_FILE"
+              
+              echo "✅ 注入后状态："
+              grep "nw-version-tag" "$JS_FILE" || true
+            else
+              echo "❌ 找不到目标 JS 文件: $JS_FILE ！请检查路径。"
+              exit 1
+            fi
+          done
 
       - name: 编译
         uses: sbwml/openwrt-gh-action-sdk@main   
