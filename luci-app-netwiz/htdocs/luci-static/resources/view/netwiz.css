@@ -586,7 +586,7 @@ input:checked + .nw-slider:before { transform: translateX(20px); }
 
     .nd-card-mid { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; width: 100% !important; max-width: 100% !important; background: #f8fafc !important; padding: 4px 6px !important; border-radius: 8px !important; box-sizing: border-box !important; margin: 2px 0 !important; border: none !important; }
     .nd-lease-info { order: 1 !important; font-size: 11.5px !important; color: #64748b !important; white-space: nowrap !important; margin: 0 !important; background: transparent !important; padding: 0 !important; }
-    .nd-card-ip { order: 2 !important; font-size: 16px !important; font-weight: 800 !important; color: #3b82f6 !important; white-space: nowrap !important; font-family: monospace !important; margin: 0 !important; text-align: right !important; }
+    .nd-card-ip { order: 2 !important; font-size: 16px !important; font-weight: 800 !important; color: #3b82f6 !important; white-space: nowrap !important; font-family: monospace !important; margin: 0 !important; text-align: right !important; white-space: normal !important; word-break: break-word !important; line-height: 1.3 !important;}
 
     .nd-card-right { width: 100% !important; margin-top: 4px !important; }
     .nd-btn { flex: 1 !important; padding: 9px 0 !important; font-size: 14px !important; }
