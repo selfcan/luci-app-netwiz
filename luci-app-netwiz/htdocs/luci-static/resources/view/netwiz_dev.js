@@ -288,36 +288,48 @@ return view.extend({
         if (modalOverlay) { document.body.appendChild(modalOverlay); }
         
         // ==============================================================
+        // 动态计算悬浮高度
         var controlBar = container.querySelector('.nd-control-bar');
         if (controlBar) {
             var lastHeight = -1;
             var adjustStickyTop = function() {
-                var topOffset = 0;
+                var validBottoms = [0];
                 var headers = document.querySelectorAll('header, .navbar, .main-top, #header, .topbar');
                 for (var i = 0; i < headers.length; i++) {
                     var style = window.getComputedStyle(headers[i]);
                     if (style.position === 'fixed' || style.position === 'sticky') {
                         var rect = headers[i].getBoundingClientRect();
-                        if (rect.top <= 5 && rect.height > 10 && rect.height < 150) {
-                            if (rect.bottom > topOffset) topOffset = rect.bottom;
+
+                        if (rect.top <= 5 && rect.height >= 35 && rect.height <= 90) {
+                            validBottoms.push(rect.bottom);
                         }
                     }
                 }
                 
+                var topOffset = 0;
+                var realBottoms = validBottoms.filter(function(b) { return b > 0; });
+                if (realBottoms.length > 0) topOffset = Math.min.apply(null, realBottoms);
+                if (topOffset > 0) topOffset -= 1; // 向上咬合 1px
+
                 if (topOffset !== lastHeight) {
                     controlBar.style.setProperty('top', topOffset + 'px', 'important');
                     lastHeight = topOffset;
                 }
             };
             
-            adjustStickyTop();
+            var startTime = Date.now();
+            var fastCheck = function() {
+                adjustStickyTop();
+                if (Date.now() - startTime < 2000) {
+                    window.requestAnimationFrame(fastCheck);
+                }
+            };
+            window.requestAnimationFrame(fastCheck);
             
-            [100, 500, 2000].forEach(function(t) { setTimeout(adjustStickyTop, t); });
-            
+            // 自动校准
             window.addEventListener('scroll', function() {
                 if (lastHeight <= 0) adjustStickyTop();
             }, { passive: true });
-
             window.addEventListener('resize', adjustStickyTop);
         }
         // ==============================================================
