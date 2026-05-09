@@ -63,6 +63,7 @@ var T = {
     'TXT_UNKNOWN_DEV': _('Unknown Device'),
     'TXT_UNKNOWN_IP': _('Unknown IP'),
     'BDG_ADDR_IP': _('Terminal Addressed IP'),
+    'BDG_PENDING': _('Pending'),
     'TIT_EDIT_DEV': _('Edit Device Info'),
     'TIT_QUICK_BIND': _('Quick Bind IP'),
     'TXT_CONFIG_MAC': _('Configuring MAC: '),
@@ -664,12 +665,18 @@ return view.extend({
                 var isGw = (dev.is_gw === true || dev.is_gw === 'true');
                 var isLocal = (dev.is_local === true || dev.is_local === 'true');
                 var isVisitor = (dev.is_visitor === true || dev.is_visitor === 'true');
+                var isPending = (isStatic && dev.bound_ip && dev.ip && dev.ip !== 'Unknown IP' && dev.ip !== dev.bound_ip);
 
                 var statusBadgesHtml = isOnline 
                     ? '<span class="nd-status-badge nd-status-online"><span class="nd-dot-online"></span>' + T['BDG_ONLINE'] + '</span>' 
                     : '<span class="nd-status-badge nd-status-offline"><span class="nd-dot-offline"></span>' + T['BDG_OFFLINE'] + '</span>';
 
-                if (isStatic) statusBadgesHtml += '<span class="nd-badge nd-badge-static">🔒 ' + T['BDG_STATIC'] + '</span>';
+                if (isPending) {
+                    statusBadgesHtml += '<span class="nd-badge nd-badge-pending">⏳ ' + (T['BDG_PENDING'] || 'Pending') + '</span>';
+                } else if (isStatic) {
+                    statusBadgesHtml += '<span class="nd-badge nd-badge-static">🔒 ' + T['BDG_STATIC'] + '</span>';
+                }
+                if (isGw) statusBadgesHtml += '<span class="nd-badge nd-badge-gw">🌐 ' + T['BDG_GW'] + '</span>';
                 if (isGw) statusBadgesHtml += '<span class="nd-badge nd-badge-gw">🌐 ' + T['BDG_GW'] + '</span>';
                 if (isLocal) statusBadgesHtml += '<span class="nd-badge nd-badge-local">💻 ' + T['BDG_LOCAL'] + '</span>';
                 if (isVisitor) statusBadgesHtml += '<span class="nd-badge nd-badge-visitor">👤 ' + (T['BDG_VISITOR'] || '当前设备') + '</span>';
@@ -708,6 +715,10 @@ return view.extend({
                 }
 
                 var ipText = dev.ip === 'Unknown IP' ? T['TXT_UNKNOWN_IP'] : dev.ip;
+                if (isPending) {
+                    // 划掉旧 IP ➜ 橙色的新 IP
+                    ipText = '<span style="text-decoration:line-through; color:#94a3b8; font-size:12.5px; margin-right:5px;">' + dev.ip + '</span><span style="color:#d97706; font-weight:bold;">➜ ' + dev.bound_ip + '</span>';
+                }
 
                 html += '<div class="nd-card"><div class="nd-card-left"><div style="display:flex; align-items:center;">';
                 
