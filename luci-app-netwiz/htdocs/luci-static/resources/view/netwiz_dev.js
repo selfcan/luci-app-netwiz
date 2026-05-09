@@ -54,6 +54,7 @@ var T = {
     'BDG_STATIC': _('Static'),
     'BDG_GW': _('Upstream Gateway'),
     'BDG_LOCAL': _('Local System'),
+    'BDG_VISITOR': _('Current Device'),
     'TXT_SYS_ROUTE': _('System Core Route'),
     'TXT_SYS_RESERVED': _('System Reserved Device'),
     'BTN_EDIT': _('Edit'),
@@ -571,7 +572,10 @@ return view.extend({
 
         function isSelectable(dev) {
             var isSys = dev.is_gw === 'true' || dev.is_gw === true || dev.is_local === 'true' || dev.is_local === true;
-            if (isSys) return false;
+            var isVisitor = dev.is_visitor === 'true' || dev.is_visitor === true;
+            
+            // 系统保留设备，或者当前设备，不能被选中
+            if (isSys || isVisitor) return false;
             return true; 
         }
 
@@ -647,14 +651,16 @@ return view.extend({
                 var isStatic = (dev.is_static === true || dev.is_static === 'true');
                 var isGw = (dev.is_gw === true || dev.is_gw === 'true');
                 var isLocal = (dev.is_local === true || dev.is_local === 'true');
-                
+                var isVisitor = (dev.is_visitor === true || dev.is_visitor === 'true');
+
                 var statusBadgesHtml = isOnline 
                     ? '<span class="nd-status-badge nd-status-online"><span class="nd-dot-online"></span>' + T['BDG_ONLINE'] + '</span>' 
                     : '<span class="nd-status-badge nd-status-offline"><span class="nd-dot-offline"></span>' + T['BDG_OFFLINE'] + '</span>';
-                    
+
                 if (isStatic) statusBadgesHtml += '<span class="nd-badge nd-badge-static">🔒 ' + T['BDG_STATIC'] + '</span>';
                 if (isGw) statusBadgesHtml += '<span class="nd-badge nd-badge-gw">🌐 ' + T['BDG_GW'] + '</span>';
                 if (isLocal) statusBadgesHtml += '<span class="nd-badge nd-badge-local">💻 ' + T['BDG_LOCAL'] + '</span>';
+                if (isVisitor) statusBadgesHtml += '<span class="nd-badge nd-badge-visitor">👤 ' + (T['BDG_VISITOR'] || '当前设备') + '</span>';
 
                 var leaseText = dev.lease || '-';
                 if (leaseText === 'Static' || leaseText === 'Infinite' || (isStatic && leaseText === '-')) {
@@ -681,6 +687,7 @@ return view.extend({
                 var isChecked = selectedDevices.findIndex(function(d){ return d.mac === dev.mac; }) !== -1;
 
                 var isSys = isGw || isLocal;
+                var noCheckbox = isSys || isVisitor;
                 var crossSubnetWarn = "";
 
                 var isValidIp = (dev.ip && dev.ip !== 'Unknown IP' && dev.ip.substring(0, dev.ip.lastIndexOf('.') + 1) === basePrefix);
@@ -692,7 +699,7 @@ return view.extend({
 
                 html += '<div class="nd-card"><div class="nd-card-left"><div style="display:flex; align-items:center;">';
                 
-                if (isSys) {
+                if (noCheckbox) {
                     html += '<div style="width: 33px; flex-shrink: 0; margin-right: 15px;"></div>';
                 } else {
                     html += '<label class="nw-wiz-cb-wrap nd-card-checkbox"><input type="checkbox" data-mac="'+dev.mac+'" '+(isChecked?'checked':'')+'><span class="nw-wiz-checkmark"></span></label>';
@@ -1007,22 +1014,38 @@ return view.extend({
                 container.querySelector('#cnt-iot').innerText = cIot;
                 container.querySelector('#cnt-other').innerText = cOth;
 
+                // ==============================================================
+                // 设备排序
                 devices.sort(function(a, b) {
-                    var aGw = (a.is_gw === true || a.is_gw === 'true');
-                    var bGw = (b.is_gw === true || b.is_gw === 'true');
-                    var aLocal = (a.is_local === true || a.is_local === 'true');
-                    var bLocal = (b.is_local === true || b.is_local === 'true');
-                    var aStatic = (a.is_static === true || a.is_static === 'true');
-                    var bStatic = (b.is_static === true || b.is_static === 'true');
-                    var aOnline = (a.online === true || a.online === 'true');
-                    var bOnline = (b.online === true || b.online === 'true');
+                    var getWeight = function(d) {
+                        // 1. 系統设备
+                        if (d.is_gw === true || d.is_gw === 'true') return 100;
+                        if (d.is_local === true || d.is_local === 'true') return 90;
+                        if (d.is_visitor === true || d.is_visitor === 'true') return 80;
+                        
+                        // 2. 已绑 IP
+                        if (d.is_static === true || d.is_static === 'true') return 70;
+                        
+                        var isOnline = (d.online === true || d.online === 'true');
+                        var isUnknown = (d.name === 'Unknown' || d.ip === 'Unknown IP');
+                        
+                        // 3. 常规
+                        if (isOnline && !isUnknown) return 60;  // 在线 + 活跃设备
+                        if (isOnline && isUnknown) return 50;   // 在线 + 未知设备
+                        if (!isOnline && isUnknown) return 40;  // 离线 + 未知设备
+                        return 30;                              // 离线 + 已知设备
+                    };
 
-                    if (aGw !== bGw) return aGw ? -1 : 1;
-                    if (aLocal !== bLocal) return aLocal ? -1 : 1;
-                    if (aStatic !== bStatic) return aStatic ? -1 : 1;
-                    if (aOnline !== bOnline) return aOnline ? -1 : 1;
+                    var weightA = getWeight(a);
+                    var weightB = getWeight(b);
+
+                    if (weightA !== weightB) {
+                        return weightB - weightA; 
+                    }
+                    
                     return a.ip.localeCompare(b.ip, undefined, {numeric: true, sensitivity: 'base'});
                 });
+                // ==============================================================
 
                 if (devices.length === 0) {
                     listEl.innerHTML = '<div style="text-align:center; padding:60px 20px; color:#64748b; background:#fff; border-radius:16px; border:1px dashed #cbd5e1; width:100%;">' + T['MSG_NO_DEVS'] + '</div>';
