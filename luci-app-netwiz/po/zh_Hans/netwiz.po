@@ -933,3 +933,24 @@ msgstr "❌ 拦截规则保存失败！\n\n原因: RPC 通信异常 ({err})\n可
 
 msgid "❌ Save failed!\nReason: {err}\nPlease run `/etc/init.d/rpcd restart` in SSH"
 msgstr "❌ 保存失败！\n原因: {err}\n请在 SSH 执行: /etc/init.d/rpcd restart"
+
+msgid "Firewall & Access Control"
+msgstr "防火墙与权限管控"
+
+msgid "Live Connections"
+msgstr "实时连接数"
+
+msgid "Monitor real-time connections (Auto turn off in 3 mins)"
+msgstr "监控设备实时并发连接数 (开启3分钟后自动关闭以节省性能)"
+
+msgid "Net Blocked"
+msgstr "已断网"
+
+msgid "Isolated"
+msgstr "已隔离"
+
+msgid "DMZ Host"
+msgstr "DMZ 主机"
+
+msgid "Conns"
+msgstr "连接"
