@@ -688,7 +688,7 @@ return view.extend({
                 }
                 
                 if (nameSet[d.name]) {
-                    alert(T['ERR_DEPT_NAME_DUP'] + ' [' + d.name + ']');
+                    alert(T['ERR_DEPT_NAME_DUP'].replace('{name}', '[' + d.name + ']'));
                     return false;
                 }
                 nameSet[d.name] = true;
@@ -699,7 +699,7 @@ return view.extend({
             for(var i=0; i<newDepts.length; i++) {
                 for(var j=i+1; j<newDepts.length; j++) {
                     if (Math.max(newDepts[i].start, newDepts[j].start) <= Math.min(newDepts[i].end, newDepts[j].end)) {
-                        alert(T['ERR_DEPT_OVERLAP'] + ' [' + newDepts[i].name + '] & [' + newDepts[j].name + ']');
+                        alert(T['ERR_DEPT_OVERLAP'].replace('{groups}', '[' + newDepts[i].name + '] & [' + newDepts[j].name + ']'));
                         return false; 
                     }
                 }
