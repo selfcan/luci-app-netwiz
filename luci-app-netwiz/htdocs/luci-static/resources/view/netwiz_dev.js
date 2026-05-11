@@ -1290,7 +1290,7 @@ return view.extend({
 
                         // 展示
                         var showV6 = publicV6List.find(function(v) { return v.indexOf('::') !== -1 && v.length < 25; }) || publicV6List[0];
-                        var moreV6 = publicV6List.length > 1 ? (' +' + (publicV6List.length - 1)) : '';
+                        var moreV6 = publicV6List.length >= 2 ? (' +' + publicV6List.length) : '';
                         
                         var allV6Str = publicV6List.join('\n');
                         var titleStr = T['TIP_V6_COPY'] + '\n' + allV6Str;
