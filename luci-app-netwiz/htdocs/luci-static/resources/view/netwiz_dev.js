@@ -1034,29 +1034,35 @@ return view.extend({
         var selectedDevices = [];
         var currentFilter = 'all';
 
-        // 全局心跳消息队列与状态锁
+        // 全局并发控制
         window.nwKeepAliveQueue = window.nwKeepAliveQueue || [];
-        window.nwIsProcessingQueue = window.nwIsProcessingQueue || false;
+        window.nwActiveCount = window.nwActiveCount || 0; // 当前正在执行的任务数
+        var MAX_CONCURRENT = 10; // 并发数：10
 
         function processKeepAliveQueue() {
-            // 队列空了，或处理中，就退出
-            if (window.nwKeepAliveQueue.length === 0 || window.nwIsProcessingQueue) return;
-            
-            window.nwIsProcessingQueue = true; // 上锁
-            var mac = window.nwKeepAliveQueue.shift(); // 取出队列第一个 MAC
+            // 如果队列空了，或者并发数已经达到上限，就退出等待
+            if (window.nwKeepAliveQueue.length === 0 || window.nwActiveCount >= MAX_CONCURRENT) return;
 
-            // 发送请求给路由器后端
-            callV6KeepAlive(mac).then(function() {
-                sessionStorage.setItem('nw_v6_hb_' + mac, 'sent'); // 成功后标记为已发送
-            }).catch(function() {
-                // 失败忽略，不阻塞队伍
-            }).finally(function() {
-                // 延时 200 毫秒
-                setTimeout(function() {
-                    window.nwIsProcessingQueue = false; // 解锁
-                    processKeepAliveQueue();            // 处理下一个
-                }, 200); 
-            });
+            // 没到并发上限，且队列里还有任务，执行
+            while (window.nwKeepAliveQueue.length > 0 && window.nwActiveCount < MAX_CONCURRENT) {
+                window.nwActiveCount++; // 占位：活跃任务数 +1
+                var mac = window.nwKeepAliveQueue.shift(); // 取出 MAC
+
+                // 锁定当前的 mac，防止污染
+                (function(currentMac) {
+                    callV6KeepAlive(currentMac).then(function() {
+                        sessionStorage.setItem('nw_v6_hb_' + currentMac, 'sent'); 
+                    }).catch(function() {
+                        // 失败忽略
+                    }).finally(function() {
+                        // 延时 200 毫秒后释放槽位
+                        setTimeout(function() {
+                            window.nwActiveCount--; // 释放活跃任务数 -1
+                            processKeepAliveQueue(); // 继续
+                        }, 200); 
+                    });
+                })(mac);
+            }
         }
 
         function isSelectable(dev) {
