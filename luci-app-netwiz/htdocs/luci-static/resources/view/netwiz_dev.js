@@ -138,7 +138,9 @@ var T = {
     'ERR_DMZ_OCCUPIED_2': _(' ] is currently the DMZ.\nPlease disable its DMZ first!'),
     'ERR_FW_SAVE_FAIL': _('❌ Save failed!\n\nReason: RPC Error ({err}).\nPlease run `/etc/init.d/rpcd restart` in SSH and try again!'),
     'ERR_SAVE_FAIL_SHORT': _('❌ Save failed!\nReason: {err}\nPlease run `/etc/init.d/rpcd restart` in SSH'),
-    'ERR_IP_FORMAT': _('❌ Invalid IP format! Please enter a valid IPv4 address (e.g., 192.168.1.50)')
+    'ERR_IP_FORMAT': _('❌ Invalid IP format! Please enter a valid IPv4 address (e.g., 192.168.1.50)'),
+    'TIP_V6_COPY': _('Public IPv6 (Click to copy):'),
+    'MSG_V6_COPIED': _('IPv6 address copied successfully:')
 };
 
 var callDeviceList = rpc.declare({ object: 'netwiz_dev', method: 'get_list', params: ['show_conns'], expect: { '': {} } });
@@ -148,6 +150,7 @@ var callDeviceUnbind = rpc.declare({ object: 'netwiz_dev', method: 'unbind', par
 var callApplyDhcp = rpc.declare({ object: 'netwiz_dev', method: 'apply_dhcp', expect: { result: 0 } });
 var callGetDepts = rpc.declare({ object: 'netwiz_dev', method: 'get_depts', expect: { depts: [] } });
 var callSaveDepts = rpc.declare({ object: 'netwiz_dev', method: 'save_depts', params: ['data'], expect: { result: 0 } });
+var callV6KeepAlive = rpc.declare({ object: 'netwiz_dev', method: 'v6_keep_alive', params: ['mac'], expect: { result: 0 } });
 
 return view.extend({
     handleSaveApply: null,
@@ -953,6 +956,31 @@ return view.extend({
         var selectedDevices = [];
         var currentFilter = 'all';
 
+        // 全局心跳消息队列与状态锁
+        window.nwKeepAliveQueue = window.nwKeepAliveQueue || [];
+        window.nwIsProcessingQueue = window.nwIsProcessingQueue || false;
+
+        function processKeepAliveQueue() {
+            // 队列空了，或处理中，就退出
+            if (window.nwKeepAliveQueue.length === 0 || window.nwIsProcessingQueue) return;
+            
+            window.nwIsProcessingQueue = true; // 上锁
+            var mac = window.nwKeepAliveQueue.shift(); // 取出队列第一个 MAC
+
+            // 发送请求给路由器后端
+            callV6KeepAlive(mac).then(function() {
+                sessionStorage.setItem('nw_v6_hb_' + mac, 'sent'); // 成功后标记为已发送
+            }).catch(function() {
+                // 失败忽略，不阻塞队伍
+            }).finally(function() {
+                // 延时 200 毫秒
+                setTimeout(function() {
+                    window.nwIsProcessingQueue = false; // 解锁
+                    processKeepAliveQueue();            // 处理下一个
+                }, 200); 
+            });
+        }
+
         function isSelectable(dev) {
             var isSys = dev.is_gw === 'true' || dev.is_gw === true || dev.is_local === 'true' || dev.is_local === true;
             var isVisitor = dev.is_visitor === 'true' || dev.is_visitor === true;
@@ -1008,7 +1036,6 @@ return view.extend({
             globalDepartments.forEach(function(d) { deptCounts[d.id] = 0; });
 
             globalDevices.forEach(function(d) {
-                // 测算部门
                 var dept = getDeviceDept(d);
                 if (dept) {
                     deptCounts[dept.id]++;
@@ -1210,6 +1237,69 @@ return view.extend({
                     connHtml = '<div style="font-size:12px; color:'+connColor+'; font-family:monospace; margin-top:2px; font-weight:bold;">⚡ ' + dev.conn_count + ' ' + T['LBL_CONN_COUNT'] + '</div>';
                 }
 
+                // 只保留 2 或 3 开头的公网 IP，屏蔽 fd/fe 等内网 IP
+                var ipv6Html = '';
+                if (dev.ipv6 && dev.ipv6.trim() !== '') {
+                    var v6List = dev.ipv6.trim().split(' ');
+                    var publicV6List = v6List.filter(function(v) { 
+                        var firstChar = v.charAt(0).toLowerCase();
+                        return firstChar === '2' || firstChar === '3'; 
+                    });
+
+                    // 显示徽章
+                    if (publicV6List.length > 0) {
+                        var memKey = 'nw_v6_mem_' + dev.mac; // L1 记忆钥匙
+                        var hbKey = 'nw_v6_hb_' + dev.mac;   // Session 心跳钥匙
+                        var currentPrefix = publicV6List[0].split(':').slice(0, 4).join(':'); // 提取真实前缀
+                        
+                        var radarShortV6 = publicV6List.find(function(v) { return v.indexOf('::') !== -1 && v.length < 25; });
+                        var localShortV6 = localStorage.getItem(memKey);
+                        var isBackendPc = (dev.is_pc_v6 === true || dev.is_pc_v6 === 'true');
+
+                        // 全局队列
+                        var triggerKeepAlive = function() {
+                            var hasSent = sessionStorage.getItem(hbKey);
+                            // 只要这个会话没发过，且没在排队
+                            if (!hasSent && window.nwKeepAliveQueue.indexOf(dev.mac) === -1) { 
+                                sessionStorage.setItem(hbKey, 'pending'); // 占位
+                                window.nwKeepAliveQueue.push(dev.mac);    // 进排队
+                                processKeepAliveQueue();                  // 处理
+                            }
+                        };
+
+                        // 核心逻辑树：雷达真实 > L1缓存 > L2预测拼凑
+                        if (radarShortV6) {
+                            localStorage.setItem(memKey, radarShortV6);
+                            triggerKeepAlive();
+                            
+                        } else if (localShortV6 && localShortV6.indexOf(currentPrefix) === 0) {
+                            publicV6List.unshift(localShortV6); 
+                            triggerKeepAlive();
+                            
+                        } else if (isBackendPc) {
+                            var ipToUse = (dev.bound_ip && dev.bound_ip !== 'Unknown IP') ? dev.bound_ip : ((dev.ip !== 'Unknown IP') ? dev.ip : '');
+                            if (ipToUse) {
+                                var ipv4Suffix = ipToUse.split('.').pop(); 
+                                var predictedV6 = currentPrefix + '::' + parseInt(ipv4Suffix, 10); 
+                                
+                                publicV6List.unshift(predictedV6); 
+                                localStorage.setItem(memKey, predictedV6); 
+                                triggerKeepAlive(); 
+                            }
+                        }
+
+                        // 展示
+                        var showV6 = publicV6List.find(function(v) { return v.indexOf('::') !== -1 && v.length < 25; }) || publicV6List[0];
+                        var moreV6 = publicV6List.length > 1 ? (' +' + (publicV6List.length - 1)) : '';
+                        
+                        var allV6Str = publicV6List.join('\n');
+                        var titleStr = T['TIP_V6_COPY'] + '\n' + allV6Str;
+                        
+                        // 复制ipv6
+                        ipv6Html = '<div class="nd-ipv6-badge" data-v6="' + showV6 + '" title="' + titleStr + '" style="font-size:11px; color:#64748b; font-family:monospace; margin-top:3px; display:flex; align-items:center; gap:4px; cursor:pointer;"><span style="background:#10b981; padding:4px 5px; border-radius:4px; font-weight:bold; color:#fff; border:1px solid #e2e8f0; line-height:1;">IPv6</span> <span style="overflow:hidden; text-overflow:ellipsis; max-width:120px; white-space:nowrap;">' + showV6 + '</span><span style="color:#3b82f6; font-weight:bold;">' + moreV6 + '</span></div>';
+                    }
+                }
+
                 var actions = "";
                 if (isGw || isLocal) {
                     actions = '<span style="color:#f00; font-size:16.5px; font-weight:bold; padding: 10px;">' + T['TXT_SYS_RESERVED'] + '</span>';
@@ -1251,12 +1341,17 @@ return view.extend({
                     '               ' + statusBadgesHtml, 
                     '           </div>',
                     '       </div>',
-                    '       <div class="nd-card-mac btn-fw-mac" title="' + T['TIP_MAC_CTRL'] + '" data-mac="'+dev.mac+'" data-ip="'+(dev.bound_ip || dev.ip)+'" style="margin-left:50px;">' + (dev.mac).toUpperCase() + ' <span style="font-size:15px; margin-left:2px;">👈</span></div>',
+                    '       <div class="nd-card-mac btn-fw-mac" title="' + T['TIP_MAC_CTRL'] + '" data-mac="'+dev.mac+'" data-ip="'+(dev.bound_ip || dev.ip)+'" style="margin-left:50px; display:flex; align-items:center;">' + (dev.mac).toUpperCase() + ' <span style="font-size:1.2em; color:#94a3b8; margin-left:4px; vertical-align:middle;">👈</span></div>',
                     '   </div>',
                     '   <div class="nd-card-mid">',
-                    '       <div class="nd-card-ip">' + ipText + '</div>',
-                    '       <div class="nd-lease-info"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ' + leaseText + '</div>',
-                    '       ' + connHtml,
+                    '       <div style="display:flex; flex-direction:column; align-items:flex-start; min-width:0;">',
+                    '           <div class="nd-card-ip">' + ipText + '</div>',
+                    '           ' + ipv6Html,
+                    '       </div>',
+                    '       <div style="display:flex; flex-direction:column; align-items:flex-end;">',
+                    '           <div class="nd-lease-info"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ' + leaseText + '</div>',
+                    '           ' + connHtml,
+                    '       </div>',
                     '   </div>',
                     '   <div class="nd-card-right">' + actions + '</div>',
                     '</div>'
@@ -1265,6 +1360,28 @@ return view.extend({
 
             listEl.innerHTML = html;
             
+            container.querySelectorAll('.nd-ipv6-badge').forEach(function(badge) {
+                badge.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止点击事件穿透
+                    var v6text = this.getAttribute('data-v6');
+                    
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(v6text).then(function() {
+                            alert('✅ ' + T['MSG_V6_COPIED'] + '\n\n' + v6text);
+                        });
+                    } else {
+                        var textArea = document.createElement("textarea");
+                        textArea.value = v6text;
+                        textArea.style.position = "fixed";
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        try { document.execCommand('copy'); alert('✅ ' + T['MSG_V6_COPIED'] + '\n\n' + v6text); } catch (err) {}
+                        document.body.removeChild(textArea);
+                    }
+                });
+            });
+
             container.querySelectorAll('.nd-card-checkbox input').forEach(function(cb) {
                 cb.addEventListener('change', function() { 
                     var mac = this.getAttribute('data-mac');
