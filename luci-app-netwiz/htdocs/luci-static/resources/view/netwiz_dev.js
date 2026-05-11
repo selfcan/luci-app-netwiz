@@ -881,6 +881,12 @@ return view.extend({
 
                         if (!submitIp) { alert(T['ERR_IP_EMPTY']); return; }
 
+                        var ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+                        if (!ipRegex.test(submitIp)) {
+                            alert(T['ERR_IP_FORMAT']); 
+                            return; 
+                        }
+
                         var conflictDev = globalDevices.find(function(d) {
                             return (d.bound_ip === submitIp || d.ip === submitIp) && d.mac !== options.targetMac;
                         });
