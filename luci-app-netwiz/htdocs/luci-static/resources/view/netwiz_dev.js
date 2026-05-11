@@ -741,11 +741,13 @@ return view.extend({
             if(!activeRadio) return;
             var val = activeRadio.value;
             var usedIps = [];
-            globalDevices.forEach(function(d) {
-                if (d.mac === currentSingleDev.mac) return; 
-                if (d.ip && d.ip !== 'Unknown IP') usedIps.push(d.ip);
-                if (d.bound_ip && d.bound_ip !== 'Unknown IP') usedIps.push(d.bound_ip);
-            });
+                    var selectedMacs = selectedDevices.map(function(d) { return d.mac; });
+                    globalDevices.forEach(function(d) {
+                        if (selectedMacs.indexOf(d.mac) === -1) { 
+                            if (d.ip && d.ip !== 'Unknown IP') usedIps.push(d.ip);
+                            if (d.bound_ip && d.bound_ip !== 'Unknown IP') usedIps.push(d.bound_ip);
+                        }
+                    });
 
             if (val === 'keep') {
                 mInpIp.value = currentOriginalIp;
@@ -1659,7 +1661,6 @@ return view.extend({
                 okText: T['BTN_START_ASSIGN'],
                 onOk: function(data) {
                     var strategy = data.strategy;
-                    var usedIps = globalDevices.map(function(d) { return d.bound_ip || d.ip; });
                     var dept_id = data.dept;
                     
                     if (strategy === 'seq') {
@@ -1715,16 +1716,19 @@ return view.extend({
 
                     selectedDevices.forEach(function(dev) {
                         var assignIp = dev.bound_ip || dev.ip; 
+                        var existingIp = dev.bound_ip || dev.ip;
+                        var exSuf = -1;
+                        if (existingIp && existingIp !== 'Unknown IP' && existingIp.indexOf(basePrefix) === 0) {
+                            exSuf = parseInt(existingIp.split('.').pop(), 10);
+                        }
 
                         if (strategy === 'keep') {
                             var devPrefix = assignIp.substring(0, assignIp.lastIndexOf('.') + 1);
-                            if (devPrefix !== basePrefix) {
+                            if (devPrefix !== basePrefix || usedIps.indexOf(assignIp) !== -1) {
                                 assignIp = getAvailableIpInRange(basePrefix, 50, 250, usedIps);
-                                usedIps.push(assignIp);
                             }
                         } else if (strategy === 'seq') {
                             assignIp = getNextAvailableIp(currentIp, usedIps);
-                            usedIps.push(assignIp); 
                             currentIp = getNextAvailableIp(assignIp, usedIps); 
                         } else if (strategy === 'smart') {
                             var devType = getDeviceType(dev);
@@ -1733,17 +1737,28 @@ return view.extend({
                             else if (devType === 'pc') { sStart = data.ranges.ps; sEnd = data.ranges.pe; }
                             else if (devType === 'iot') { sStart = data.ranges.is; sEnd = data.ranges.ie; }
                             
-                            var smartIp = getAvailableIpInRange(basePrefix, sStart, sEnd, usedIps);
-                            if (smartIp) {
-                                assignIp = smartIp;
-                                usedIps.push(assignIp);
+                            // 原 IP 已经处于该分类的目标网段，且未被抢占，保留
+                            if (exSuf >= sStart && exSuf <= sEnd && usedIps.indexOf(existingIp) === -1) {
+                                assignIp = existingIp; 
+                            } else {
+                                var smartIp = getAvailableIpInRange(basePrefix, sStart, sEnd, usedIps);
+                                if (smartIp) assignIp = smartIp;
                             }
                         } else if (strategy === 'dept') {
                             var tgt2 = globalDepartments.find(function(d){ return d.id === dept_id; });
-                            if(tgt2) {
-                                var dip = getAvailableIpInRange(basePrefix, tgt2.start, tgt2.end, usedIps);
-                                if (dip) { assignIp = dip; usedIps.push(assignIp); }
+                            if (tgt2) {
+                                // 原 IP 若在自定义组网段内，保留
+                                if (exSuf >= tgt2.start && exSuf <= tgt2.end && usedIps.indexOf(existingIp) === -1) {
+                                    assignIp = existingIp;
+                                } else {
+                                    var dip = getAvailableIpInRange(basePrefix, tgt2.start, tgt2.end, usedIps);
+                                    if (dip) assignIp = dip;
+                                }
                             }
+                        }
+
+                        if (assignIp && usedIps.indexOf(assignIp) === -1) {
+                            usedIps.push(assignIp);
                         }
 
                         var isCurrentlyStatic = dev.is_static === true || dev.is_static === 'true';
