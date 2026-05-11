@@ -141,10 +141,10 @@ var T = {
     'ERR_IP_FORMAT': _('❌ Invalid IP format! Please enter a valid IPv4 address (e.g., 192.168.1.50)'),
     'TIP_V6_COPY': _('Public IPv6 (Click to copy):'),
     'MSG_V6_COPIED': _('IPv6 address copied successfully:'),
-    'BTN_EXPORT_DEPTS': _('导出配置'),
-    'BTN_IMPORT_DEPTS': _('导入配置'),
-    'MSG_IMPORT_SUCCESS': _('✅ 导入成功！\n请检查无误后，点击下方【保存】按钮生效。'),
-    'ERR_IMPORT_FAIL': _('❌ 导入失败！\n文件格式错误或已损坏，请选择正确的 JSON 备份文件。'),
+    'BTN_EXPORT_DEPTS': _('Export Config'),
+    'BTN_IMPORT_DEPTS': _('Import Config'),
+    'MSG_IMPORT_SUCCESS': _('✅ Import successful!') + '\n' + _('Please verify and click [Save] below to apply.'),
+    'ERR_IMPORT_FAIL': _('❌ Import failed!') + '\n' + _('Invalid or corrupted file format. Please select a valid JSON backup file.')
 };
 
 var callDeviceList = rpc.declare({ object: 'netwiz_dev', method: 'get_list', params: ['show_conns'], expect: { '': {} } });
