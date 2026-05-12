@@ -103,7 +103,6 @@ var T = {
     'TIP_BATCH_NO_CHANGE': _('💡 Smart block: According to your strategy, the {count} selected devices are already fixed with unchanged IPs. No need to rewrite rules!'),
     'TXT_INFINITE': _('Infinite'),
     'TXT_EXPIRED': _('Expired'),
-    'BTN_MANAGE_DEPTS': _('Manage Groups'),
     'STRAT_DEPT': _('Group IP Pool'),
     'STRAT_DEPT_TITLE': _('Group Pool (Auto Assign)'),
     'STRAT_DEPT_DESC': _('Assign free IPs automatically from the selected Target Group\'s specific IP range'),
@@ -1181,6 +1180,7 @@ return view.extend({
             
             var row1Title = smartFilterByIp ? T['LBL_ROW_TYPE_SMART'] : T['LBL_ROW_TYPE_NAME'];
             tabsHtml += '<div style="display:flex; gap:8px; width:max-content; align-items:center; margin-bottom:10px;">';
+            tabsHtml += '<div style="font-size:14px; font-weight:bold; color:#3b82f6 ; background:#f1f5f9; padding:5px 10px; border-radius:6px; margin-right:4px; border: 1px solid #3b82f6;">' + row1Title + '</div>';
             tabsHtml += btnAll + btnMob + btnPc + btnIot + btnTypeOth;
             tabsHtml += '</div>';
 
