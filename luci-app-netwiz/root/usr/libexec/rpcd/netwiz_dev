@@ -352,7 +352,7 @@ case "$1" in
                             delete_fw_rule "nw_blk_${mac_safe}" "rule"
                             delete_fw_rule "nw_iso_${mac_safe}" "rule"
                             delete_fw_rule "nw_dmz_${mac_safe}" "redirect"
-                            c
+
                             # 刪除時间戳
                             uci -q delete netwiz."$sec"
                             logger -t Netwiz "🧹 Garbage Collection: Cleared old rules for $mac_safe"
