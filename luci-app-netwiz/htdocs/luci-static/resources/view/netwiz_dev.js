@@ -201,7 +201,7 @@ return view.extend({
             '    .nd-dept-ctrl-bar #btn-add-dept { width: auto !important; flex: 1.2; padding: 10px 2px !important; font-size: 14px !important; align-self: center !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
             '    .dept-row { padding: 8px 10px !important; margin-bottom: 8px !important; }',
             '    .nd-dept-row-inner { gap: 6px !important; }',
-            '    .dept-row .nd-input { min-height: 36px !important; padding: 4px 8px !important; font-size: 13.5px !important; }',
+            '    .dept-row .nd-input { min-height: 36px !important; padding: 2px 8px !important; font-size: 13.5px !important; }',
             '    .nd-dept-col-ip { padding: 0px 4px !important; }',
             '    .nd-dept-col-actions .d-color, .nd-dept-col-actions .d-del { height: 36px !important; width: 36px !important; flex: 0 0 36px !important; min-width: 36px !important; max-width: 36px !important; }',
             '  }',
