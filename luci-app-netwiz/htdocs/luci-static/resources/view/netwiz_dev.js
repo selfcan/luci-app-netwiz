@@ -143,7 +143,11 @@ var T = {
     'BTN_IMPORT_DEPTS': _('Import Config'),
     'MSG_IMPORT_SUCCESS': _('✅ Import successful!') + '\n' + _('Please verify and click [Save] below to apply.'),
     'ERR_IMPORT_FAIL': _('❌ Import failed!') + '\n' + _('Invalid or corrupted file format. Please select a valid JSON backup file.'),
-    'BDG_NEW_UNKNOWN': _('Suspected Spoofed Device')
+    'BDG_NEW_UNKNOWN': _('Suspected Spoofed Device'),
+    'BTN_RESET_ALL': _('Factory Reset'),
+    'TIT_RESET_ALL': _('⚠️ Danger: Restore Default Network'),
+    'MSG_RESET_CONFIRM': _('Are you sure you want to clear all static IPs and firewall rules set by Netwiz?<br><br><span style="color:#ef4444; font-weight:bold;">This operation will delete all groups, blacklists, isolations, and DMZ settings, and restart network services.</span>'),
+    'MSG_RESETTING': _('Cleaning up and restarting network services...')
 };
 
 var callDeviceList = rpc.declare({ object: 'netwiz_dev', method: 'get_list', params: ['show_conns'], expect: { '': {} } });
@@ -157,6 +161,7 @@ var callV6KeepAlive = rpc.declare({ object: 'netwiz_dev', method: 'v6_keep_alive
 
 var callGetSmartRanges = rpc.declare({ object: 'netwiz_dev', method: 'get_smart_ranges', expect: { ranges: {} } });
 var callSaveSmartRanges = rpc.declare({ object: 'netwiz_dev', method: 'save_smart_ranges', params: ['data'], expect: { result: 0 } });
+var callResetAll = rpc.declare({ object: 'netwiz_dev', method: 'reset_all', expect: { result: 0 } });
 
 return view.extend({
     handleSaveApply: null,
@@ -280,7 +285,10 @@ return view.extend({
             '       </div>',
 
             '       <div id="nd-m-fw-panel" style="display:none; text-align:left;">',
-            '           <p style="font-size:15px; font-weight:bold; color:#64748b; margin-bottom:15px; text-align:center;">{{TXT_FW_PANEL_TITLE}}</p>',
+            '           <div style="display:flex; justify-content:center; align-items:center; margin-bottom:15px; position:relative;">',
+            '               <p style="font-size:15px; font-weight:bold; color:#64748b; margin:0;">{{TXT_FW_PANEL_TITLE}}</p>',
+            '               <div id="fw-reset-gear" title="{{TIT_RESET_ALL}}" style="position:absolute; right:10px; cursor:pointer; font-size:18px; filter:grayscale(100%); opacity:0.4; transition:all 0.3s;" onmouseover="this.style.filter=\'none\'; this.style.opacity=1; this.style.transform=\'rotate(90deg)\'" onmouseout="this.style.filter=\'grayscale(100%)\'; this.style.opacity=0.4; this.style.transform=\'none\'">⚙️</div>',
+            '           </div>',
             '           <div style="background:#f8fafc; margin:10px;  padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px;">',
             '               <label class="nw-switch-row-padded" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed #cbd5e1; padding-bottom:15px; margin-bottom:15px;">',
             '                   <div style="flex:1; padding-right:15px;">',
@@ -1993,6 +2001,33 @@ return view.extend({
             if(icon) { icon.style.transform = 'rotate(360deg)'; setTimeout(function(){ icon.style.transform = 'none'; }, 800); }
             loadDevices();
         });
+
+        var fwResetGear = modalOverlay.querySelector('#fw-reset-gear');
+        if (fwResetGear) {
+            fwResetGear.addEventListener('click', function() {
+                openModal({
+                    title: T['TIT_RESET_ALL'],
+                    content: T['MSG_RESET_CONFIRM'],
+                    danger: true,
+                    okText: T['BTN_RESET_ALL'],
+                    onOk: function() {
+                        listHeader.style.display = 'none';
+                        listEl.style.display = 'none';
+                        catTabs.style.display = 'none';
+                        if (batchBar) batchBar.classList.remove('show');
+                        loadingEl.style.display = 'flex';
+                        loadingText.innerText = T['MSG_RESETTING'];
+                        
+                        callResetAll().then(function() {
+                            setTimeout(loadDevices, 2000);
+                        }).catch(function(e) {
+                            alert(T['ERR_SAVE_FAIL_SHORT'].replace('{err}', e));
+                            setTimeout(loadDevices, 2000);
+                        });
+                    }
+                });
+            });
+        }
 
         loadDevices();
     }
