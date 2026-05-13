@@ -187,7 +187,8 @@ var T = {
     'MSG_READ_FAIL': _('Unable to fetch router backup list.'),
     'TXT_BAK_AUTO': _('Auto Backup'),
     'TXT_BAK_IMPORT': _('Before Import'),
-    'TXT_BAK_RESET': _('Before Reset')
+    'TXT_BAK_RESET': _('Before Reset'),
+    'OPT_NO_CHANGE': _('-- 保持不变 --')
 };
 
 var callDeviceList = rpc.declare({ object: 'netwiz_dev', method: 'get_list', params: ['show_conns'], expect: { '': {} } });
@@ -586,12 +587,18 @@ return view.extend({
         }
 
         function populateTagSelects() {
-            var html = '<option value="none">' + T['OPT_NO_GROUP'] + '</option>';
+            var baseHtml = '';
             globalDepartments.forEach(function(d) {
-                html += '<option value="'+d.id+'">' + d.icon + ' ' + d.name + '</option>';
+                baseHtml += '<option value="'+d.id+'">' + d.icon + ' ' + d.name + '</option>';
             });
-            if(mSingleTagSelect) mSingleTagSelect.innerHTML = html;
-            if(batchTagSelect) batchTagSelect.innerHTML = html;
+            
+            if(mSingleTagSelect) {
+                mSingleTagSelect.innerHTML = '<option value="none">' + T['OPT_NO_GROUP'] + '</option>' + baseHtml;
+            }
+            if(batchTagSelect) {
+                // “保持不变”选项
+                batchTagSelect.innerHTML = '<option value="keep">' + (T['OPT_NO_CHANGE'] || '-- 保持不变 --') + '</option><option value="none">' + T['OPT_NO_GROUP'] + '</option>' + baseHtml;
+            }
         }
 
         function renderDeptManager(overrideDepts) {
@@ -931,6 +938,8 @@ return view.extend({
                     mNormalFields.style.display = 'none';
                     mBatchFields.style.display = 'block';
                     applyStrategyUI(savedStrategy);
+                    // 默认选中“保持不变”
+                    batchTagSelect.value = 'keep';
                 } else {
                     mBatchFields.style.display = 'none';
                     mNormalFields.style.display = 'block';
@@ -938,8 +947,8 @@ return view.extend({
                     
                     if (options.showSingleStrategy) {
                         mSingleStrategyGroup.style.display = 'block';
-                        // 预选部门
-                        if (currentSingleDev && currentSingleDev.dept) {
+                        // 单机绑定/编辑打开时，如果它原来有分组，回显；否则设为未分组
+                        if (currentSingleDev && currentSingleDev.dept && currentSingleDev.dept !== 'none' && currentSingleDev.dept !== '') {
                             mSingleTagSelect.value = currentSingleDev.dept;
                         } else {
                             mSingleTagSelect.value = 'none';
@@ -988,7 +997,8 @@ return view.extend({
                         var activeStrategy = modalOverlay.querySelector('.nd-strategy-card.active').getAttribute('data-val');
                         var batchDeptId = batchTagSelect.value;
                         
-                        if (activeStrategy === 'dept' && batchDeptId === 'none') {
+                        // 策略选了“按部门网段分配”，那目标部门就绝对不能是“保持不变”或“未分组”，必须指定一个具体部门
+                        if (activeStrategy === 'dept' && (batchDeptId === 'none' || batchDeptId === 'keep')) {
                             alert(T['ERR_DEPT_NOT_SEL']);
                             return;
                         }
@@ -1985,7 +1995,11 @@ return view.extend({
 
                         var isCurrentlyStatic = dev.is_static === true || dev.is_static === 'true';
                         var oldDeptId = dev.dept || 'none';
-                        if (isCurrentlyStatic && assignIp === (dev.bound_ip || dev.ip) && dept_id === oldDeptId) {
+                        
+                        // 选了“保持不变”，oldDeptId
+                        var finalDept = (dept_id === 'keep') ? oldDeptId : dept_id;
+
+                        if (isCurrentlyStatic && assignIp === (dev.bound_ip || dev.ip) && finalDept === oldDeptId) {
                             skippedCount++;
                             return; 
                         }
@@ -1993,7 +2007,8 @@ return view.extend({
                         lastAssignedGlobal = assignIp;
                         var safeName = dev.name === "Unknown" ? "" : dev.name;
                         tasks.push(function() {
-                            return callDeviceBind(dev.mac, assignIp, safeName, dept_id, true);
+                            // 写入时使用 finalDept
+                            return callDeviceBind(dev.mac, assignIp, safeName, finalDept, true);
                         });
                     });
 
