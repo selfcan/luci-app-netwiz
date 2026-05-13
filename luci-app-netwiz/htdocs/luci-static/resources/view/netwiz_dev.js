@@ -2326,6 +2326,7 @@ return view.extend({
             });
         }
 
+
         loadDevices();
     }
 });
