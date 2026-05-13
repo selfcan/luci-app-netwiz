@@ -348,7 +348,7 @@ case "$1" in
              
                         is_pc_flag = (is_pc_v6_map[mac] == 1) ? "true" : "false";
                         is_new_unknown = "false";
-                        if (is_online == 1 && is_static_mac[mac] != 1 && name == "Unknown" && is_local == "false" && is_gw == "false") {
+                        if (is_online == 1 && is_static_mac[mac] != 1 && is_local == "false" && is_gw == "false") {
                             is_new_unknown = "true";
                         }
              
@@ -357,44 +357,52 @@ case "$1" in
                     }
                     printf "]}";
                 }')
-                # --- 靜默清理 ---
+                
+                # --- 靜默清理与更新 ---
                 (
                     NOW=$(date +%s)
-                    EXP_TIME=2592000 # 30 天
+                    EXP_TIME=2592000 #  30 天
 
-                    # 1. 活躍時间戳
+                    # 1. 活跃时间戳 (前缀互斥隔离，绝不重复)
                     cat /proc/net/arp 2>/dev/null | grep -v IP | awk '{print $4}' | while read mac; do
                         [ -z "$mac" ] || [ "$mac" = "00:00:00:00:00:00" ] && continue
                         MAC_SAFE=$(echo "$mac" | tr -d ':' | tr 'a-z' 'A-Z')
-                        uci -q set netwiz.seen_${MAC_SAFE}="netwiz_dev"
-                        uci -q set netwiz.seen_${MAC_SAFE}.ts="$NOW"
+                        
+                        # 判断它是否已经拥有 PC 特权
+                        if uci -q get netwiz.v6pc_${MAC_SAFE} >/dev/null; then
+                            # 如果是 PC，只更新 v6pc_ 的时间戳
+                            uci -q set netwiz.v6pc_${MAC_SAFE}.ts="$NOW"
+                        else
+                            # 如果是普通设备，更新 seen_ 的时间戳
+                            uci -q set netwiz.seen_${MAC_SAFE}="netwiz_dev"
+                            uci -q set netwiz.seen_${MAC_SAFE}.ts="$NOW"
+                        fi
                     done
                     uci commit netwiz
 
-                    # 2. 30 天没上线
-                    uci -q show netwiz | grep '=netwiz_dev' | grep 'seen_' | while read line; do
+                    # 2. 90 天没上线清理 (同时扫描 seen_ 和 v6pc_)
+                    uci -q show netwiz | grep -E '=netwiz_dev|=v6_pc' | while read line; do
                         sec=$(echo "$line" | cut -d'=' -f1 | cut -d'.' -f2)
                         mac_safe=$(echo "$sec" | cut -d'_' -f2)
-                        
                         mac_lower=$(echo "$mac_safe" | tr 'A-Z' 'a-z')
                         
                         ts=$(uci -q get netwiz."$sec".ts)
                         
                         if [ -n "$ts" ] && [ $((NOW - ts)) -gt $EXP_TIME ]; then
-                            # 殭屍设备，清理防火牆和 DMZ 规则 
+                            # 殭屍设备，清理防火墙和 DMZ 规则 
                             delete_fw_rule "nw_blk_${mac_lower}" "rule"
                             delete_fw_rule "nw_iso_${mac_lower}" "rule"
                             delete_fw_rule "nw_dmz_${mac_lower}" "redirect"
 
-                            # 刪除時间戳
+                            # 删除过期记录 (不管是 seen 还是 v6pc 都杀掉)
                             uci -q delete netwiz."$sec"
                             logger -t Netwiz "🧹 Garbage Collection: Cleared old rules for $mac_safe"
                         fi
                     done
                     uci commit firewall
-                    uci commit netwiz  # 時間戳写入
+                    uci commit netwiz
                     /etc/init.d/firewall reload >/dev/null 2>&1
-                ) &
+                ) >/dev/null 2>&1 &
                 # ----------------------------------------------------
 
                 echo "$json_data"
@@ -501,7 +509,7 @@ case "$1" in
                         if command -v iptables >/dev/null 2>&1; then iptables -I FORWARD 1 -m mac --mac-source $mac -d 192.168.0.0/16 -j DROP >/dev/null 2>&1; fi
                         if command -v nft >/dev/null 2>&1; then nft insert rule inet fw4 forward ether saddr $mac ip daddr 192.168.0.0/16 drop >/dev/null 2>&1; fi
                     fi
-                ) &
+                ) >/dev/null 2>&1 &
 
                 echo '{"result":0}'
                 exit 0
@@ -659,24 +667,18 @@ case "$1" in
                 MAC_SAFE=$(echo "$mac" | tr -d ':' | tr 'a-z' 'A-Z')
                 NOW=$(date +%s)
                 UPDATE_THRESHOLD=604800 # 写入阈值：7天
-                EXP_TIME=2592000 # 过期时间：30天
-
-                # 清理所有超过 30 天没更新的旧设备
-                uci -q show netwiz | grep '=v6_pc' | while read -r line; do
-                    sec=$(echo "$line" | cut -d'.' -f2 | cut -d'=' -f1)
-                    ts=$(uci -q get netwiz."$sec".ts)
-                    if [ -n "$ts" ] && [ $((NOW - ts)) -gt $EXP_TIME ]; then
-                        uci -q delete netwiz."$sec"
-                    fi
-                done
 
                 # 时间戳更新
                 OLD_TS=$(uci -q get netwiz.v6pc_$MAC_SAFE.ts)
+                
                 # 没记录过，或上次记录已经是 7 天前，才写入
                 if [ -z "$OLD_TS" ] || [ $((NOW - OLD_TS)) -gt $UPDATE_THRESHOLD ]; then
                     uci -q set netwiz.v6pc_$MAC_SAFE=v6_pc
                     uci -q set netwiz.v6pc_$MAC_SAFE.mac="$mac"
                     uci -q set netwiz.v6pc_$MAC_SAFE.ts="$NOW"
+                    
+                    # 确定为 PC 后，删掉它作为普通设备的 seen_ 记录
+                    uci -q delete netwiz.seen_$MAC_SAFE
                 fi
                 
                 # 提交
