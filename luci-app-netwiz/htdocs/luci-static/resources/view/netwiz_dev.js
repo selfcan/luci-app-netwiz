@@ -184,7 +184,10 @@ var T = {
     'LBL_RESTORE_PC': _('💻 Upload from Local PC'),
     'BTN_BROWSE_PC': _('📁 Browse PC Files...'),
     'TIT_READ_FAIL': _('❌ Read Failed'),
-    'MSG_READ_FAIL': _('Unable to fetch router backup list.')
+    'MSG_READ_FAIL': _('Unable to fetch router backup list.'),
+    'TXT_BAK_AUTO': _('Auto Backup'),
+    'TXT_BAK_IMPORT': _('Before Import'),
+    'TXT_BAK_RESET': _('Before Reset')
 };
 
 var callDeviceList = rpc.declare({ object: 'netwiz_dev', method: 'get_list', params: ['show_conns'], expect: { '': {} } });
@@ -2278,6 +2281,22 @@ return view.extend({
                     } else {
                         bks.forEach(function(f) {
                             var display = f.replace('.tar.gz', '').replace('netwiz_', '');
+                            
+                            // 解析前缀和时间
+                            var typeStr = '';
+                            if (f.indexOf('auto_') !== -1) typeStr = '🤖 ' + (T['TXT_BAK_AUTO'] || 'Auto Backup');
+                            else if (f.indexOf('pre_import_') !== -1) typeStr = '⬆️ ' + (T['TXT_BAK_IMPORT'] || 'Before Import');
+                            else if (f.indexOf('pre_reset_') !== -1) typeStr = '⚠️ ' + (T['TXT_BAK_RESET'] || 'Before Reset');
+                            
+                            // 提取时间字符串后缀 20XXXXXX_170748
+                            var match = f.match(/(\d{8})_(\d{6})/);
+                            if (match && typeStr) {
+                                var d = match[1], t = match[2];
+                                var timeStr = d.substring(0,4) + '/' + d.substring(4,6) + '/' + d.substring(6,8) + ' ' + 
+                                              t.substring(0,2) + ':' + t.substring(2,4) + ':' + t.substring(4,6);
+                                display = typeStr + ' (' + timeStr + ')';
+                            }
+                            
                             optsHtml += '<option value="'+f+'">' + display + '</option>';
                         });
                     }
