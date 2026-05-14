@@ -388,7 +388,6 @@ return view.extend({
             '        <form id="main-pppoe-fields" target="dummy_main_frame" action="about:blank" method="POST" style="margin:0; padding:0;">',
             '           <div class="nw-value"><label class="nw-value-title">{{LBL_USER}}</label><div class="nw-value-field">',
             '              <input type="search" id="pppoe-user" name="search_q3" class="nd-input" placeholder="{{PH_USER}}" autocomplete="on">',
-            '              <div id="main-user-mirror" style="display:none; margin-top:8px; padding:8px 10px; background:#eff6ff; border-radius:8px; font-size:13.5px; color:#1e3a8a; word-break:break-all; line-height:1.4; border:1px dashed #93c5fd; text-align:left;"></div>',
             '           </div></div>',
             '           <div class="nw-value"><label class="nw-value-title">{{LBL_PASS}}</label><div class="nw-value-field"><input type="search" id="pppoe-pass" name="search_q4" class="nd-input" placeholder="{{PH_PASS}}" autocomplete="on"></div></div>',
             '           <button type="submit" id="main-pppoe-submit" style="display:none;">Save</button>',
@@ -640,12 +639,12 @@ return view.extend({
         var wizUserMir = container.querySelector('#wiz-user-mirror');
         if (wizUserInp && wizUserMir) {
             var syncMir = function() {
-                // 超18个字符，显示投影
                 if (wizUserInp.value.length > 18) { 
                     wizUserMir.style.display = 'block';
                     wizUserMir.textContent = wizUserInp.value;
                 } else {
                     wizUserMir.style.display = 'none';
+                    wizUserMir.textContent = wizUserInp.value;
                 }
             };
             wizUserInp.addEventListener('input', syncMir);
