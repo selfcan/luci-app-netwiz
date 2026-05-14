@@ -298,13 +298,16 @@ return view.extend({
             '                <label class="nw-radio-btn"><input type="radio" name="wiz_wan_type" value="pppoe" checked> <span class="nw-radio-btn-text">{{MODE_PPPOE_TITLE}}</span></label>',
             '              </div>',
             '            </div>',
-            '            <form id="wiz-pppoe-fields" style="display:block; margin-top: 15px;" onsubmit="return false;">',
+            '            ',
+            '            <iframe name="dummy_wiz_frame" style="display:none;"></iframe>',
+            '            <form id="wiz-pppoe-fields" target="dummy_wiz_frame" action="about:blank" method="POST" style="display:block; margin-top: 15px;">',
             '               <div class="nw-value"><label class="nw-value-title">{{LBL_USER}}</label><div class="nw-value-field">',
-            '                  <input type="text" id="wiz-pppoe-user" name="wiz_pppoe_acc" class="nd-input" placeholder="{{PH_USER}}" autocomplete="on">',
-            '                  ',
+            '                  <input type="search" id="wiz-pppoe-user" name="search_q1" class="nd-input" placeholder="{{PH_USER}}" autocomplete="on">',
             '                  <div id="wiz-user-mirror" style="display:none; margin-top:8px; padding:8px 10px; background:#eff6ff; border-radius:8px; font-size:13.5px; color:#1e3a8a; word-break:break-all; line-height:1.4; border:1px dashed #93c5fd; text-align:left;"></div>',
             '               </div></div>',
-            '               <div class="nw-value"><label class="nw-value-title">{{LBL_PASS}}</label><div class="nw-value-field"><input type="text" id="wiz-pppoe-pass" name="wiz_pppoe_pwd" class="nd-input" placeholder="{{PH_PASS}}" autocomplete="on"></div></div>',
+            '               <div class="nw-value"><label class="nw-value-title">{{LBL_PASS}}</label><div class="nw-value-field"><input type="search" id="wiz-pppoe-pass" name="search_q2" class="nd-input" placeholder="{{PH_PASS}}" autocomplete="on"></div></div>',
+            '               ',
+            '               <button type="submit" id="wiz-pppoe-submit" style="display:none;">Save</button>',
             '            </form>',
             '         </div>',
             '         <div id="wiz-step-2-area" style="display:none;">',
@@ -381,9 +384,14 @@ return view.extend({
             '      </div>',
             '      <div id="fields-pppoe" style="display: none;">',
             '        <div class="nw-step-title">{{TITLE_PPPOE}}</div>',
-            '        <form onsubmit="return false;" style="margin:0; padding:0;">',
-            '           <div class="nw-value"><label class="nw-value-title">{{LBL_USER}}</label><div class="nw-value-field"><input type="text" id="pppoe-user" name="history_main_pppoe_user" class="nd-input" placeholder="{{PH_USER}}" autocomplete="on"></div></div>',
-            '           <div class="nw-value"><label class="nw-value-title">{{LBL_PASS}}</label><div class="nw-value-field"><input type="text" id="pppoe-pass" name="history_main_pppoe_pass" class="nd-input" placeholder="{{PH_PASS}}" autocomplete="on"></div></div>',
+            '        <iframe name="dummy_main_frame" style="display:none;"></iframe>',
+            '        <form id="main-pppoe-fields" target="dummy_main_frame" action="about:blank" method="POST" style="margin:0; padding:0;">',
+            '           <div class="nw-value"><label class="nw-value-title">{{LBL_USER}}</label><div class="nw-value-field">',
+            '              <input type="search" id="pppoe-user" name="search_q3" class="nd-input" placeholder="{{PH_USER}}" autocomplete="on">',
+            '              <div id="main-user-mirror" style="display:none; margin-top:8px; padding:8px 10px; background:#eff6ff; border-radius:8px; font-size:13.5px; color:#1e3a8a; word-break:break-all; line-height:1.4; border:1px dashed #93c5fd; text-align:left;"></div>',
+            '           </div></div>',
+            '           <div class="nw-value"><label class="nw-value-title">{{LBL_PASS}}</label><div class="nw-value-field"><input type="search" id="pppoe-pass" name="search_q4" class="nd-input" placeholder="{{PH_PASS}}" autocomplete="on"></div></div>',
+            '           <button type="submit" id="main-pppoe-submit" style="display:none;">Save</button>',
             '        </form>',
             '        <div class="nw-warn-text">{{MSG_WAN_AUTODETECT}}</div>',
             '      </div>',
@@ -752,6 +760,9 @@ return view.extend({
         // 4. 下一步逻辑
         wBtnNext.addEventListener('click', function() {
             if (currentWizStep === 1) {
+                var pppoeBtn = container.querySelector('#wiz-pppoe-submit');
+                if (pppoeBtn) pppoeBtn.click();
+                
                 var wType = container.querySelector('input[name="wiz_wan_type"]:checked').value;
                 if (wType === 'pppoe' && (!container.querySelector('#wiz-pppoe-user').value.replace(/[\r\n\s]+/g, '') || !container.querySelector('#wiz-pppoe-pass').value.trim())) {
                     openModal({ title: T['M_INC_TIT'], msg: T['M_INC_PPPOE'], okText: T['M_CLOSE'] }); 
@@ -2181,6 +2192,9 @@ return view.extend({
 
         container.querySelector('#btn-next-2').addEventListener('click', function () {
             try {
+                var mainBtn = container.querySelector('#main-pppoe-submit');
+                if (mainBtn) mainBtn.click();
+                
                 var rTypeEl = container.querySelector('input[name="router_type"]:checked');
                 var rType = rTypeEl ? rTypeEl.value : 'dhcp';
                 var targetIp = '', targetGw = '', isBypass = false;
