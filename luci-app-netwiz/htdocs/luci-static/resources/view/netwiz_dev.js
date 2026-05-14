@@ -189,8 +189,6 @@ var T = {
     'TXT_BAK_IMPORT': _('Before Import'),
     'TXT_BAK_RESET': _('Before Reset'),
     'OPT_NO_CHANGE': _('-- Keep Unchanged --'),
-    'TIP_V6_COPY': _('Public IPv6 (Click to copy):'),
-    'MSG_V6_COPIED': _('IPv6 address copied successfully:'),
     'BDG_V6_RESERVED': _('Reserved')
 };
 
@@ -1521,7 +1519,7 @@ return view.extend({
                             return (isV6Unseen && v === showV6) ? (v + ' (' + v6ReservedText + ')') : v;
                         }).join('\n');
 
-                        var titleStr = (T['TIP_V6_COPY'] || '公网 IPv6 (点击即可复制):') + '\n' + displayV6Str;
+                        var titleStr = (T['TIP_V6_COPY'] || 'Public IPv6 (Click to copy):') + '\n' + displayV6Str;
 
                         // 渲染
                         ipv6Html = '<div class="nd-ipv6-badge" data-v6="' + encodeURIComponent(pureV6Str) + '" title="' + titleStr + '" style="font-size:11px; color:#64748b; font-family:monospace; margin-top:3px; display:flex; align-items:center; gap:4px; cursor:pointer;"><span style="background:#10b981; padding:4px 5px; border-radius:4px; font-weight:bold; color:#fff; border:1px solid #e2e8f0; line-height:1;">IPv6</span> <span style="overflow:hidden; text-overflow:ellipsis; max-width:120px; white-space:nowrap;">' + showV6 + '</span><span style="color:#3b82f6; font-weight:bold;">' + moreV6 + '</span></div>';
@@ -1692,7 +1690,7 @@ return view.extend({
                     
                     if (navigator.clipboard && window.isSecureContext) {
                         navigator.clipboard.writeText(v6text).then(function() {
-                            alert('✅ ' + (T['MSG_V6_COPIED'] || '已复制 IPv6 地址') + '\n\n' + v6text);
+                            alert('✅ ' + (T['MSG_V6_COPIED'] || 'IPv6 address copied successfully:') + '\n\n' + v6text);
                         });
                     } else {
                         var textArea = document.createElement("textarea");
@@ -1703,7 +1701,7 @@ return view.extend({
                         textArea.select();
                         try { 
                             document.execCommand('copy'); 
-                            alert('✅ ' + (T['MSG_V6_COPIED'] || '已复制 IPv6 地址') + '\n\n' + v6text); 
+                            alert('✅ ' + (T['MSG_V6_COPIED'] || 'IPv6 address copied successfully:') + '\n\n' + v6text); 
                         } catch (err) {}
                         document.body.removeChild(textArea);
                     }
