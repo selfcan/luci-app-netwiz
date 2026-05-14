@@ -298,10 +298,14 @@ return view.extend({
             '                <label class="nw-radio-btn"><input type="radio" name="wiz_wan_type" value="pppoe" checked> <span class="nw-radio-btn-text">{{MODE_PPPOE_TITLE}}</span></label>',
             '              </div>',
             '            </div>',
-            '            <div id="wiz-pppoe-fields" style="display:block; margin-top: 15px;">',
-            '               <div class="nw-value"><label class="nw-value-title">{{LBL_USER}}</label><div class="nw-value-field"><textarea id="wiz-pppoe-user" placeholder="{{PH_USER}}" rows="2"></textarea></div></div>',
-            '               <div class="nw-value"><label class="nw-value-title">{{LBL_PASS}}</label><div class="nw-value-field"><input type="text" id="wiz-pppoe-pass" placeholder="{{PH_PASS}}"></div></div>',
-            '            </div>',
+            '            <form id="wiz-pppoe-fields" style="display:block; margin-top: 15px;" onsubmit="return false;">',
+            '               <div class="nw-value"><label class="nw-value-title">{{LBL_USER}}</label><div class="nw-value-field">',
+            '                  <input type="text" id="wiz-pppoe-user" name="wiz_pppoe_acc" class="nd-input" placeholder="{{PH_USER}}" autocomplete="on">',
+            '                  ',
+            '                  <div id="wiz-user-mirror" style="display:none; margin-top:8px; padding:8px 10px; background:#eff6ff; border-radius:8px; font-size:13.5px; color:#1e3a8a; word-break:break-all; line-height:1.4; border:1px dashed #93c5fd; text-align:left;"></div>',
+            '               </div></div>',
+            '               <div class="nw-value"><label class="nw-value-title">{{LBL_PASS}}</label><div class="nw-value-field"><input type="text" id="wiz-pppoe-pass" name="wiz_pppoe_pwd" class="nd-input" placeholder="{{PH_PASS}}" autocomplete="on"></div></div>',
+            '            </form>',
             '         </div>',
             '         <div id="wiz-step-2-area" style="display:none;">',
             '            <div class="nw-step-title" style="margin-bottom: 20px; font-size: 19px;">{{WIZ_WIFI}}</div>',
@@ -621,6 +625,26 @@ return view.extend({
 
         // ===== 快速开机向导流 =====
         var wizModal = container.querySelector('#nw-wizard-modal');
+        
+        var wizUserInp = container.querySelector('#wiz-pppoe-user');
+        var wizUserMir = container.querySelector('#wiz-user-mirror');
+        if (wizUserInp && wizUserMir) {
+            var syncMir = function() {
+                // 超18个字符，显示投影
+                if (wizUserInp.value.length > 18) { 
+                    wizUserMir.style.display = 'block';
+                    wizUserMir.textContent = wizUserInp.value;
+                } else {
+                    wizUserMir.style.display = 'none';
+                }
+            };
+            wizUserInp.addEventListener('input', syncMir);
+            wizUserInp.addEventListener('change', syncMir);
+
+            setInterval(function(){ 
+                if (wizUserInp.value !== wizUserMir.textContent) syncMir(); 
+            }, 800);
+        }
         var wArea1 = container.querySelector('#wiz-step-1-area'), wArea2 = container.querySelector('#wiz-step-2-area'), wArea3 = container.querySelector('#wiz-step-3-area');
         var wBtnPrev = container.querySelector('#wiz-btn-prev'), wBtnNext = container.querySelector('#wiz-btn-next'), wBtnApply = container.querySelector('#wiz-btn-apply');
         var wizHideCb = container.querySelector('#wiz-hide-checkbox');
