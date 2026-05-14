@@ -2289,29 +2289,22 @@ return view.extend({
 
         if (btnExportNet) {
             btnExportNet.addEventListener('click', function() {
-                openModal({ 
-                    title: T['TIT_EXPORT_ING'], 
-                    content: T['MSG_EXPORT_ING'], 
-                    hideCancel: true, 
-                    okText: T['BTN_PLEASE_WAIT'] 
+                openModal({
+                    title: T['TIT_EXPORT_ING'],
+                    content: T['MSG_EXPORT_ING'],
+                    hideCancel: true,
+                    okText: T['BTN_PLEASE_WAIT']
                 });
                 callExportConfig().then(function(res) {
-                    if(res.data && res.filename) {
-                        var byteCharacters = atob(res.data);
-                        var byteNumbers = new Array(byteCharacters.length);
-                        for (var i = 0; i < byteCharacters.length; i++) {
-                            byteNumbers[i] = byteCharacters.charCodeAt(i);
-                        }
-                        var byteArray = new Uint8Array(byteNumbers);
-                        var blob = new Blob([byteArray], {type: "application/gzip"});
-                        
+
+                    if(res && res.url) {
                         var a = document.createElement("a");
-                        a.href = URL.createObjectURL(blob);
-                        a.download = res.filename;
+                        a.href = res.url;
+                        a.download = res.filename || "NetWiz_NetConf.tar.gz";
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                        
+
                         openModal({ title: T['TIT_EXPORT_OK'], content: T['MSG_EXPORT_OK'], hideCancel: true, okText: T['BTN_CLOSE'] });
                     } else {
                         openModal({ title: T['TIT_EXPORT_FAIL'], content: T['MSG_EXPORT_FAIL_NODATA'], hideCancel: true, okText: T['BTN_CLOSE'] });
@@ -2322,7 +2315,6 @@ return view.extend({
             });
         }
 
-        // 公共的恢复确认逻辑
         function confirmAndRestore(payload) {
             openModal({ 
                 title: T['TIT_IMPORT_CONFIRM'], 
