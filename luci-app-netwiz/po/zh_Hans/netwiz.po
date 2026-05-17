@@ -233,7 +233,7 @@ msgid "WAN Static IP MUST NOT be the same as the gateway!"
 msgstr "WAN 静态 IP 绝对不能和网关一模一样！"
 
 msgid "In AP/Relay mode, the device IP MUST NOT be the exact same as the Gateway! (Tip: The Gateway should be the LAN IP of your upstream main router, and this device needs its own unique IP)"
-msgstr "【旁路由 / 有线中继 (AP)】模式下，本设备 IP 绝对不能与网关相同！（💡 提示：网关请填写上级主路由的 LAN 口 IP 地址，本设备需设置一个同网段的独立 IP）"
+msgstr "【旁路由 / 有线中继 (AP)】模式下，本设备 IP 绝对不能与网关完全一样但网段需要相同！（💡 提示：网关请填写上级主路由的 LAN 口 IP 地址）"
 
 msgid "No Changes Needed"
 msgstr "未发生更改"
