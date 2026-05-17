@@ -64,7 +64,13 @@ case "$1" in
                         for i in $(seq 1 254); do
                             (ping -c 1 -W 1 -q "$lan_prefix.$i" >/dev/null 2>&1) &
                         done
-                        # 等待 1 秒回就写入 ARP 表
+                        
+                        # --- 向多播地址和 APIPA 广播，169.254 自闭设备现身 ---
+                        (ping -c 1 -W 1 -q 224.0.0.1 >/dev/null 2>&1) &
+                        (ping -c 1 -W 1 -I br-lan 169.254.255.255 >/dev/null 2>&1) &
+                        # -----------------------------------------------------------
+                        
+                        # 等待 1 秒写入 ARP 表
                         sleep 1
                     fi
                 fi
