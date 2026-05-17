@@ -194,8 +194,8 @@ var T = {
     'TIP_DEPT_BIND_RULE': _('Custom group names are not strictly bound to IP subnets. The ranges are only used for automatic IP assignment when a group is selected.'),
     'TXT_UNOPERABLE': _('Unoperable'),
     'TXT_NOTE': _('Note:'),
-    'BTN_WOL': _('⚡ 局域網喚醒'),
-    'MSG_WOL_SENT': _('已向 {mac} 發送魔法喚醒封包！\n(設備開機可能需要一分鐘時間)'),
+    'BTN_WOL': _('Wake on LAN'),
+    'MSG_WOL_SENT': _('Wake packet sent to {mac}!\n(Device booting may take a minute)'),
 };
 
 var callDeviceList = rpc.declare({ object: 'netwiz_dev', method: 'get_list', params: ['show_conns', 'do_rescan'], expect: { '': {} } });
