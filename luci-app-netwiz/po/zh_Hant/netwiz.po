@@ -1196,7 +1196,7 @@ msgid "Detecting in background... This will close automatically once connected."
 msgstr "🔄 正在後台極速偵測... 插好後本窗口將自動消失"
 
 msgid "I am an AP / Ignore for now"
-msgstr "我是旁路由（中繼） / 暫不處理"
+msgstr "我是旁路由（中繼）/ 暫不處理"
 
 msgid "Severe Warning: Routing Loop"
 msgstr "🚨 嚴重警告：網絡衝突死環"
