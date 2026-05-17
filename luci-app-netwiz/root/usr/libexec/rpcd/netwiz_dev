@@ -20,7 +20,7 @@ delete_fw_rule() {
     done
 }
 
-# --- 高级应用喚醒函數 ---
+# --- 高级应用唤醒函數 ---
 wakeup_apps() {
     local proxy_apps="openclash passwall shadowsocksr bypass vssr homeproxy mihomo"
     local dns_apps="adguardhome smartdns mosdns"
@@ -248,7 +248,7 @@ case "$1" in
                     for(i in larr) {
                         n_f = split(larr[i], f, " ");
                         if(n_f >= 4 && f[2]!="") { 
-                            # 💡 攔截內鬼：忽略 dhcp.leases 中的 IPv6 租期，防止過期的死 IP 借屍還魂
+                            # 忽略 dhcp.leases 中的 IPv6 租期，防止過期的死 IP 出现
                             if (f[3] ~ /:/) {
                                 continue;
                             }
@@ -478,7 +478,7 @@ case "$1" in
                         fi
                     done
                     
-                    # 💡 只有当确实有设备更新了时间戳，或者有垃圾被清理时，才执行耗时的物理写入与重启
+                    # 设备更新了时间戳，或者有垃圾被清理时，写入与重启
                     if [ "$NEEDS_COMMIT" -eq 1 ]; then
                         uci commit firewall
                         uci commit netwiz
@@ -850,7 +850,7 @@ EOF
                     /etc/init.d/dnsmasq restart
                     /etc/init.d/firewall reload
                     
-                    # 喚醒高级应用
+                    # 唤醒高级应用
                     sleep 2
                     wakeup_apps
                 ) >/dev/null 2>&1 &
@@ -897,7 +897,7 @@ EOF
                 input=$(cat)
                 mac=$(echo "$input" | jsonfilter -e '@.mac' | tr 'A-Z' 'a-z')
                 [ -n "$mac" ] && {
-                    # 嘗試使用 OpenWrt 內建的喚醒工具
+                    # 使用 OpenWrt 內建的唤醒
                     if command -v etherwake >/dev/null 2>&1; then
                         etherwake -b -i br-lan "$mac" >/dev/null 2>&1
                     elif command -v ether-wake >/dev/null 2>&1; then
@@ -931,7 +931,7 @@ EOF
                 restore_file="/tmp/netwiz_restore.tar.gz"
                 has_file=0
                 
-                # 判断来源：如果有 data 则是电脑上传，如果有 file_name 则是选择路由器本地备份
+                # data 是电脑上传，file_name 是选择路由器本地备份
                 if [ -n "$b64data" ]; then
                     echo "$b64data" | base64 -d > "$restore_file"
                     has_file=1
