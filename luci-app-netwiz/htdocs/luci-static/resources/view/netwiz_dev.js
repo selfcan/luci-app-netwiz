@@ -1567,7 +1567,7 @@ return view.extend({
 
                 var ipText = dev.ip === 'Unknown IP' ? T['TXT_UNKNOWN_IP'] : dev.ip;
 
-                // --- 新增：IPv4 为未知时，提取设备自签的 IPv6 (fe80:: / fd::) 作为兜底显示 ---
+                // --- IPv4 为未知时，提取设备自签的 IPv6 (fe80:: / fd::) ---
                 if (dev.ip === 'Unknown IP' && dev.ipv6 && dev.ipv6.trim() !== '') {
                     var allV6 = dev.ipv6.trim().split(' ');
                     // 优先寻找 fe80 或 fd 开头的自签/本地 IPv6
