@@ -1269,3 +1269,12 @@ msgstr "兩次輸入的密碼不一致，請重新檢查！"
 
 msgid "Skip Password Setup (Keep current)"
 msgstr "暫不配置 管理員密碼 (保持現狀)"
+
+msgid "Router Admin Password (Optional)"
+msgstr "路由器管理密碼 (可選)"
+
+msgid "Keep empty to retain current password"
+msgstr "留空則保持目前密碼不變"
+
+msgid "Please set the router admin password!"
+msgstr "請務必設定路由器管理密碼！"
