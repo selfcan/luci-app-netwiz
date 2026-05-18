@@ -835,13 +835,19 @@ return view.extend({
                     var p1 = container.querySelector('#nw-admin-pwd').value;
                     var p2 = container.querySelector('#nw-admin-pwd-confirm').value;
                     if (!p1) {
-                        alert(T['M_PWD_REQ'] || 'Please enter a new password or check / Skip Password Setup！');
+                        openModal({ 
+                            title: T['M_INC_TIT'] || '提示', 
+                            msg: T['M_PWD_REQ'] || '請輸入新管理員密碼，或勾選「暫不配置」！', 
+                            okText: T['M_CLOSE'] || '關閉' 
+                        });
                         return;
                     }
                     if (p1 !== p2) {
-                        alert(T['M_PWD_MISMATCH']);
-                        var p2El = container.querySelector('#nw-admin-pwd-confirm');
-                        if (p2El) p2El.focus();
+                        openModal({ 
+                            title: T['M_INC_TIT'] || '提示', 
+                            msg: T['M_PWD_MISMATCH'], 
+                            okText: T['M_CLOSE'] || '關閉'
+                        });
                         return;
                     }
                 }
