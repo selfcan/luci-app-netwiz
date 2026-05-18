@@ -38,6 +38,18 @@ start_service() {
         if [ "$is_empty_pwd" -eq 1 ] || [ "$is_in_rom" -eq 1 ]; then
             log "检测到首次开机，执行网关劫持"
             
+            # 🌟 智能多语言适配：自动检测固件内置的本地语言
+            local current_lang=$(uci -q get luci.main.lang)
+            if [ "$current_lang" = "auto" ] || [ "$current_lang" = "en" ] || [ -z "$current_lang" ]; then
+                # 抓取系统已安装的语言，取第一个匹配到的语言
+                local smart_lang=$(uci -q show luci.languages 2>/dev/null | grep -v "\.en=" | head -n 1 | awk -F'.' '{print $3}' | awk -F'=' '{print $1}')
+                if [ -n "$smart_lang" ]; then
+                    log "🔎 智能探测到本地语言包 [$smart_lang]，已自动应用为默认语言"
+                    uci set luci.main.lang="$smart_lang"
+                    uci commit luci
+                fi
+            fi
+            
             [ -f /www/cgi-bin/luci.bak ] || cp /www/cgi-bin/luci /www/cgi-bin/luci.bak
             
             # 写入分流劫持脚本
