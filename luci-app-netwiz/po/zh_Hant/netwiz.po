@@ -1254,3 +1254,30 @@ msgstr "局域網喚醒 (WOL)"
 
 msgid "Wake packet sent to {mac}!\n(Device booting may take a minute)"
 msgstr "已向 {mac} 發送喚醒封包！\n(設備開機可能需要一分鐘時間)"
+
+msgid "Quick Setup Wizard"
+msgstr "快速設置嚮導"
+
+msgid "Step 1: Admin Password"
+msgstr "第一步：管理員密碼"
+
+msgid "Step 2: Internet Setup"
+msgstr "第二步：上網設置"
+
+msgid "Step 3: Wi-Fi Setup"
+msgstr "第三步：Wi-Fi 設置"
+
+msgid "Step 4: Confirm & Apply"
+msgstr "第四步：確認並套用"
+
+msgid "Confirm Password"
+msgstr "確認密碼"
+
+msgid "Enter password again"
+msgstr "請再次輸入密碼"
+
+msgid "Passwords do not match, please try again!"
+msgstr "兩次輸入的密碼不一致，請重新檢查！"
+
+msgid "Skip Password Setup (Keep current)"
+msgstr "暫不配置 管理員密碼 (保持現狀)"
