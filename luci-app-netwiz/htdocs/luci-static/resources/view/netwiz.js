@@ -1522,7 +1522,7 @@ return view.extend({
                                     console.log("===============================================");
                                     // ==================================
                                     // 三频识别与显示
-                                    if (true) {
+                                    if (!window._isSingleChip && wDevs.length >= 3) {
                                         var hdr5g2 = container.querySelector('#hdr-5g2');
                                         var tab5g2 = container.querySelector('#tab-5g2');
                                         if (hdr5g2) hdr5g2.style.display = 'flex';
