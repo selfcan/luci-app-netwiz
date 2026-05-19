@@ -1284,3 +1284,12 @@ msgstr "💡 此密码将用于日后登录路由器后台及 SSH，建议立即
 
 msgid "Please enter a new password or check \"Skip Password Setup\"!"
 msgstr "请输入新管理员密码，或勾选「暂不配置」！"
+
+msgid "Independent Bands"
+msgstr "独立双频"
+
+msgid "WISP Repeater"
+msgstr "中继 (WISP)"
+
+msgid "Disabled"
+msgstr "未开启"
