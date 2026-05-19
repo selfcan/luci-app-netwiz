@@ -644,5 +644,5 @@ input:checked + .nw-slider:before { transform: translateX(20px); }
     /* .nw-switch span{color: transparent !important; font-size: 0 !important; }  */
     .nd-modal-box .nd-modal-title { font-size: 18px !important; } 
     .nd-cb-refresh {padding: 6px 5px;}
-    .nw-wiz-modal-title { font-size: 20px; margin: 0; padding: 0 0 0 40px; }
+    .nw-wiz-modal-title { font-size: 22px; margin: 0; padding: 0 0 0 22px; }
 }
