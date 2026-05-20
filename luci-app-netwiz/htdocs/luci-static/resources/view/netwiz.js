@@ -2293,6 +2293,10 @@ return view.extend({
 
         // 联动与自动切换标签页
         en2g.addEventListener('change', function() { 
+            // 2.4G 任何时候开启或关闭，都强制关闭漫游（保障老旧智能家居兼容性）
+            var r2 = container.querySelector('#wifi-2g-roaming');
+            if (r2) { r2.checked = false; r2.dispatchEvent(new Event('change')); }
+
             // Tab 跳转：开启时留在本页，关闭时自动跳到其他开启的频段
             if (this.checked) {
                 container.querySelector('#tab-2g').click(); 
@@ -2317,6 +2321,10 @@ return view.extend({
         });
         
         en5g.addEventListener('change', function() { 
+            // 5G 开启时自动开启漫游，关闭时联动关闭漫游
+            var r5 = container.querySelector('#wifi-5g-roaming');
+            if (r5) { r5.checked = this.checked; r5.dispatchEvent(new Event('change')); }
+
             // Tab 跳转
             if (this.checked) {
                 container.querySelector('#tab-5g').click(); 
@@ -2338,7 +2346,7 @@ return view.extend({
                 }
             }
             
-            // 开启 5G 时，顺便把 wifi-5g2-ssid 的值也赋上
+            // 开启 5G 时，赋上wifi-5g2-ssid 的值
             if (this.checked && !window._isSingleChip) {
                 var s5g2El = container.querySelector('#wifi-5g2-ssid');
                 var s5 = container.querySelector('#wifi-5g-ssid').value;
