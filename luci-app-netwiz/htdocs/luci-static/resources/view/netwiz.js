@@ -2293,7 +2293,15 @@ return view.extend({
 
         // 联动与自动切换标签页
         en2g.addEventListener('change', function() { 
-            container.querySelector('#tab-2g').click(); 
+            // Tab 跳转：开启时留在本页，关闭时自动跳到其他开启的频段
+            if (this.checked) {
+                container.querySelector('#tab-2g').click(); 
+            } else {
+                var en5g2El = container.querySelector('#wifi-5g2-en');
+                if (en5g.checked) container.querySelector('#tab-5g').click();
+                else if (en5g2El && en5g2El.checked) { var t = container.querySelector('#tab-5g2'); if (t) t.click(); }
+                else container.querySelector('#tab-2g').click();
+            }
             
             if (this.checked && window._isSingleChip) {
                 en5g.checked = false; 
@@ -2309,7 +2317,15 @@ return view.extend({
         });
         
         en5g.addEventListener('change', function() { 
-            container.querySelector('#tab-5g').click(); 
+            // Tab 跳转
+            if (this.checked) {
+                container.querySelector('#tab-5g').click(); 
+            } else {
+                var en5g2El = container.querySelector('#wifi-5g2-en');
+                if (en2g.checked) container.querySelector('#tab-2g').click();
+                else if (en5g2El && en5g2El.checked) { var t = container.querySelector('#tab-5g2'); if (t) t.click(); }
+                else container.querySelector('#tab-5g').click();
+            }
             
             if (this.checked && window._isSingleChip) {
                 en2g.checked = false; 
@@ -2337,10 +2353,17 @@ return view.extend({
         var en5g2 = container.querySelector('#wifi-5g2-en');
         if (en5g2) {
             en5g2.addEventListener('change', function() {
-                var t = container.querySelector('#tab-5g2');
-                if (t) t.click();
-                
-                // 以 5G (或 2.4G) 为基准自动补齐
+                // Tab 跳转
+                if (this.checked) {
+                    var t = container.querySelector('#tab-5g2');
+                    if (t) t.click();
+                } else {
+                    if (en2g.checked) container.querySelector('#tab-2g').click();
+                    else if (en5g.checked) container.querySelector('#tab-5g').click();
+                    else { var t = container.querySelector('#tab-5g2'); if (t) t.click(); }
+                }
+
+                // 联动：开启时以 5G (或 2.4G) 为基准自动补齐
                 if (this.checked) {
                     var s5g2El = container.querySelector('#wifi-5g2-ssid');
                     var s5 = container.querySelector('#wifi-5g-ssid').value;
@@ -2394,9 +2417,25 @@ return view.extend({
                 smartUi.style.display = 'none';
                 splitUi.style.display = 'block';
 
-                if (!e.isTrusted) return;
+                // 页面加载或手动切换时，自动判定并跳转到“已开启”的频段标签页
+                var jumpToActiveTab = function() {
+                    var e2 = container.querySelector('#wifi-2g-en').checked;
+                    var e5 = container.querySelector('#wifi-5g-en').checked;
+                    var e5g2El = container.querySelector('#wifi-5g2-en');
+                    var e5g2 = e5g2El ? e5g2El.checked : false;
 
-                // 🌟 智能联动 2：分开模式下，强制提取合一名称，并自动“追加”各自的后缀
+                    if (e2) container.querySelector('#tab-2g').click();
+                    else if (e5) container.querySelector('#tab-5g').click();
+                    else if (e5g2) { var t = container.querySelector('#tab-5g2'); if (t) t.click(); }
+                    else container.querySelector('#tab-2g').click(); // 兜底
+                };
+
+                if (!e.isTrusted) {
+                    jumpToActiveTab();
+                    return;
+                }
+
+                // 联动 2：分开模式下，强制提取合一名称，并自动“追加”各自的后缀
                 var baseSsid = container.querySelector('#wifi-smart-ssid').value;
                 var baseKey = container.querySelector('#wifi-smart-key').value;
                 var baseEnc = container.querySelector('#wifi-smart-enc').value;
@@ -2415,6 +2454,9 @@ return view.extend({
                     container.querySelector('#wifi-5g2-key').value = baseKey;
                     container.querySelector('#wifi-5g2-enc').value = baseEnc;
                 }
+                
+                // 联动完成后，执行跳转
+                jumpToActiveTab();
             }
         });
 
