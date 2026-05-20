@@ -500,7 +500,7 @@ return view.extend({
             '                <label class="nw-switch nw-flex-shrink-0"><input type="checkbox" id="wifi-smart-hidden"><span class="nw-slider"></span></label>',
             '             </div>',
             '             <div class="nw-value"><label class="nw-value-title">{{LBL_WIFI_ENC}}</label><div class="nw-value-field">',
-            '               <select id="wifi-smart-enc"><option value="sae-mixed">{{OPT_PSK2SAE}}</option><option value="psk2">{{OPT_PSK2}}</option><option value="sae">{{OPT_SAE}}</option><option value="none">{{OPT_NONE}}</option></select>',
+            '               <select id="wifi-smart-enc"><option value="sae-mixed">{{OPT_PSK2SAE}}</option><option value="psk2+ccmp">{{OPT_PSK2}}</option><option value="sae">{{OPT_SAE}}</option><option value="none">{{OPT_NONE}}</option></select>',
             '             </div></div>',
             '             <div class="nw-roam-row">',
             '                <div class="nw-flex-1">',
@@ -542,7 +542,7 @@ return view.extend({
             '                    <label class="nw-switch nw-flex-shrink-0"><input type="checkbox" id="wifi-2g-hidden"><span class="nw-slider"></span></label>',
             '                 </div>',
             '                 <div class="nw-value"><label class="nw-value-title">{{LBL_WIFI_ENC}}</label><div class="nw-value-field">',
-            '                    <select id="wifi-2g-enc"><option value="sae-mixed">{{OPT_PSK2SAE}}</option><option value="psk2">{{OPT_PSK2}}</option><option value="sae">{{OPT_SAE}}</option><option value="none">{{OPT_NONE}}</option></select>',
+            '                    <select id="wifi-2g-enc"><option value="sae-mixed">{{OPT_PSK2SAE}}</option><option value="psk2+ccmp">{{OPT_PSK2}}</option><option value="sae">{{OPT_SAE}}</option><option value="none">{{OPT_NONE}}</option></select>',
             '                 </div></div>',
             '                 <div class="nw-value"><label class="nw-value-title">{{LBL_MODE}}</label><div class="nw-value-field">',
             '                    <select id="wifi-2g-mode" data-prev="auto"><option value="auto">{{OPT_AUTO}}</option><option value="11be">11be (Wi-Fi 7)</option><option value="11ax">11ax (Wi-Fi 6)</option><option value="11g">11g (Wi-Fi 4/3)</option><option value="11b">11b (Legacy)</option></select>',
@@ -580,7 +580,7 @@ return view.extend({
             '                    <label class="nw-switch nw-flex-shrink-0"><input type="checkbox" id="wifi-5g-hidden"><span class="nw-slider"></span></label>',
             '                 </div>',
             '                 <div class="nw-value"><label class="nw-value-title">{{LBL_WIFI_ENC}}</label><div class="nw-value-field">',
-            '                    <select id="wifi-5g-enc"><option value="sae-mixed">{{OPT_PSK2SAE}}</option><option value="psk2">{{OPT_PSK2}}</option><option value="sae">{{OPT_SAE}}</option><option value="none">{{OPT_NONE}}</option></select>',
+            '                    <select id="wifi-5g-enc"><option value="sae-mixed">{{OPT_PSK2SAE}}</option><option value="psk2+ccmp">{{OPT_PSK2}}</option><option value="sae">{{OPT_SAE}}</option><option value="none">{{OPT_NONE}}</option></select>',
             '                 </div></div>',
             '                 <div class="nw-value"><label class="nw-value-title">{{LBL_MODE}}</label><div class="nw-value-field">',
             '                    <select id="wifi-5g-mode" data-prev="auto"><option value="auto">{{OPT_AUTO}}</option><option value="11be">11be (Wi-Fi 7)</option><option value="11ax">11ax (Wi-Fi 6)</option><option value="11ac">11ac (Wi-Fi 5)</option><option value="11a">11a (Wi-Fi 4)</option></select>',
@@ -605,7 +605,7 @@ return view.extend({
             '           <div id="wifi-5g2-form" style="display:none;">',
             '              <div class="nw-value"><label class="nw-value-title">无线网络名称 (5G_Game)</label><div class="nw-value-field"><input type="text" id="wifi-5g2-ssid"></div></div>',
             '              <div class="nw-value"><label class="nw-value-title">Wi-Fi 密码 (5G_Game)</label><div class="nw-value-field"><input type="text" id="wifi-5g2-key"></div></div>',
-            '              <input type="hidden" id="wifi-5g2-enc" value="psk2">',
+            '              <input type="hidden" id="wifi-5g2-enc" value="psk2+ccmp">',
             '              <input type="hidden" id="wifi-5g2-mode" value="auto">',
             '              <input type="hidden" id="wifi-5g2-chan" value="auto">',
             '              <input type="hidden" id="wifi-5g2-bw" value="auto">',
@@ -624,7 +624,7 @@ return view.extend({
             '              <div id="wisp-selected-info" style="display:none; width: 100%;">',
             '                 <div class="nw-value"><label class="nw-value-title">{{TXT_TARGET_SSID}}</label><div class="nw-value-field"><input type="text" id="wisp-target-ssid" readonly class="nw-wisp-target-input"></div></div>',
             '                 <div class="nw-value"><label class="nw-value-title">{{WISP_PWD_PROMPT}}</label><div class="nw-value-field"><input type="text" id="wisp-target-key" placeholder="{{PH_WISP_PWD}}"></div></div>',
-            '                 <input type="hidden" id="wisp-target-enc" value="psk2">',
+            '                 <input type="hidden" id="wisp-target-enc" value="psk2+ccmp">',
             '                 <input type="hidden" id="wisp-target-device" value="radio0">',
             '                 <input type="hidden" id="wisp-target-bssid" value=""></input>',
             '              </div>',
@@ -1020,7 +1020,7 @@ return view.extend({
                         
                         var ssid = container.querySelector('#wiz-wifi-ssid').value.trim();
                         var key = container.querySelector('#wiz-wifi-key').value;
-                        var enc = (key.length === 0) ? 'none' : 'psk2';
+                        var enc = (key.length === 0) ? 'none' : 'psk2+ccmp';
 
                         var arg2Obj = {};
                         if (window._isSingleChip) {
@@ -1482,7 +1482,7 @@ return view.extend({
                                 if (keyInput) keyInput.value = wispIface.key || '';
                                 
                                 var encInput = container.querySelector('#wisp-target-enc');
-                                if (encInput) encInput.value = wispIface.encryption || 'psk2';
+                                if (encInput) encInput.value = wispIface.encryption || 'psk2+ccmp';
                                 
                                 var devInput = container.querySelector('#wisp-target-device');
                                 if (devInput) devInput.value = wispIface.device || 'radio0';
@@ -1592,13 +1592,15 @@ return view.extend({
 
                                     var actSsid = activeIface ? (activeIface.ssid || '') : '';
                                     var actKey = activeIface ? (activeIface.key || '') : '';
-                                    var actEnc = activeIface ? (activeIface.encryption || 'psk2') : 'psk2';
+                                    var actEnc = activeIface ? (activeIface.encryption || 'psk2+ccmp') : 'psk2+ccmp';
+                                    if (actEnc === 'psk2') actEnc = 'psk2+ccmp';
                                     var actHidden = activeIface ? (activeIface.hidden === '1') : false;
                                     var actDisabled = activeIface ? (activeIface.disabled === '1' || theDev.disabled === '1') : true;
 
                                     var inactSsid = inactiveIface ? (inactiveIface.ssid || '') : '';
                                     var inactKey = inactiveIface ? (inactiveIface.key || '') : '';
-                                    var inactEnc = inactiveIface ? (inactiveIface.encryption || 'psk2') : 'psk2';
+                                    var inactEnc = inactiveIface ? (inactiveIface.encryption || 'psk2+ccmp') : 'psk2+ccmp';
+                                    if (inactEnc === 'psk2') inactEnc = 'psk2+ccmp';
                                     var inactHidden = inactiveIface ? (inactiveIface.hidden === '1') : false;
 
                                     var chan = theDev.channel || 'auto';
@@ -1708,12 +1710,14 @@ return view.extend({
                                     var isLegacy = dev2g && dev2g.hwmode === '11b';
                                     
                                     var s2 = i2g.ssid || '', k2 = i2g.key || '';
-                                    var e2 = i2g.encryption || 'psk2';
+                                    var e2 = i2g.encryption || 'psk2+ccmp';
+                                    if (e2 === 'psk2') e2 = 'psk2+ccmp';
                                     var h2 = i2g.hidden === '1';
                                     var d2 = (i2g.disabled === '1' || (dev2g && dev2g.disabled === '1'));
 
                                     var s5 = i5g.ssid || '', k5 = i5g.key || '';
-                                    var e5 = i5g.encryption || 'psk2';
+                                    var e5 = i5g.encryption || 'psk2+ccmp';
+                                    if (e5 === 'psk2') e5 = 'psk2+ccmp';
                                     var h5 = i5g.hidden === '1';
                                     var d5 = (i5g.disabled === '1' || (dev5g && dev5g.disabled === '1'));
                                     
@@ -1800,7 +1804,7 @@ return view.extend({
                                 var rOn = (iface.ieee80211r === '1');
                                 tog.checked = rOn;
                                 
-                                var encVal = encEl ? encEl.value : (iface.encryption || 'psk2');
+                                var encVal = encEl ? encEl.value : (iface.encryption || 'psk2+ccmp');
                                 var isDirty = rOn && (iface.mobility_domain !== 'e4d1' || encVal === 'none');
 
                                 if (isDirty) {
@@ -2271,7 +2275,7 @@ return view.extend({
                 // 1. 密码框输入 -> 影响下拉框
                 keyEl.addEventListener('input', function() {
                     if (this.value.length > 0 && encEl.value === 'none') {
-                        encEl.value = 'psk2';
+                        encEl.value = 'psk2+ccmp';
                     } else if (this.value.length === 0 && encEl.value !== 'none') {
                         encEl.value = 'none'; 
                     }
@@ -2548,7 +2552,7 @@ return view.extend({
                 
                 if (this.checked) {
                     var encSelect = container.querySelector('#wifi-smart-enc');
-                    if (encSelect && encSelect.value === 'none') encSelect.value = 'psk2';
+                    if (encSelect && encSelect.value === 'none') encSelect.value = 'psk2+ccmp';
                 }
                 updateRoamBadge('#wifi-smart-roaming');
             });
@@ -2567,7 +2571,7 @@ return view.extend({
 
                 if (this.checked) {
                     var encSelect = container.querySelector('#wifi-2g-enc');
-                    if (encSelect && encSelect.value === 'none') encSelect.value = 'psk2';
+                    if (encSelect && encSelect.value === 'none') encSelect.value = 'psk2+ccmp';
                 }
                 updateRoamBadge('#wifi-2g-roaming');
             });
@@ -2586,7 +2590,7 @@ return view.extend({
 
                 if (this.checked) {
                     var encSelect = container.querySelector('#wifi-5g-enc');
-                    if (encSelect && encSelect.value === 'none') encSelect.value = 'psk2';
+                    if (encSelect && encSelect.value === 'none') encSelect.value = 'psk2+ccmp';
                 }
                 updateRoamBadge('#wifi-5g-roaming');
             });
@@ -2673,7 +2677,7 @@ return view.extend({
                                             if (desc.indexOf('wpa3') !== -1 || desc.indexOf('sae') !== -1) {
                                                 encVal = 'sae-mixed';
                                             } else {
-                                                encVal = 'psk2'; // 绝大多数带密码的网络直接走 WPA2
+                                                encVal = 'psk2+ccmp';
                                             }
                                         }
                                     }
@@ -3248,7 +3252,7 @@ return view.extend({
                                 enabled: container.querySelector('#wifi-5g2-en').checked ? "1" : "0",
                                 ssid: container.querySelector('#wifi-5g2-ssid').value.trim(),
                                 key: container.querySelector('#wifi-5g2-key').value,
-                                encryption: "psk2",
+                                encryption: "psk2+ccmp",
                                 hidden: "0", mode: "auto", channel: "auto", bandwidth: "auto", roaming: "0"
                             };
                         }
