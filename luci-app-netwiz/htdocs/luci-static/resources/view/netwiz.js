@@ -1592,13 +1592,13 @@ return view.extend({
 
                                     var actSsid = activeIface ? (activeIface.ssid || '') : '';
                                     var actKey = activeIface ? (activeIface.key || '') : '';
-                                    var actEnc = activeIface ? (activeIface.encryption || 'psk2') : 'sae-mixed';
+                                    var actEnc = activeIface ? (activeIface.encryption || 'psk2') : 'psk2';
                                     var actHidden = activeIface ? (activeIface.hidden === '1') : false;
                                     var actDisabled = activeIface ? (activeIface.disabled === '1' || theDev.disabled === '1') : true;
 
                                     var inactSsid = inactiveIface ? (inactiveIface.ssid || '') : '';
                                     var inactKey = inactiveIface ? (inactiveIface.key || '') : '';
-                                    var inactEnc = inactiveIface ? (inactiveIface.encryption || 'psk2') : 'sae-mixed';
+                                    var inactEnc = inactiveIface ? (inactiveIface.encryption || 'psk2') : 'psk2';
                                     var inactHidden = inactiveIface ? (inactiveIface.hidden === '1') : false;
 
                                     var chan = theDev.channel || 'auto';
