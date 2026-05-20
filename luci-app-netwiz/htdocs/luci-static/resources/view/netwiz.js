@@ -609,7 +609,7 @@ return view.extend({
             '              <input type="hidden" id="wifi-5g2-mode" value="auto">',
             '              <input type="hidden" id="wifi-5g2-chan" value="auto">',
             '              <input type="hidden" id="wifi-5g2-bw" value="auto">',
-            '              <input type="hidden" id="wifi-5g2-roaming" value="1">',
+            '              <input type="hidden" id="wifi-5g2-roaming" value="0">',
             '           </div>',
             
             '        </div>',
@@ -3249,7 +3249,7 @@ return view.extend({
                                 ssid: container.querySelector('#wifi-5g2-ssid').value.trim(),
                                 key: container.querySelector('#wifi-5g2-key').value,
                                 encryption: "psk2",
-                                hidden: "0", mode: "auto", channel: "auto", bandwidth: "auto", roaming: "1"
+                                hidden: "0", mode: "auto", channel: "auto", bandwidth: "auto", roaming: "0"
                             };
                         }
                     }
