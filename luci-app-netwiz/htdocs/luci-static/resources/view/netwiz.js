@@ -2486,6 +2486,12 @@ return view.extend({
                     container.querySelector('#wifi-5g2-enc').value = baseEnc;
                 }
                 
+                // 多频合一切回分开恢复漫游策略
+                var r2gEl = container.querySelector('#wifi-2g-roaming');
+                if (r2gEl) { r2gEl.checked = false; r2gEl.dispatchEvent(new Event('change')); }
+                var r5gEl = container.querySelector('#wifi-5g-roaming');
+                if (r5gEl) { r5gEl.checked = true; r5gEl.dispatchEvent(new Event('change')); }
+
                 // 联动完成后，执行跳转
                 jumpToActiveTab();
             }
