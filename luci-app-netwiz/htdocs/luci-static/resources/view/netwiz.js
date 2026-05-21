@@ -786,12 +786,31 @@ return view.extend({
         updateWizSteps(currentWizStep);
 
         var skipAndReleaseLuci = function() {
-            // 直接隐藏向导弹窗
-            wizModal.style.display = 'none';
             var hideCb = container.querySelector('#wiz-hide-checkbox');
             var hideState = (hideCb && hideCb.checked) ? '0' : '1';
-            
-            silentSaveWizardState(hideState);
+
+            // 判断是「首次打开」还是「日常」
+            if (window._realIsConfigured === '0') {
+                // 跳官方后台
+                wizModal.style.display = 'none';
+                openModal({ 
+                    title: T['WIZ_SKIP_TITLE'] || '跳过向导', 
+                    msg: '<div style="color: #64748b; font-size: 16px; font-weight:bold;">' + (T['WIZ_SKIP_MSG'] || '进入官方后台中...') + '</div>', 
+                    spin: true 
+                });
+
+                silentSaveWizardState(hideState).then(function() {
+                    setTimeout(function() {
+                        window.location.replace('http://' + window.location.hostname + '/cgi-bin/luci/');
+                    }, 500);
+                }).catch(function() {
+                    window.location.replace('http://' + window.location.hostname + '/cgi-bin/luci/');
+                });
+            } else {
+                // 关闭直接隐藏
+                wizModal.style.display = 'none';
+                silentSaveWizardState(hideState);
+            }
         };
 
         container.querySelector('#wiz-modal-close').addEventListener('click', skipAndReleaseLuci);
