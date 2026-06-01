@@ -139,7 +139,7 @@ var T = {
     'ERR_SAVE_FAIL_SHORT': _('❌ Save failed!') + '\n' + _('Reason: {err}') + '\n' + _('Please run `/etc/init.d/rpcd restart` in SSH'),
     'ERR_IP_FORMAT': _('❌ Invalid IP format! Please enter a valid IPv4 address (e.g., 192.168.1.50)'),
     'TIP_V6_COPY': _('Public IPv6 (Click to copy):'),
-    'MSG_V6_COPIED': _('IPv6 address copied successfully:'),
+    'MSG_V6_COPIED': _('First IPv6 address copied successfully:'),
     'BTN_EXPORT_DEPTS': _('Export Groups'),
     'BTN_IMPORT_DEPTS': _('Import Groups'),
     'MSG_IMPORT_SUCCESS': _('✅ Import successful!') + '\n' + _('Please verify and click [Save] below to apply.'),
@@ -501,7 +501,6 @@ return view.extend({
                 box.style.transform = 'scale(1)';
             });
 
-            // 🌟 这里改成了 closeModal，彻底杜绝替换冲突
             var closeModal = function() {
                 overlay.style.opacity = '0';
                 box.style.transform = 'scale(0.95)';
@@ -1688,7 +1687,7 @@ return view.extend({
 
             listEl.innerHTML = html;
 
-            // 綁定分析面板点击事件
+            // 绑定分析面板点击事件
         container.querySelectorAll('.nd-conn-badge').forEach(function(badge) {
             badge.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -1696,15 +1695,15 @@ return view.extend({
             var name = this.getAttribute('data-name');
             if (!ip || ip === 'Unknown IP') return;
         
-            // 1. 彈出 Loading 畫面 (使用變量)
+            // 1. 弹出 Loading 画面
             openModal({ 
             title: T['TIT_CONN_RADAR'] + ' - NetWiz',
             content: '<div style="text-align:center; padding:30px 0; color:#64748b;"><div class="nd-spinner" style="margin:0 auto 15px auto;"></div>' + T['MSG_DIVE_KERNEL'] + '</div>', 
-            okText: T['BTN_OK'], // 通常使用統一的“確定”或“關閉”
+            okText: T['BTN_OK'], // 通常使用统一的“确定”或“关闭”
             hideCancel: true
         });
         
-        // 2. 呼叫後端執行抓包
+        // 2. 呼叫后端执行抓包
         callAnalyzeConns(ip).then(function(res) {
             var s = res.stats || {};
             var pctWeb = s.total ? (s.web / s.total * 100).toFixed(1) : 0;
@@ -1715,7 +1714,7 @@ return view.extend({
             
             var p2pStyle = s.p2p > 50 ? 'color:#ef4444; font-weight:bold; background:#fef2f2; padding:2px 4px; border-radius:4px;' : '';
 
-            // 3. 拼裝統計面板 (使用分類變量)
+            // 3. 拼装统计面板
             var html = '<div style="margin-bottom:15px; font-size:13.5px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">' +
                 '<div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed #cbd5e1; padding-bottom:8px;">' +
                     '<span><span style="color:#3b82f6;">🌐 ' + T['LBL_CONN_WEB'] + ':</span> <b>'+s.web+'</b> <span style="font-size:11px;color:#94a3b8;">('+pctWeb+'%)</span></span>' +
@@ -1730,14 +1729,14 @@ return view.extend({
                 '</div>' +
             '</div>';
                 
-            // 4. 終端機黑框 (使用帶佔位符的變量)
+            // 4. 终端机黑框
             html += '<div style="background:#0f172a; color:#10b981; font-family:monospace; font-size:11px; line-height:1.4; padding:12px; border-radius:8px; max-height:280px; min-height:60px; overflow-y:auto; white-space:pre-wrap; word-break:break-all; box-shadow:inset 0 0 10px rgba(0,0,0,0.5);">';
             
-            // 替換總數佔位符 {total}
+            // 替换总数佔位符 {total}
             var msgTotal = T['MSG_CONN_TOTAL'].replace('{total}', s.total || 0);
             html += '<span style="color:#94a3b8;">' + msgTotal + '</span>\n';
             
-            // 替換命令行中的 IP 佔位符 {ip}
+            // 替换命令行中的 IP 佔位符 {ip}
             var msgCmd = T['MSG_CONN_CMD'].replace('{ip}', ip);
             html += '<span style="color:#fbbf24;">' + msgCmd + '</span>\n\n';
             
@@ -1751,12 +1750,12 @@ return view.extend({
             }
             html += '</div>';
             
-            // 替換彈窗內容
+            // 替换弹窗
             var contentEl = document.querySelector('#nd-m-content');
             if (contentEl) contentEl.innerHTML = html;
         }).catch(function(e) {
             var contentEl = document.querySelector('#nd-m-content');
-            // 替換錯誤信息佔位符 {err}
+            // 替换错误信息佔位符 {err}
             var msgFail = T['MSG_CONN_ANALYZE_FAIL'].replace('{err}', e);
             if (contentEl) contentEl.innerHTML = '<div style="color:#ef4444; text-align:center; padding:20px;">' + msgFail + '</div>';
         });
@@ -1769,22 +1768,34 @@ return view.extend({
                     e.stopPropagation(); // 阻止点击事件穿透
                     
                     var rawV6Text = this.getAttribute('data-v6') || '';
-                    var v6text = decodeURIComponent(rawV6Text);
+                    
+                    // 1. 保留完整的 IPv6 列表（用于弹窗展示）
+                    var fullV6Text = decodeURIComponent(rawV6Text);
+                    
+                    // 2. 单独提取第一条 IPv6（用于复制到剪贴板）
+                    var firstV6Ip = fullV6Text.split('\n')[0].split(',')[0].split('<br>')[0].trim();
+                    
+                    // 3. 自定义弹窗的提示文字
+                    var successMsg = '✅ ' + (T['MSG_V6_COPIED'] || 'First IPv6 address copied successfully:') + '\n\n' + fullV6Text;
                     
                     if (navigator.clipboard && window.isSecureContext) {
-                        navigator.clipboard.writeText(v6text).then(function() {
-                            showCustomAlert('✅ ' + (T['MSG_V6_COPIED'] || 'IPv6 address copied successfully:') + '\n\n' + v6text);
+                        // 只复制第一条 (firstV6Ip)
+                        navigator.clipboard.writeText(firstV6Ip).then(function() {
+                            // 弹窗显示完整列表 (successMsg)
+                            showCustomAlert(successMsg);
                         });
                     } else {
                         var textArea = document.createElement("textarea");
-                        textArea.value = v6text;
+                        // 只把第一条写入隐藏的输入框
+                        textArea.value = firstV6Ip;
                         textArea.style.position = "fixed";
                         document.body.appendChild(textArea);
                         textArea.focus();
                         textArea.select();
                         try { 
                             document.execCommand('copy'); 
-                            showCustomAlert('✅ ' + (T['MSG_V6_COPIED'] || 'IPv6 address copied successfully:') + '\n\n' + v6text); 
+                            // 弹窗显示完整列表 (successMsg)
+                            showCustomAlert(successMsg); 
                         } catch (err) {}
                         document.body.removeChild(textArea);
                     }
