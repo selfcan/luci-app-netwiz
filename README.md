@@ -240,7 +240,7 @@ wget -qO- https://ghproxy.net/https://raw.githubusercontent.com/huchd0/luci-app-
 **对于 OpenWrt 25.x 及最新快照版 (`.apk` 格式)：**
 上传至 `/tmp/` 目录后，运行以下命令（注意：新版 25.x 由于签名限制，网页直接上传会报 `Error 99`，请务必使用下方的命令行安装）：
 ```bash
-apk add --allow-untrusted /tmp/luci-app-netwiz.apk
+apk add --allow-untrusted /tmp/*netwiz*.apk
 rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* && /etc/init.d/rpcd restart
 ```
 
@@ -249,7 +249,7 @@ rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* && /etc/init.d/rpcd restart
 1. 网页端：在系统后台使用 “系统 -> 软件包 -> 上传软件包” 正常安装。
 2. 命令行：上传至 `/tmp/` 目录后，运行以下命令：
 ```bash
-opkg install /tmp/luci-app-netwiz.ipk
+opkg install /tmp/*netwiz*.ipk
 rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* && /etc/init.d/rpcd restart
 ```
 
