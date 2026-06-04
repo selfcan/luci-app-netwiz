@@ -1506,3 +1506,24 @@ msgstr "還原徹底完成！路由器即將自動重啟！"
 
 msgid "MSG_RST_INVALID"
 msgstr "無效的膠囊檔案！系統未檢測到 NetWiz 專屬特徵碼，為保護系統安全已自動攔截並銷毀。"
+
+msgid "File Too Large"
+msgstr "檔案過大"
+
+msgid "<div style=\"text-align:left; color:#ef4444; font-weight:bold;\">Backup files are usually under 1MB!</div><br>The selected file is too large and has been blocked. Please ensure you didn't select the wrong file (e.g., firmware or video)."
+msgstr "<div style=\"text-align:left; color:#ef4444; font-weight:bold;\">配置備份檔案通常小於 1MB！</div><br>您選擇的檔案過大，已被安全攔截。請檢查是否選錯了檔案（如韌體或影片）。"
+
+msgid "Restore Network Config"
+msgstr "還原網路配置"
+
+msgid "This action will overwrite the existing network configuration and restart the network.<br><br><span style=\"color:#f59e0b; font-weight:bold;\">⚠️ Security Warning: Do not upload backups from unknown sources to prevent router hijacking.</span><br><br>Confirm restore?"
+msgstr "此操作將覆蓋現有的網路配置，並重啟網路。<br><br><span style=\"color:#f59e0b; font-weight:bold;\">⚠️ 安全警告：請勿上傳來路不明的備份檔案，以免路由器被惡意劫持。</span><br><br>確認要執行還原嗎？"
+
+msgid "Restoring"
+msgstr "正在還原"
+
+msgid "Restore Failed"
+msgstr "還原失敗"
+
+msgid "Error: "
+msgstr "錯誤: "
