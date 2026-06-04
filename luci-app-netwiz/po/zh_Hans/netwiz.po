@@ -1379,16 +1379,16 @@ msgid "Extracting configs and packing files in background..."
 msgstr "正在后台提取配置并打包文件..."
 
 msgid "Note: Full mode selected, downloading all dependencies. Takes 1-2 mins, please wait."
-msgstr "提示 当前为全量模式 需要下载全部底层依赖 大约需 1 到 2 分钟 请耐心等待"
+msgstr "提示: 当前为全量模式，需要下载全部底层依赖。大约需 1 到 2 分钟，请耐心等待。"
 
 msgid "Note: Lightweight mode selected, packing is very fast (~30s)."
-msgstr "提示 当前为轻量模式 打包速度极快 大约需要 30 秒左右"
+msgstr "提示: 当前为轻量模式，打包速度极快。大约需要 30 秒左右。"
 
 msgid "Backup Successful"
 msgstr "打包成功"
 
 msgid "Backup capsule downloaded. Upload this file after flashing new firmware to restore."
-msgstr "备份胶囊已成功下载 刷入新系统后上传此文件即可恢复"
+msgstr "备份胶囊已成功下载。刷入新系统后上传此文件即可恢复。"
 
 msgid "Backup Failed"
 msgstr "打包失败"
@@ -1400,7 +1400,7 @@ msgid "Confirm System Restore"
 msgstr "确认恢复系统"
 
 msgid "<span style=\"color:#ef4444; font-weight:bold;\">WARNING: This will overwrite current configs and reinstall plugins!</span><br><br>Router will auto-reboot upon completion. Ensure file is correct.<br><br>"
-msgstr "<span style=\"color:#ef4444; font-weight:bold;\">警告 此操作将覆盖当前系统的配置并重装插件</span><br><br>恢复完成后路由器将自动重启 请确认上传的文件无误<br><br>"
+msgstr "<span style=\"color:#ef4444; font-weight:bold;\">警告: 此操作将覆盖当前系统的配置并重装插件</span><br><br>恢复完成后路由器将自动重启，请确认上传的文件无误。<br><br>"
 
 msgid "Auto-download current state backup before restore (Regret Pill)"
 msgstr "恢复前先自动下载当前状态的备份 (后悔药)"
@@ -1412,7 +1412,7 @@ msgid "Native Fast Restore Mode"
 msgstr "原生极速恢复模式"
 
 msgid "Transferring capsule via high-speed system channel...<br><br><b style=\"color:#ef4444;\">DO NOT power off. Router will auto-reboot upon completion.</b>"
-msgstr "正在调用系统底层高速通道直传胶囊...<br><br><b style=\"color:#ef4444;\">请勿断开电源 路由器将在完成后自动重启</b>"
+msgstr "正在调用系统底层高速通道直传胶囊...<br><br><b style=\"color:#ef4444;\">请勿断开电源，路由器将在完成后自动重启。</b>"
 
 msgid "Capsule delivered, preparing offline task..."
 msgstr "胶囊已送达底层，准备执行脱机任务..."
@@ -1439,7 +1439,7 @@ msgid "Preparing Regret Pill"
 msgstr "正在为您调配后悔药"
 
 msgid "Backing up current state to prevent regrets...<br><br><span style=\"font-size:12px; color:#10b981;\">Tip: Restore will begin automatically after download</span>"
-msgstr "正在备份当前系统状态 以防恢复后反悔<br><br><span style=\"font-size:12px; color:#10b981;\">提示 备份下载完成后将自动开始覆盖并恢复新系统</span>"
+msgstr "正在备份当前系统状态以防恢复后反悔<br><br><span style=\"font-size:12px; color:#10b981;\">提示: 备份下载完成后将自动开始覆盖并恢复新系统</span>"
 
 msgid "Probing Environment"
 msgstr "正在探测运行环境"
@@ -1451,7 +1451,7 @@ msgid "Critical RAM Shortage"
 msgstr "物理内存严重不足"
 
 msgid "Your full capsule size is <b style=\"color:#ef4444;\">{size} MB</b>.<br><br>But /tmp (RAM) only has <b style=\"color:#ef4444;\">{avail} MB</b> free!<br><br>Force uploading will <b style=\"color:#f00;\">cause OOM, crash, and network drop</b>.<br><br><b>Solution:</b> Please <b style=\"color:#10b981;\">reboot the router</b> once to clear RAM fragments, then retry."
-msgstr "检测到您的全量胶囊大小为 <b style=\"color:#ef4444;\">{size} MB</b>。<br><br>但当前路由器的 /tmp (运行内存) 仅剩余 <b style=\"color:#ef4444;\">{avail} MB</b> 可用空间！<br><br>强行上传将<b style=\"color:#f00;\">导致路由器内存溢出、死机并断网</b>。<br><br>💡 <b>解决方案：</b>请先<b style=\"color:#10b981;\">重启一次路由器</b>来清空内存碎片，重启后再进行恢复操作。"
+msgstr "检测到您的全量胶囊大小为 <b style=\"color:#ef4444;\">{size} MB</b>。<br><br>但当前路由器的 /tmp (运行内存) 仅剩余 <b style=\"color:#ef4444;\">{avail} MB</b> 可用空间！<br><br>强行上传将<b style=\"color:#f00;\">导致路由器内存溢出、死机并断网</b>。<br><br><b>解决方案：</b>请先<b style=\"color:#10b981;\">重启一次路由器</b>来清空内存碎片，重启后再进行恢复操作。"
 
 msgid "Cancel Restore"
 msgstr "取消恢复"
@@ -1463,7 +1463,7 @@ msgid "Capsule delivered, initializing restore environment..."
 msgstr "胶囊已送达，正在初始化恢复环境..."
 
 msgid "Scanning capsule structure to estimate uncompressed size (5-10s)..."
-msgstr "正在扫描胶囊深层结构以预估解压体积 (约需5-10秒)..."
+msgstr "正在扫描胶囊深层结构以预估解压体积 (约需 5-10 秒)..."
 
 msgid "Uncompressed size reaches {u}MB, but RAM only has {a}MB left! Intercepted to prevent router crash."
 msgstr "解压体积达 {u}MB，但内存仅剩 {a}MB！为防止死机，已触发安全拦截。"
