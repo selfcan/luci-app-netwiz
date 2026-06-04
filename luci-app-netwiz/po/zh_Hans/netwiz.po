@@ -1325,7 +1325,7 @@ msgid "Advanced & Lab Features"
 msgstr "高级与实验室功能"
 
 msgid "Beta"
-msgstr "测试版"
+msgstr "测试"
 
 msgid "Full Software Backup & Restore"
 msgstr "全量软件的备份与恢复"
