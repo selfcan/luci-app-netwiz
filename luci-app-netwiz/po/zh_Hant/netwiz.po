@@ -91,6 +91,27 @@ msgstr "設備區域網路 IP"
 msgid "LAN Gateway"
 msgstr "區域網路閘道器"
 
+msgid "Auto Detect"
+msgstr "一鍵探測"
+
+msgid "Upstream subnet detected, recommended IP assigned"
+msgstr "已獲取上級網段，並為您分配推薦 IP"
+
+msgid "Detection failed, cannot get upstream gateway"
+msgstr "探測失敗，無法獲取到上級網關資訊"
+
+msgid "Invalid Operation"
+msgstr "操作無效"
+
+msgid "In Main Router mode, LAN Gateway MUST be empty.<br><br>\"Auto Detect\" is only for AP/Relay mode!"
+msgstr "當前為主路由模式，區域網路網關<b style=\"color:#ef4444;\">必須留空</b>。<br><br>「一鍵探測」僅用於配置「旁路由/AP有線中繼」模式！"
+
+msgid "Critical Intercept"
+msgstr "極度危險攔截"
+
+msgid "System detected WAN is <b style=\"color:#3b82f6;\">PPPoE Dial-up</b>.<br><br>The acquired <b>{gw}</b> is the ISP BRAS gateway!<br><b style=\"color:#ef4444;\">NEVER set this as LAN gateway</b>, or your network will crash!"
+msgstr "系統檢測到當前外網為 <b style=\"color:#3b82f6;\">PPPoE 撥號</b>。<br><br>獲取到的 <b>{gw}</b> 是電信機房的遠程基地台網關！<br><b style=\"color:#ef4444;\">絕不能將其填入區域網路中</b>，否則將導致網路癱瘓！"
+
 msgid "Blank for Main, required for AP Wired Relay"
 msgstr "主路由留空，旁路由（AP有線中繼）必填"
 
