@@ -549,6 +549,8 @@ return view.extend({
             '            </div>',
             '        </div>',
             '    </div>',
+            
+            '  </div>',
 
             '  <div id="step-2" class="nw-step" style="display: none;">',
             '    <div class="nw-form-area">',
