@@ -197,6 +197,13 @@ var T = {
     'BTN_WOL': _('Wake on LAN (WOL)'),
     'MSG_WOL_SENT_1': _('Wake packet sent to {mac}!'),
     'MSG_WOL_SENT_2': _('(Device booting may take a minute)'),
+    'TIT_FILE_LARGE': _('File Too Large'),
+    'MSG_FILE_LARGE': _('<div style="text-align:left; color:#ef4444; font-weight:bold;">Backup files are usually under 1MB!</div><br>The selected file is too large and has been blocked. Please ensure you didn\'t select the wrong file (e.g., firmware or video).'),
+    'TIT_RESTORE_NET': _('Restore Network Config'),
+    'MSG_RESTORE_NET_CONFIRM': _('This action will overwrite the existing network configuration and restart the network.<br><br><span style="color:#f59e0b; font-weight:bold;">⚠️ Security Warning: Do not upload backups from unknown sources to prevent router hijacking.</span><br><br>Confirm restore?'),
+    'TIT_RESTORING': _('Restoring'),
+    'TIT_RESTORE_FAIL': _('Restore Failed'),
+    'TXT_ERROR': _('Error: '),
 };
 
 var callDeviceList = rpc.declare({ object: 'netwiz_dev', method: 'get_list', params: ['show_conns', 'do_rescan'], expect: { '': {} } });
@@ -2454,10 +2461,11 @@ return view.extend({
         }
 
         function confirmAndRestore(payload) {
-            openModal({ 
-                title: T['TIT_IMPORT_CONFIRM'], 
-                content: T['MSG_IMPORT_CONFIRM'], 
-                okText: T['BTN_CONFIRM_IMPORT'], 
+            var defaultWarn = '此操作将覆盖现有的设备分组与静态 IP 绑定数据，并重启网络。<br><br><span style="color:#f59e0b; font-weight:bold;">⚠️ 安全警告：请勿上传来路不明的备份文件，以免 DNS 被恶意劫持。</span><br><br>确认要执行还原吗？';
+            openModal({
+                title: '⚡ ' + (T['TIT_RESTORE_DATA'] || '还原设备数据'),
+                content: '<div style="text-align:left;">' + (T['MSG_RESTORE_CONFIRM'] || defaultWarn) + '</div>',
+                okText: T['BTN_CONFIRM'] || '确认',
                 danger: true,
                 onOk: function() {
                     listHeader.style.display = 'none';
@@ -2553,10 +2561,40 @@ return view.extend({
             fileImportNet.addEventListener('change', function(e) {
                 var file = e.target.files[0];
                 if (!file) return;
+
+                // [防呆拦截] 限制文件大小不超过 2MB
+                if (file.size > 2 * 1024 * 1024) {
+                    openModal({
+                        title: '⚠️ ' + (T['TIT_FILE_LARGE'] || 'File Too Large'),
+                        content: T['MSG_FILE_LARGE'],
+                        hideCancel: true,
+                        okText: T['BTN_CLOSE'] || 'Close'
+                    });
+                    fileImportNet.value = ''; 
+                    return;
+                }
+
                 var reader = new FileReader();
                 reader.onload = function(evt) {
                     var b64data = evt.target.result.split(',')[1]; 
-                    confirmAndRestore({ data: b64data }); // 走统一恢复逻辑
+                    
+                    openModal({
+                        title: '⚡ ' + (T['TIT_RESTORE_NET'] || 'Restore Network Config'),
+                        content: '<div style="text-align:left;">' + T['MSG_RESTORE_NET_CONFIRM'] + '</div>',
+                        okText: T['BTN_CONFIRM'] || 'Confirm',
+                        onOk: function() {
+                            openModal({ title: T['TIT_RESTORING'] || 'Restoring', content: T['MSG_WAIT'] || 'Writing config...', spin: true });
+                            rpc.declare({ object: 'netwiz_dev', method: 'import_config', params: ['data'], expect: { result: 0 } })({ data: b64data }).then(function(res) {
+                                if (res && res.error) {
+                                    openModal({ title: '❌ ' + (T['TIT_RESTORE_FAIL'] || 'Restore Failed'), content: (T['TXT_ERROR'] || 'Error: ') + res.error, hideCancel: true, okText: T['BTN_CLOSE'] || 'Close' });
+                                } else {
+                                    setTimeout(function() { window.location.reload(); }, 6000);
+                                }
+                            }).catch(function() {
+                                setTimeout(function() { window.location.reload(); }, 6000);
+                            });
+                        }
+                    });
                 };
                 reader.readAsDataURL(file); 
                 fileImportNet.value = ''; 
