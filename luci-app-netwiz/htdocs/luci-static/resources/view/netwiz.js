@@ -549,7 +549,7 @@ return view.extend({
             '            </div>',
             '        </div>',
             '    </div>',
-            
+
             '  </div>',
 
             '  <div id="step-2" class="nw-step" style="display: none;">',
@@ -2861,7 +2861,7 @@ return view.extend({
                 var pickKey = container.querySelector('#wifi-' + pickBand + '-key').value;
                 var pickEnc = container.querySelector('#wifi-' + pickBand + '-enc').value;
                 
-                // 🌟 智能联动 1：合一模式下，强制自动“剥离” 2.4G/5G 等后缀
+                // 智能联动 1：合一模式下，强制自动“剥离” 2.4G/5G 等后缀
                 var smartSsidEl = container.querySelector('#wifi-smart-ssid');
                 if (pickSsid) {
                     smartSsidEl.value = cleanSsidSuffix(pickSsid); 
