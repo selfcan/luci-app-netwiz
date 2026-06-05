@@ -3367,7 +3367,7 @@ return view.extend({
                         if (targetIp === targetGw) { 
                             openModal({
                                 title: T['M_LOGIC_TIT'], 
-                                msg: T['M_SAME_BYP'] || "旁路由/AP 模式下，本设备 IP 绝对不能与网关相同！", 
+                                msg: T['M_SAME_BYP'] || 'In AP/Relay mode, Device IP MUST NOT be the same as Gateway!', 
                                 okText: T['BTN_EDIT']
                             }); 
                             return; 
