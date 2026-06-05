@@ -786,7 +786,7 @@ case "$1" in
                 ;;
 
             smart_backup)
-                tLOG_FILE="/etc/netwiz_recovery.log"
+                LOG_FILE="/etc/netwiz_recovery.log"
                 touch /tmp/nw_backup_running
                 
                 # 解析前端传来的备份类型参数
