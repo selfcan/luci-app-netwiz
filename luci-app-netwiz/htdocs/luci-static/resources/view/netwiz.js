@@ -340,7 +340,7 @@ var callSystemBoard = rpc.declare({ object: 'system', method: 'board', expect: {
 var callSmartBackup = rpc.declare({ object: 'netwiz', method: 'smart_backup', params: ['type'], expect: { '': {} } });
 var callCheckBackup = rpc.declare({ object: 'netwiz', method: 'check_backup', expect: { '': {} } });
 var callSmartRestoreExec = rpc.declare({ object: 'netwiz', method: 'smart_restore_exec', params: ['filepath'], expect: { result: 0 } });
-var callCheckStorage = rpc.declare({ object: 'netwiz', method: 'check_storage', expect: { tmp_avail_mb: 0 } });
+var callCheckStorage = rpc.declare({ object: 'netwiz', method: 'check_storage', expect: { '': {} } });
 var callCheckRestoreStatus = rpc.declare({ object: 'netwiz', method: 'check_restore_status', expect: { status: 'unknown', msg: '' } });
 
 return view.extend({
