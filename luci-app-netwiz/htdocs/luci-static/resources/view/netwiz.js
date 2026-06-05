@@ -2486,13 +2486,32 @@ return view.extend({
                 
                 var startProcess = function() {
                     var execRestore = function() {
-                        openModal({
-                            title: T['M_RST_NATIVE_TIT'],
-                            msg: '<div style="text-align:center; padding:10px 0; color:#64748b;">' + T['M_RST_NATIVE_MSG'] + '<br><div id="nw-upload-progress" style="font-size:24px; color:#3b82f6; font-weight:bold; margin-top:10px; font-family:monospace;">0%</div></div>',
-                            spin: true 
-                        });
-                        
-                        var fd = new FormData();
+                    openModal({
+                        title: T['M_RST_NATIVE_TIT'],
+                        msg: '<div style="text-align:center; padding:10px 0; color:#64748b;">' + T['M_RST_NATIVE_MSG'] + '<br><div id="nw-upload-progress" style="font-size:24px; color:#3b82f6; font-weight:bold; margin-top:10px; font-family:monospace;">0%</div></div>',
+                        spin: true 
+                    });
+                    
+                    // 探测心跳包函数
+                    var executeRebootProbe = function() {
+                        var rebootSec = 0;
+                        var rebootTimer = setInterval(function() {
+                            rebootSec += 2;
+                            if (rebootSec < 15) return; // 前 15 秒静默等待
+                            var controller = new AbortController();
+                            var timeoutId = setTimeout(function() { controller.abort(); }, 1500); // 1.5秒超時防卡死
+                            fetch('/cgi-bin/luci/?_t=' + Date.now(), { method: 'HEAD', signal: controller.signal })
+                            .then(function() {
+                                clearTimeout(timeoutId);
+                                clearInterval(rebootTimer);
+                                window.location.href = '/cgi-bin/luci/'; // 切入登陆页
+                            }).catch(function() {
+                                clearTimeout(timeoutId);
+                            });
+                        }, 2000);
+                    };
+                    
+                    var fd = new FormData();
                         var sid = (typeof L !== 'undefined' && L.env && L.env.sessionid) ? L.env.sessionid : "";
                         if (!sid) {
                             var match = document.cookie.match(/sysauth_http=([^;]+)/) || document.cookie.match(/sysauth=([^;]+)/);
@@ -2553,12 +2572,12 @@ return view.extend({
                                             } else if (s === 'done') {
                                                 clearInterval(checkTimer);
                                                 if (pEl) pEl.innerHTML = '<span style="color:#10b981; font-size:18px;">🎉 ' + m + '</span>';
-                                                setTimeout(function() { window.location.reload(); }, 25000); 
+                                                executeRebootProbe();
                                             }
                                         }).catch(function() {});
                                     }, 2500);
                                 }).catch(function() {
-                                    setTimeout(function() { window.location.reload(); }, 60000);
+                                    executeRebootProbe();
                                 });
                             } else {
                                 fileSmartRestore.value = '';
