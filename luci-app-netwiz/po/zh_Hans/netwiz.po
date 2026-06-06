@@ -1631,4 +1631,4 @@ msgid "Plugin Scan Complete"
 msgstr "插件扫描完成"
 
 msgid "System scan complete! All your installed plugins are from the official repository and will be safely recorded for automatic restoration."
-msgstr "系统扫描完毕！您当前安装的所有第三方可视化插件，均存在于官方软件源中。它们将被安全记录并在未来自动联网恢复。"
+msgstr "系统扫描完毕！您安装的所有第三方可视化插件，均存在于当前软件源中。它们将被安全记录并在未来自动联网恢复。"
