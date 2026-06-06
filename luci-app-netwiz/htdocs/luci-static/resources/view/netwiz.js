@@ -333,8 +333,8 @@ var T = {
     'MSG_SUGGEST_FIX': _('We strongly recommend changing it to avoid network crashes.'),
     'BTN_FIX_IP': _('Fix to'),
     'MSG_SCAN_PKGS': _('Scanning installed plugins...'),
-    'TIT_CUSTOM_PKG_WARN': _('Custom Plugins Detected'),
-    'MSG_CUSTOM_PKG_DESC': _('We detected the following plugins are NOT available in your current software feeds:'),
+    'TIT_PKG_CHECK': _('Plugin Backup Status'),
+    'MSG_CUSTOM_PKG_DESC': _('The system detected that some plugins are not in the official feed. Please check the backup status below:'),
     'MSG_CUSTOM_PKG_ACT': _('If you proceed, missing plugins WILL NOT be restored automatically!'),
     'MSG_CUSTOM_PKG_TIP': _('Tip: To include them, please cancel, put their .ipk/.apk files into /etc/netwiz/custom_pkgs/, and backup again.'),
     'BTN_FORCE_BACKUP': _('Ignore & Backup'),
@@ -2515,9 +2515,9 @@ return view.extend({
                                 // 缺失：包含紅色缺失 + 绿色保险箱清单 + 蓝色官方清单
                                 var pkgListHtml = scrollWrapperStart + missingHtml + providedHtml + officialHtml + scrollWrapperEnd;
                                 openModal({
-                                    title: '⚠️ ' + (T['TIT_CUSTOM_PKG_WARN'] || 'Custom Plugins Detected'),
+                                    title: '⚠️ ' + (T['TIT_PKG_CHECK'] || 'Plugin Backup Status'),
                                     msg: '<div style="font-size:15px; color:#475569;">' + 
-                                         (T['MSG_CUSTOM_PKG_DESC'] || 'We detected the following plugins are NOT available in your current software feeds:') + 
+                                         (T['MSG_CUSTOM_PKG_DESC'] || 'The system detected that some plugins are not in the official feed. Please check the backup status below:') + 
                                          pkgListHtml + 
                                          '<span style="color:#ef4444; font-weight:bold;">' + 
                                          (T['MSG_CUSTOM_PKG_ACT'] || 'If you proceed, missing plugins WILL NOT be restored automatically!') + 
