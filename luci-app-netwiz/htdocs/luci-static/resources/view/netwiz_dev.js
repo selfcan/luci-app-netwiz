@@ -1591,7 +1591,7 @@ return view.extend({
                             var lastSentName = sessionStorage.getItem(hbKey);
                             var inQueue = window.nwKeepAliveQueue.find(function(q){ return q.mac === dev.mac; });
                             
-                            // 没有发过，或者用户名跟上次不一样”，更改
+                            // 没有发过，或者用户名跟上次不一样，更改
                             if (lastSentName !== dev.name && !inQueue) { 
                                 sessionStorage.setItem(hbKey, dev.name); // 将现在的用户名作为指纹存入防刷缓存
                                 window.nwKeepAliveQueue.push({mac: dev.mac, name: dev.name});    
