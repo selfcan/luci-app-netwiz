@@ -4,6 +4,8 @@ echo "🚀 开始极速安装/升级 NetWiz 网络设置向导 (含多语言包)
 
 # 0. 提前创建自定义插件保险箱目录
 mkdir -p /etc/netwiz/custom_pkgs/
+# 当前正在运行的脚本，直接复制一份到保险箱中备用
+cp -f "$0" /etc/netwiz/custom_pkgs/install.sh 2>/dev/null
 
 # 1. 判定包管理器并强制卸载旧版主程序与语言包 (UI)
 echo "🧹 正在清理系统旧版本..."
