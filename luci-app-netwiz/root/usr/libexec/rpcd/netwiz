@@ -236,7 +236,9 @@ case "$1" in
                 # 回传：缺失插件、文件插件、官方插件
                 pkg_type="ipk"
                 command -v apk >/dev/null 2>&1 && pkg_type="apk"
-                echo "{ \"missing\": [$m_arr], \"provided\": [$p_arr], \"official\": [$o_arr], \"pkg_type\": \"$pkg_type\" }"
+                sys_arch=$(uname -m)
+                
+                echo "{ \"missing\": [$m_arr], \"provided\": [$p_arr], \"official\": [$o_arr], \"pkg_type\": \"$pkg_type\", \"sys_arch\": \"$sys_arch\" }"
                 ;;
                 
             confirm)
