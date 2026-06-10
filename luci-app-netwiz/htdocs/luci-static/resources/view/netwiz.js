@@ -2513,12 +2513,16 @@ return view.extend({
                         });
 
                         // 2. 呼叫后端扫描
-                        callCheckMissingPkgs().then(function(res) {
+                        // 成功渲染逻辑抽离为独立函数，方便首次尝试与后续自动轮询复用
+                        var handleMissingRes = function(res) {
+                            var backupModal = document.getElementById('nw-global-modal');
+                            if (backupModal) backupModal.style.display = 'none';
+
                             var missing = res.missing || [];
                             var provided = res.provided || [];
                             var official = res.official || [];
 
-                            // --- 三色列表 HTML ---
+                            // --- 三色列表HTML渲染保持不变 ---
                             var missingHtml = '';
                             if (missing.length > 0) {
                                 missingHtml += '<div style="color:#b91c1c; font-weight:bold; margin-bottom:5px; margin-top:10px;">❌ ' + (T['TXT_MISSING_PKGS'] || 'Missing packages:') + '</div>';
@@ -2544,13 +2548,10 @@ return view.extend({
                             }
 
                             var totalCount = missing.length + provided.length + official.length;
-
-                            // 全局滚动容器
                             var scrollWrapperStart = '<div style="max-height: 35vh; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0 10px 10px 10px; background: #f8fafc; margin-bottom: 15px; margin-top: 10px; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.03);">';
                             var scrollWrapperEnd = '</div>';
 
                             if (missing.length > 0) {
-                                // 缺失：包含紅色缺失 + 绿色保险箱清单 + 蓝色官方清单
                                 var pkgListHtml = scrollWrapperStart + missingHtml + providedHtml + officialHtml + scrollWrapperEnd;
                                 openModal({
                                     title: '⚠️ ' + (T['TIT_PKG_CHECK'] || 'Plugin Backup Status'),
@@ -2568,7 +2569,6 @@ return view.extend({
                                     onOk: function() { performBackup(); }
                                 });
                             } else if (totalCount > 0) {
-                                // 沒有缺失，只列出绿色保险箱清单 + 蓝色官方清单
                                 var pkgListHtml = scrollWrapperStart + providedHtml + officialHtml + scrollWrapperEnd;
                                 var mTitle = provided.length > 0 ? (T['TIT_CUSTOM_PKG_READY'] || 'Custom Plugins Ready') : (T['TIT_OFFICIAL_PKG_READY'] || 'Plugin Scan Complete');
                                 var mDesc = provided.length > 0 ? (T['MSG_CUSTOM_PKG_READY_DESC'] || 'Great! Your custom plugins are safely stored and will be included in the backup capsule.') : (T['MSG_OFFICIAL_PKG_READY_DESC'] || 'All installed plugins are from the official repository and will be safely recorded.');
@@ -2581,20 +2581,61 @@ return view.extend({
                                     onOk: function() { performBackup(); }
                                 });
                             } else {
-                                // 无任何 UI 插件，直接备份
                                 performBackup();
                             }
-                        }).catch(function(err) {
-                            var backupModal = document.getElementById('nw-global-modal');
-                            if (backupModal) backupModal.style.display = 'none';
-                            
-                            openModal({ 
-                                title: T['M_FIRST_SYNC_TITLE'] || '🔄 First Time Syncing', 
-                                msg: '<div style="font-size:15px; color:#f59e0b; margin-bottom:10px;"><b>' + (T['M_FIRST_SYNC_SUB'] || 'Syncing lists in the background...') + '</b></div>' +
-                                     '<div style="font-size:14px; color:#475569;">' + (T['M_FIRST_SYNC_DESC'] || 'This is the first run, the router is syncing the official software sources in the background.<br><br>Depending on the network, this usually takes <b>10 to 15 seconds</b>.<br>Please wait a moment and click the backup button again.') + '</div>', 
-                                okText: T['M_SYNC_OK'] || 'OK, I will try again later' 
+                        };
+
+                        // 建立主动轮询流
+                        var isPolling = false; // 轮询开关
+                        
+                        var doCheck = function() {
+                            callCheckMissingPkgs().then(handleMissingRes).catch(function(err) {
+                                var backupModal = document.getElementById('nw-global-modal');
+                                if (backupModal) backupModal.style.display = 'none';
+                                
+                                isPolling = true; // 开启轮询状态
+                                openModal({ 
+                                    title: T['M_FIRST_SYNC_TITLE'] || '🔄 首次核实插件清单', 
+                                    msg: '<div style="font-size:15px; color:#f59e0b; margin-bottom:10px;"><b>' + (T['M_FIRST_SYNC_SUB'] || '正在后台拉取最新列表...') + '</b></div>' +
+                                         '<div style="font-size:14px; color:#475569;">正在核实可以自动备份的插件清单...<br><br>受限于网络，这通常需要 <b>15 ~ 20秒</b>。<br>系统正在自动等待结果，请稍候...<br><br><span id="nw-sync-dots" style="color:#2563eb; font-weight:bold;">正在查询中 .</span></div>', 
+                                    okText: T['M_SYNC_OK'] || '停止备份',
+                                    onOk: function() {
+                                        isPolling = false; // 点击停止，彻底关闭后续的联机请求
+                                    }
+                                });
+
+                                var dots = 1;
+                                
+                                // 上一个请求彻底结束（超时或被后端秒拒），等待3秒发送下一个
+                                var pollNext = function() {
+                                    if (!isPolling) return; // 如果被停止，立刻终止
+                                    
+                                    var dEl = document.getElementById('nw-sync-dots');
+                                    if (dEl) {
+                                        dots = (dots % 3) + 1;
+                                        var dotStr = '';
+                                        for(var i=0; i<dots; i++) dotStr += '.';
+                                        dEl.innerHTML = '正在查询中 ' + dotStr;
+                                    }
+                                    
+                                    // 停顿3秒后再发送查询
+                                    setTimeout(function() {
+                                        if (!isPolling) return;
+                                        callCheckMissingPkgs().then(function(retryRes) {
+                                            isPolling = false; // 拿到结果
+                                            handleMissingRes(retryRes); // 自动切换视窗
+                                        }).catch(function(e) {
+                                            // 后端正在下载中（回传exit 1），拒绝。进入下一个循环
+                                            pollNext();
+                                        });
+                                    }, 3000);
+                                };
+                                
+                                pollNext(); // 启动递归引擎
                             });
-                        });
+                        };
+                        
+                        doCheck(); // 启动主入口
                     }
                 });
 
