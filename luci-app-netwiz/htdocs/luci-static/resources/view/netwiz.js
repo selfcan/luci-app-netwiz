@@ -340,7 +340,7 @@ var T = {
     'MSG_CUSTOM_PKG_TIP': _('Tip: Manually place missing packages .ipk/.apk into the /etc/netwiz/custom_pkgs/ directory via SSH to ensure they are automatically reinstalled during future restorations.'),
     'BTN_IGNORE_BAK': _('Ignore & Backup'),
     'TIT_ARCH_CONFLICT': _('Architecture Conflict Warning'),
-    'MSG_RESTORE_ARCH_TIP': _('Architecture Safety Lock: If restoring across different package managers (e.g., IPK backup to APK system), offline plugins will be safely skipped to prevent damage. Config data will still be restored.'),
+    'MSG_RESTORE_ARCH_TIP': _('Architecture Safety Lock: Cross-package manager restoration (e.g., IPK to APK) is strictly prohibited. The underlying network and firewall configurations differ significantly across these system versions. Forcing a restore will cause severe network failure and brick your router!'),
     'BTN_FORCE_RESTORE': _('Force Restore Config'),
     'TXT_MISSING_PKGS': _('Missing packages:'),
     'TXT_PROVIDED_PKGS': _('Manually placed in custom_pkgs:'),
