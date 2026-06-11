@@ -1447,18 +1447,6 @@ msgstr "恢复异常被安全拦截"
 msgid "Self-healing mechanism triggered. Garbage cleared, router is safe and unharmed."
 msgstr "系统已启动自愈机制清理了垃圾残留，您的路由器目前处于安全状态，并未受损。"
 
-msgid "🔄 First Time Syncing"
-msgstr "🔄 首次同步软件源"
-
-msgid "Syncing lists in the background..."
-msgstr "正在后台拉取最新列表..."
-
-msgid "Verifying the list of plugins for automatic backup...<br><br>Depending on the network, this usually takes <b>15 to 20 seconds</b>.<br>The system is verifying, please wait..."
-msgstr "正在核实可以自动备份的插件清单...<br><br>受限于网络，这通常需要 <b>15 ~ 20秒</b>。<br>系统正在核实，请稍候..."
-
-msgid "OK, I will try again later"
-msgstr "好的，我稍后再点"
-
 msgid "Transfer Failed"
 msgstr "传输失败"
 
@@ -1681,8 +1669,8 @@ msgstr "🔄 首次核实插件清单"
 msgid "Syncing lists in the background..."
 msgstr "正在后台拉取最新列表..."
 
-msgid "This is the first run, the router is syncing the official software sources in the background.<br><br>Depending on the network, this usually takes <b>10 to 15 seconds</b>.<br>Please wait a moment and click the backup button again."
-msgstr "正在核实可以自动备份的插件清单...<br><br>受限于网络，这通常需要 <b>15 ~ 20秒</b>。<br>系统正在自动等待结果，请稍候..."
+msgid "Verifying the list of plugins for automatic backup...<br><br>Depending on the network, this usually takes <b>15 to 20 seconds</b>.<br>The system is verifying, please wait..."
+msgstr "正在核實可以自動備份的插件清單...<br><br>受限於網路，這通常需要 <b>15 ~ 20秒</b>。<br>系統正在核實，請稍候..."
 
 msgid "OK, I will try again later"
 msgstr "停止备份"
