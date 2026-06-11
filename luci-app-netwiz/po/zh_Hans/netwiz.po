@@ -1709,7 +1709,7 @@ msgid "The backup package you selected belongs to a different hardware architect
 msgstr "您选择的备份包属于不同的硬件架构。强行恢复将会导致您的路由器变砖！"
 
 msgid "The frontend security system has instantly blocked this dangerous operation."
-msgstr "前端安全系统已瞬间拦截此危险操作。"
+msgstr "前端安全系统已拦截此危险操作。"
 
 msgid "Architecture Warning"
 msgstr "架构标识未匹配"
