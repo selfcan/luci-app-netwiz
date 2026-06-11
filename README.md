@@ -254,12 +254,17 @@ if wget -qO /tmp/nw_inst.sh https://ghproxy.net/https://raw.githubusercontent.co
 如果你习惯手动操作，请前往 [Releases 页面] 下载最新的安装包，并使用 WinSCP 将其上传至路由器的 `/tmp/` 目录。
 
 **对于 OpenWrt 25.x 及最新快照版 (`.apk` 格式)：**
-上传至 `/tmp/` 目录后，运行以下命令（注意：新版 25.x 由于签名限制，网页直接上传会报 `Error 99`，请务必使用下方的命令行安装）：
+上传至 `/tmp/` 目录后，运行以下命令（注意：新版 25.x 由于签名限制，官方界面直接上传安装会报 `Error 99`，优先使用上方的命令行安装）。
+手动上传：
 ```bash
 apk add --allow-untrusted /tmp/*netwiz*.apk
 rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* && /etc/init.d/rpcd restart
 ```
-
+官方界面上传(不要点安装)：
+```bash
+apk add --allow-untrusted /tmp/upload.apk
+rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* && /etc/init.d/rpcd restart
+```
 **对于 OpenWrt 23.05 及更早系统 (`.ipk` 格式)：**
 以下两种方式任选其一：
 1. 网页端：在系统后台使用 “系统 -> 软件包 -> 上传软件包” 正常安装。
