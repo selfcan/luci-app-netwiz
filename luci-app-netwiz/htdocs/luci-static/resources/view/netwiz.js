@@ -3061,11 +3061,12 @@ return view.extend({
                 // ==========================================
                 
                 var fileName = file.name;
+                var lowerFileName = fileName.toLowerCase(); // 统一转为小写
                 var curPkg = window.nwCurrentPkg || 'ipk';
                 var curArch = window.nwCurrentArch || '';
                 
-                var isApkBackup = fileName.indexOf('_apk_') !== -1;
-                var isIpkBackup = fileName.indexOf('_ipk_') !== -1;
+                var isApkBackup = lowerFileName.indexOf('_apk_') !== -1;
+                var isIpkBackup = lowerFileName.indexOf('_ipk_') !== -1;
 
                 // 核心推进函数
                 var doNext = function() {
@@ -3093,8 +3094,8 @@ return view.extend({
                     }).catch(function() { startProcess(); });
                 };
 
-                // 前端 Fail-Fast 极速拦截防线
-                if (fileName.indexOf('NetWiz_') !== -1) {
+                // 前端 Fail-Fast 拦截防线
+                if (lowerFileName.indexOf('netwiz_') !== -1) { // 改用小写匹配
                     
                     // 1. 检查包管理器是否冲突 (apk vs ipk)
                     if ((curPkg === 'apk' && isIpkBackup) || (curPkg === 'ipk' && isApkBackup)) {
@@ -3109,14 +3110,14 @@ return view.extend({
                             isDanger: true,
                             onOk: function() {
                                 fileSmartRestore.value = ''; // 清空文件选择
-                                document.getElementById('nw-global-modal').style.display = 'none'; // 直接关闭弹窗，绝对不执行 doNext()
+                                document.getElementById('nw-global-modal').style.display = 'none'; // 直接关闭弹窗，不执行 doNext()
                             }
                         });
                         return; // 彻底死锁拦截
                     }
 
                     // 2. 检查 CPU 架构是否冲突
-                    if (curArch && fileName.indexOf(curArch) === -1) {
+                    if (curArch && lowerFileName.indexOf(curArch.toLowerCase()) === -1) { // 架构检查转为小写对比
                         var warnMsg1 = T['MSG_ARCH_WARN_1'] ? T['MSG_ARCH_WARN_1'].replace('{arch}', curArch) : 'Architecture mismatch!';
                         var warnMsg2 = T['MSG_ARCH_WARN_2'] || 'If you manually renamed this file, ignore this.';
                         openModal({
@@ -3126,7 +3127,7 @@ return view.extend({
                             cancelText: T['BTN_CANCEL_RST'] || 'Cancel',
                             isDanger: true,
                             onOk: function() {
-                                doNext(); // 强行继续
+                                doNext(); // 继续
                             }
                         });
                         return; // 拦截，等待用户选择
