@@ -953,12 +953,22 @@ return view.extend({
             if (e.target.closest('.nw-qr-hover')) updateQRPos(e);
         });
         
+        // 鼠标移出时隐藏
         container.addEventListener('mouseout', function(e) { 
             if (e.target.closest('.nw-qr-hover')) {
                 var hoverBox = container.querySelector('#nw-hover-qr-box') || document.getElementById('nw-hover-qr-box');
                 if(hoverBox) hoverBox.style.display = 'none'; 
             }
         });
+
+        // 移动端防粘滞逻辑，滑动屏幕或点击空白处时自动隐藏
+        window.addEventListener('scroll', function() {
+            var hoverBox = document.getElementById('nw-hover-qr-box');
+            if (hoverBox && hoverBox.style.display === 'block') {
+                hoverBox.style.display = 'none';
+            }
+        }, { passive: true });
+        
 
         var inputsToWatch = ['#wifi-smart-ssid', '#wifi-smart-key', '#wifi-smart-enc', '#wifi-smart-en', '#wifi-2g-ssid', '#wifi-2g-key', '#wifi-2g-enc', '#wifi-2g-en', '#wifi-5g-ssid', '#wifi-5g-key', '#wifi-5g-enc', '#wifi-5g-en', '#wifi-5g2-ssid', '#wifi-5g2-key', '#wifi-5g2-en'];
         inputsToWatch.forEach(function(sel) { var el = container.querySelector(sel); if (el) { el.addEventListener('input', window._updateLiveQR); el.addEventListener('change', window._updateLiveQR); } });
