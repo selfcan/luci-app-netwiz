@@ -297,7 +297,7 @@ var T = {
     'M_RST_REGRET_PILL': _('Auto-download current state backup before restore (Regret Pill)'),
     'BTN_CONFIRM_SEL': _('Confirm & Select File'),
     'M_RST_NATIVE_TIT': '⚡ ' + _('Native Fast Restore Mode'),
-    'M_RST_NATIVE_MSG': _('Transferring capsule via high-speed system channel...<br><br><b style="color:#ef4444;">DO NOT power off. Router will auto-reboot upon completion.</b>'),
+    'MSG_RESTORE_UPLOADING': _('Transferring capsule via high-speed system channel...<br><br><b style="color:#ef4444;">DO NOT power off. Router will auto-reboot upon completion.</b><br><br><span style="color:#059669; font-size: 14px;">🛡️ Safe Mode: Auto-rollback if connection is lost for 300s.</span>'),
     'M_RST_DELIVERED': '✅ ' + _('Capsule delivered, preparing offline task...'),
     'M_RST_BLOCKED_TIT': '❌ ' + _('Restore Blocked by Security'),
     'M_RST_BLOCKED_MSG': _('Self-healing mechanism triggered. Garbage cleared, router is safe and unharmed.'),
