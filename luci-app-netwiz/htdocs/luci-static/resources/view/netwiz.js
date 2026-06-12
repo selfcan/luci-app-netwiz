@@ -98,7 +98,7 @@ var T = {
     'NOTE_2': _('The system will auto-refresh or redirect in 15 seconds.'),
     'BTN_APPLY': _('Apply Settings'),
     'STAT_BYPASS': _('AP Wired Relay'),
-    'CURRENT_MODE': _('Current: '),
+    'CURRENT_MODE': _('Current:'),
     'STAT_MAIN_PPPOE': _('Main Router (PPPoE)'),
     'STAT_SEC_DHCP': _('Secondary Router (DHCP)'),
     'STAT_SEC_STATIC': _('Secondary Router (Static IP)'),
@@ -1863,7 +1863,7 @@ return view.extend({
                         if (wProto === 'pppoe') protoName = T['STAT_MAIN_PPPOE'] || 'Main Router (PPPoE)';
                         else if (wProto === 'static') protoName = T['STAT_SEC_STATIC'] || 'Secondary Router (Static IP)';
                         else protoName = T['STAT_SEC_DHCP'] || 'Secondary Router (DHCP)';
-                        window._nwCurrentProtoText = (T['CURRENT_MODE'] || 'Current: ') + protoName;
+                        window._nwCurrentProtoText = (T['CURRENT_MODE'] || 'Current:') + ' ' + protoName;
 
                         // 辅助函数：根据状态智能切换红色警告/绿色正常
                         var setupStatusBox = function(box, isWarning, warnText) {
