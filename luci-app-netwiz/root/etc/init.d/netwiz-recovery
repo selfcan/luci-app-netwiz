@@ -68,10 +68,30 @@ boot() {
         (
             sleep 300
             
-            # 300秒后苏醒，如果标记还在，说明前端在 5 分钟内都没有成功连上发 confirm
+            # 300秒后苏醒，如果标记还在，说明前端没发来 confirm
             if [ -f "/etc/netwiz_pending_recovery" ]; then
-                logger -t Netwiz "[RECOVERY] 🚨 300秒超时！判断为恢复后失联，启动硬回滚！"
-                echo "$(date '+%F %T') [RECOVERY] 🚨 恢复备份后失联，触发硬回滚机制！" >> "$RECOVERY_LOG"
+                
+                # ====================================================
+                # 判断是否为“假阳性失联”(用户关闭了网页但网络其实是好的)
+                # 检测 1: br-lan (局域网桥接) 是否正常运行且拥有 IP
+                # 检测 2: ARP 表中是否有任何活跃的设备连接着 LAN 口
+                # ====================================================
+                LAN_ALIVE=$(ifconfig br-lan 2>/dev/null | grep "inet addr:")
+                ARP_ACTIVE=$(cat /proc/net/arp | grep -E "br-lan|eth1" | grep -v "00:00:00:00:00:00")
+
+                if [ -n "$LAN_ALIVE" ] && [ -n "$ARP_ACTIVE" ]; then
+                    logger -t Netwiz "[RECOVERY] 🛡️ 300秒超时，但检测到 LAN 网络运作正常且有设备连接！判定为用户关闭了网页 (假阳性)。"
+                    logger -t Netwiz "[RECOVERY] 终止回滚动作，仅静默拆除炸弹。"
+                    echo "$(date '+%F %T') [RECOVERY] 🛡️ 网络自我检测健康，取消回滚，静默拆弹。" >> "$RECOVERY_LOG"
+                    
+                    rm -f /etc/netwiz_pending_recovery
+                    rm -rf /etc/netwiz/failsafe
+                    exit 0
+                fi
+
+                # 如果上面检测没通过 (LAN 崩溃或完全无设备连接)，才真的执行硬回滚
+                logger -t Netwiz "[RECOVERY] 🚨 300秒超时且 LAN 网络无响应！判断为恢复后变砖，启动硬回滚！"
+                echo "$(date '+%F %T') [RECOVERY] 🚨 恢复备份后失联且网络崩溃，触发硬回滚机制！" >> "$RECOVERY_LOG"
                 
                 # 备用配置覆盖当前损坏的配置
                 cp -p /etc/netwiz/failsafe/network_bak /etc/config/network 2>/dev/null
@@ -83,9 +103,10 @@ boot() {
                 rm -rf /etc/netwiz/failsafe
                 
                 logger -t Netwiz "[RECOVERY] 回滚覆盖完成，正在强制重启系统以自救..."
-                # 因为底层架构可能被错误插件破坏，最安全的自救方式是再次整机重启
+                # 底层架构可能被错误插件破坏，最安全的自救方式是再次整机重启
                 sleep 3
                 reboot
+            fi
             fi
         ) </dev/null >/dev/null 2>&1 &
     fi
