@@ -1438,8 +1438,8 @@ msgstr "確認並選擇檔案"
 msgid "Native Fast Restore Mode"
 msgstr "原生極速還原模式"
 
-msgid "Transferring capsule via high-speed system channel...<br><br><b style=\"color:#ef4444;\">DO NOT power off. Router will auto-reboot upon completion.</b>"
-msgstr "正在調用系統底層高速通道直傳膠囊...<br><br><b style=\"color:#ef4444;\">請勿斷開電源，路由器將在完成後自動重啟。</b>"
+msgid "Transferring capsule via high-speed system channel...<br><br><b style=\"color:#ef4444;\">DO NOT power off. Router will auto-reboot upon completion.</b><br><br><span style=\"color:#059669; font-size: 14px;\">🛡️ Safe Mode: Auto-rollback if connection is lost for 300s.</span>"
+msgstr "正在呼叫系統底層高速通道直傳膠囊...<br><br><b style=\"color:#ef4444;\">請勿斷開電源，路由器將在完成後自動重啟。</b><br><br><span style=\"color:#059669; font-size: 14px;\">🛡️ 安全機制：若重啟後失聯 300 秒，系統將自動回退設定以防變磚。</span>"
 
 msgid "Capsule delivered, preparing offline task..."
 msgstr "膠囊已送達底層，準備執行脫機任務..."
