@@ -57,6 +57,40 @@ boot() {
         echo "=========================================================" >> "$RECOVERY_LOG"
     fi
 
+    # ======================================================================
+    # 备份恢复后重启 (300 秒跨重启看门狗)
+    # 如果在 300 秒内前端没有发送 confirm 确认存活，则判定为失联变砖并强制回滚
+    # ======================================================================
+    if [ -f "/etc/netwiz_pending_recovery" ]; then
+        logger -t Netwiz "[RECOVERY] ⚠️ 检测到未清除的恢复备份防砖标记，启动 300 秒幽灵看门狗..."
+        
+        # 剥离子进程进入后台倒数，绝不阻塞路由器的正常开机流程
+        (
+            sleep 300
+            
+            # 300秒后苏醒，如果标记还在，说明前端在 5 分钟内都没有成功连上发 confirm
+            if [ -f "/etc/netwiz_pending_recovery" ]; then
+                logger -t Netwiz "[RECOVERY] 🚨 300秒超时！判断为恢复后失联，启动硬回滚！"
+                echo "$(date '+%F %T') [RECOVERY] 🚨 恢复备份后失联，触发硬回滚机制！" >> "$RECOVERY_LOG"
+                
+                # 备用配置覆盖当前损坏的配置
+                cp -p /etc/netwiz/failsafe/network_bak /etc/config/network 2>/dev/null
+                cp -p /etc/netwiz/failsafe/dhcp_bak /etc/config/dhcp 2>/dev/null
+                cp -p /etc/netwiz/failsafe/wireless_bak /etc/config/wireless 2>/dev/null
+                
+                # 删除，防止无限循环回滚
+                rm -f /etc/netwiz_pending_recovery
+                rm -rf /etc/netwiz/failsafe
+                
+                logger -t Netwiz "[RECOVERY] 回滚覆盖完成，正在强制重启系统以自救..."
+                # 因为底层架构可能被错误插件破坏，最安全的自救方式是再次整机重启
+                sleep 3
+                reboot
+            fi
+        ) </dev/null >/dev/null 2>&1 &
+    fi
+    # ======================================================================
+
     # 日志体积控制，保留最后 100 行即可
     if [ $(wc -l < "$RECOVERY_LOG" 2>/dev/null || echo 0) -gt 150 ]; then
         tail -n 100 "$RECOVERY_LOG" > "$RECOVERY_LOG.tmp"
