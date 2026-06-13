@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "🚀 开始极速安装/升级/修复 NetWiz 网络设置向导 (智能双模式)..."
+echo "🚀 开始极速安装/升级/修复 NetWiz"
 
 # ==========================================
 # 0. 环境初始化与版本识别
@@ -18,8 +18,6 @@ fi
 # 函数：获取当前系统中已安装的版本
 get_installed_version() {
     if [ "$PKG_TYPE" = "apk" ]; then
-        # 使用 apk info -v 获取全量带版本号的列表，再用正则表达式精准捕获。
-        # [0-9] 可完美规避多语言包（zh-cn），仅抓取主程序的版本号
         apk info -v 2>/dev/null | grep -E "^luci-app-netwiz-[0-9]" | head -n 1 | sed 's/^luci-app-netwiz-//'
     else
         opkg status luci-app-netwiz 2>/dev/null | grep -i "^Version:" | awk '{print $2}'
@@ -30,28 +28,22 @@ get_installed_version() {
 get_local_version() {
     local file="$1"
     local ver=""
-    mkdir -p /tmp/nw_ver_check
-    if [ "$PKG_TYPE" = "apk" ]; then
-        # 1. 尝试常规解压
-        tar -xzf "$file" -C /tmp/nw_ver_check .PKGINFO 2>/dev/null
-        if [ -f /tmp/nw_ver_check/.PKGINFO ]; then
-            ver=$(grep "^pkgver =" /tmp/nw_ver_check/.PKGINFO | cut -d'=' -f2 | tr -d ' ')
-        else
-            # 💡 核心修复：针对 apk 的多段 gzip 拼接特征，使用 zcat 暴力强读压缩流中的版本明文字符串
-            ver=$(zcat "$file" 2>/dev/null | grep -a -m 1 "^pkgver =" | cut -d'=' -f2 | tr -d ' ')
-            [ -z "$ver" ] && ver=$(grep -a -m 1 "^pkgver =" "$file" | cut -d'=' -f2 | tr -d ' ')
-        fi
-    else
-        tar -xzf "$file" -C /tmp/nw_ver_check ./control.tar.gz 2>/dev/null
-        [ -f /tmp/nw_ver_check/control.tar.gz ] && tar -xzf /tmp/nw_ver_check/control.tar.gz -C /tmp/nw_ver_check ./control 2>/dev/null
-        [ -f /tmp/nw_ver_check/control ] && ver=$(grep -i "^Version:" /tmp/nw_ver_check/control | awk '{print $2}')
-    fi
-    rm -rf /tmp/nw_ver_check
     
-    # 3. 终极兜底：如果前两种都失效，直接从文件名中硬抠数字版本号
-    if [ -z "$ver" ]; then
-        ver=$(basename "$file" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?(-r[0-9]+)?' | head -n 1)
+    if [ "$PKG_TYPE" = "apk" ]; then
+        # 1. 尝试直接跨流提取 .PKGINFO
+        ver=$(tar -Ozxf "$file" .PKGINFO 2>/dev/null | grep "^pkgver =" | cut -d'=' -f2 | tr -d ' ')
+        # 2. 核心修复：如果由于多段 gzip 拼接导致 tar 失败，利用 zcat 暴力读取压缩流明文
+        [ -z "$ver" ] && ver=$(zcat "$file" 2>/dev/null | grep -a -m 1 "^pkgver =" | cut -d'=' -f2 | tr -d ' ')
+        # 3. 终极穿透：利用 strings 强制提取二进制文件中的可见版本字符
+        [ -z "$ver" ] && ver=$(strings "$file" 2>/dev/null | grep -m 1 "^pkgver =" | cut -d'=' -f2 | tr -d ' ')
+    else
+        # ipk 架构的提取非常稳定
+        ver=$(tar -Ozxf "$file" ./control.tar.gz 2>/dev/null | tar -Ozxf - ./control 2>/dev/null | grep -i "^Version:" | awk '{print $2}')
     fi
+    
+    # 4. 从文件名兜底提取
+    [ -z "$ver" ] && ver=$(basename "$file" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?(-r[0-9]+)?' | head -n 1)
+    
     echo "$ver"
 }
 
@@ -87,7 +79,7 @@ mkdir -p /etc/netwiz/custom_pkgs/
 cp -f "$0" /etc/netwiz/custom_pkgs/install.sh 2>/dev/null
 
 # ==========================================
-# 2. 尝试从云端拉取最新版
+# 2. 从云端拉取最新版
 # ==========================================
 echo "⬇️ 正在从云端尝试获取最新版本..."
 FILES="luci-app-netwiz luci-i18n-netwiz-zh-cn luci-i18n-netwiz-zh-tw"
@@ -96,14 +88,17 @@ DOWNLOAD_SUCCESS=0
 for FILE in $FILES; do
     TARGET_FILE="${PKG_TYPE}_${FILE}.${PKG_TYPE}"
     URL_DIRECT="https://github.com/huchd0/luci-app-netwiz/releases/latest/download/${TARGET_FILE}"
-    PROXY_1="https://ghp.ci/${URL_DIRECT}"
-    PROXY_2="https://ghproxy.net/${URL_DIRECT}"
-    PROXY_3="https://github.moeyy.xyz/${URL_DIRECT}"
+    
+    # 代理节点
+    PROXY_1="https://mirror.ghproxy.com/${URL_DIRECT}"
+    PROXY_2="https://ghfast.top/${URL_DIRECT}"
+    PROXY_3="https://ghp.ci/${URL_DIRECT}"
 
     echo "正在拉取: ${TARGET_FILE} ..."
     wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 10 "$URL_DIRECT"
     [ "$?" -ne 0 ] || [ ! -s "/tmp/${TARGET_FILE}" ] && wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 10 "$PROXY_1"
     [ "$?" -ne 0 ] || [ ! -s "/tmp/${TARGET_FILE}" ] && wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 10 "$PROXY_2"
+    [ "$?" -ne 0 ] || [ ! -s "/tmp/${TARGET_FILE}" ] && wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 10 "$PROXY_3"
 
     FILE_SIZE=$(ls -l "/tmp/${TARGET_FILE}" 2>/dev/null | awk '{print $5}')
     if [ -s "/tmp/${TARGET_FILE}" ] && [ "$FILE_SIZE" -gt 1000 ]; then
@@ -115,7 +110,7 @@ for FILE in $FILES; do
 done
 
 # ==========================================
-# 3. 核心决策：云端全新安装 vs 离线智能对比
+# 3. 云端全新安装 vs 离线智能对比
 # ==========================================
 if [ "$DOWNLOAD_SUCCESS" -eq 3 ]; then
     echo "🌐 云端下载完整！正在覆盖至本地保险箱..."
@@ -133,6 +128,7 @@ else
         LOCAL_VER=$(get_local_version "$LOCAL_MAIN")
         echo "📦 发现本地储备版本: ${LOCAL_VER:-未知}"
         
+        # 双向对比机制
         if [ -n "$INSTALLED_VER" ] && [ -n "$LOCAL_VER" ]; then
             if version_ge "$LOCAL_VER" "$INSTALLED_VER"; then
                 echo "✅ 本地储备版 ($LOCAL_VER) >= 当前运行版 ($INSTALLED_VER)，允许覆盖恢复！"
@@ -141,6 +137,8 @@ else
                 echo "💡 为保护系统，无需进行降级安装，已自动安全退出。"
                 exit 0
             fi
+        elif [ -n "$INSTALLED_VER" ] && [ -z "$LOCAL_VER" ]; then
+            echo "⚠️ 无法准确识别本地包版本，默认放行执行覆盖安装以尝试修复系统！"
         else
             echo "✅ 系统核心未挂载，允许执行离线急救部署！"
         fi
@@ -184,7 +182,7 @@ fi
 echo -e "\n🎉 NetWiz 核心程序部署圆满完成！"
 echo -e "💡 登录状态已安全重置，请返回浏览器按下 【F5】 刷新即可看到新菜单！"
 
-# 6. 匿名安装量统计 (静默运行)
+# 6. 匿名安装量统计
 (
     if [ -f /etc/openwrt_release ]; then
         . /etc/openwrt_release
