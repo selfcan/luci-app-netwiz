@@ -79,7 +79,7 @@ mkdir -p /etc/netwiz/custom_pkgs/
 cp -f "$0" /etc/netwiz/custom_pkgs/install.sh 2>/dev/null
 
 # ==========================================
-# 2. 从云端拉取最新版
+# 2. 尝试从云端拉取最新版 (高透明度探测)
 # ==========================================
 echo "⬇️ 正在从云端尝试获取最新版本..."
 FILES="luci-app-netwiz luci-i18n-netwiz-zh-cn luci-i18n-netwiz-zh-tw"
@@ -89,24 +89,45 @@ for FILE in $FILES; do
     TARGET_FILE="${PKG_TYPE}_${FILE}.${PKG_TYPE}"
     URL_DIRECT="https://github.com/huchd0/luci-app-netwiz/releases/latest/download/${TARGET_FILE}"
     
-    # 代理节点
     PROXY_1="https://mirror.ghproxy.com/${URL_DIRECT}"
     PROXY_2="https://ghfast.top/${URL_DIRECT}"
     PROXY_3="https://ghp.ci/${URL_DIRECT}"
 
-    echo "正在拉取: ${TARGET_FILE} ..."
-    wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 10 "$URL_DIRECT"
-    [ "$?" -ne 0 ] || [ ! -s "/tmp/${TARGET_FILE}" ] && wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 10 "$PROXY_1"
-    [ "$?" -ne 0 ] || [ ! -s "/tmp/${TARGET_FILE}" ] && wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 10 "$PROXY_2"
-    [ "$?" -ne 0 ] || [ ! -s "/tmp/${TARGET_FILE}" ] && wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 10 "$PROXY_3"
-
-    FILE_SIZE=$(ls -l "/tmp/${TARGET_FILE}" 2>/dev/null | awk '{print $5}')
-    if [ -s "/tmp/${TARGET_FILE}" ] && [ "$FILE_SIZE" -gt 1000 ]; then
+    echo -n "正在拉取: ${TARGET_FILE} ... "
+    
+    # 尝试 1：官方直连 (仅等待 5 秒)
+    wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 5 "$URL_DIRECT"
+    if [ "$?" -eq 0 ] && [ -s "/tmp/${TARGET_FILE}" ]; then
         DOWNLOAD_SUCCESS=$((DOWNLOAD_SUCCESS + 1))
-        echo "⬇️⬇️⬇️ ${TARGET_FILE} 获取成功，暂存备用！✅✅✅"
-    else
-        rm -f "/tmp/${TARGET_FILE}"
+        echo "👉 👉 👉 [官方直连] 成功！✅✅✅"
+        continue
     fi
+    
+    # 尝试 2：代理节点 1
+    wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 5 "$PROXY_1"
+    if [ "$?" -eq 0 ] && [ -s "/tmp/${TARGET_FILE}" ]; then
+        DOWNLOAD_SUCCESS=$((DOWNLOAD_SUCCESS + 1))
+        echo "👉 👉 👉 [加速节点1] 成功！✅✅✅"
+        continue
+    fi
+
+    # 尝试 3：代理节点 2
+    wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 5 "$PROXY_2"
+    if [ "$?" -eq 0 ] && [ -s "/tmp/${TARGET_FILE}" ]; then
+        DOWNLOAD_SUCCESS=$((DOWNLOAD_SUCCESS + 1))
+        echo "👉 👉 👉 [加速节点2] 成功！✅✅✅"
+        continue
+    fi
+    
+    # 尝试 4：代理节点 3
+    wget -qO "/tmp/${TARGET_FILE}" --no-check-certificate -T 5 "$PROXY_3"
+    if [ "$?" -eq 0 ] && [ -s "/tmp/${TARGET_FILE}" ]; then
+        DOWNLOAD_SUCCESS=$((DOWNLOAD_SUCCESS + 1))
+        echo "👉 👉 👉 [加速节点3] 成功！✅✅✅"
+        continue
+    fi
+
+    echo "❌ 所有节点均失败！"
 done
 
 # ==========================================
