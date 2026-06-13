@@ -293,7 +293,7 @@ var T = {
 
     // 恢复提示
     'M_RST_CONFIRM_TIT': '⚡ ' + _('Confirm System Restore'),
-    'M_RST_CONFIRM_MSG': _("<span style='color:#ef4444; font-weight:bold;'>WARNING: This will overwrite current configs and reinstall plugins!</span><br><br>Router will auto-reboot upon completion. Ensure file is correct.<br><br><span style='color:#059669; font-size: 14px;'>🛡️ Safe Mode: Auto-rollback if connection is lost for 300s.</span><br><br>"),
+    'M_RST_CONFIRM_MSG': _('<span style="color:#ef4444; font-weight:bold;">WARNING: This will overwrite current configs and reinstall plugins!</span><br><br>Router will auto-reboot upon completion. Ensure file is correct.<br><br><span style="color:#059669; font-size: 14px;">🛡️ Safe Mode: Auto-rollback if connection is lost for 300s.</span><br><br>'),
     'M_RST_REGRET_PILL': _('Auto-download current state backup before restore (Regret Pill)'),
     'BTN_CONFIRM_SEL': _('Confirm & Select File'),
     'M_RST_NATIVE_TIT': '⚡ ' + _('Native Fast Restore Mode'),
