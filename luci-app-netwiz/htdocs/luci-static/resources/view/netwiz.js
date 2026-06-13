@@ -293,7 +293,7 @@ var T = {
 
     // 恢复提示
     'M_RST_CONFIRM_TIT': '⚡ ' + _('Confirm System Restore'),
-    'M_RST_CONFIRM_MSG': _('<span style=\"color:#ef4444; font-weight:bold;\">WARNING: This will overwrite current configs and reinstall plugins!</span><br><br>Router will auto-reboot upon completion. Ensure file is correct.<br><br><span style=\"color:#059669; font-size: 14px;\">🛡️ Safe Mode: Auto-rollback if connection is lost for 300s.</span><br><br>'),
+    'M_RST_CONFIRM_MSG': _("<span style='color:#ef4444; font-weight:bold;'>WARNING: This will overwrite current configs and reinstall plugins!</span><br><br>Router will auto-reboot upon completion. Ensure file is correct.<br><br><span style='color:#059669; font-size: 14px;'>🛡️ Safe Mode: Auto-rollback if connection is lost for 300s.</span><br><br>"),
     'M_RST_REGRET_PILL': _('Auto-download current state backup before restore (Regret Pill)'),
     'BTN_CONFIRM_SEL': _('Confirm & Select File'),
     'M_RST_NATIVE_TIT': '⚡ ' + _('Native Fast Restore Mode'),
@@ -2885,10 +2885,10 @@ return view.extend({
                 // 架构信息在页面加载时抓取
                 openModal({
                     title: '<div style="position:relative; display:flex; justify-content:center; align-items:center; width:100%;"><span id="btn-restore-close" style="position:absolute; right: 10px; font-size:35px; color:rgba(255,255,255,0.8); cursor:pointer; line-height:1; font-family:Arial,sans-serif; padding:0 5px;" onmouseover="this.style.color=\'#fff\'" onmouseout="this.style.color=\'rgba(255,255,255,0.8)\'">×</span><span>' + T['M_RST_CONFIRM_TIT'] + '</span></div>',
-                    msg: '<div style="text-align:left;">' + T['M_RST_CONFIRM_MSG'] +
+                    msg: '<div style="text-align:left;">' + (T['M_RST_CONFIRM_MSG'] || '') +
                          '    <label style="display:flex; align-items:center; justify-content:center; cursor:pointer; background:#f8fafc; padding:12px; border-radius:8px; border:1px dashed #cbd5e1; margin:0;">' +
                          '        <input type="checkbox" id="chk-regret-pill" checked style="-webkit-appearance:checkbox !important; appearance:checkbox !important; opacity:1 !important; visibility:visible !important; display:block !important; margin:0 8px 0 0 !important; width:16px !important; height:16px !important; min-width:16px !important; flex-shrink:0 !important; position:static !important; top:auto !important; transform:none !important;">' +
-                         '        <span style="color:#3b82f6; font-weight:bold; font-size:13.5px; line-height:1.4; text-align:left; display:block;">' + T['M_RST_REGRET_PILL'] + '</span>' +
+                         '        <span style="color:#3b82f6; font-weight:bold; font-size:13.5px; line-height:1.4; text-align:left; display:block;">' + (T['M_RST_REGRET_PILL'] || 'Auto-download current state backup before restore (Regret Pill)') + '</span>' +
                          '    </label>' +
                          '</div>',
                     okText: T['BTN_CONFIRM_SEL'],
@@ -3015,13 +3015,27 @@ return view.extend({
                                     var checkTimer = setInterval(function() {
                                         callCheckRestoreStatus().then(function(res) {
                                             errCount = 0;
-                                            var s = res.status;
-                                            var code = res.code;
+                                            
+                                            // 🛡️ 核心修复：安全解包。处理 LuCI RPC 底层可能返回数组 [0, {data}] 的情况
+                                            var data = (Array.isArray(res) && res.length > 1) ? res[1] : (res || {});
+                                            
+                                            var s = data.status;
+                                            var code = data.code;
+                                            var arg1 = data.arg1 || '';
+                                            var arg2 = data.arg2 || '';
+                                            
+                                            // 拦截空数据，防止后端刚启动没来得及写文件时，前端渲染出 undefined
+                                            if (!s || !code) return;
+                                            
                                             var m = T[code] || code;
                                             
+                                            // 占位符替换
                                             if (code === 'MSG_RST_OOM_INTERCEPT') {
-                                                m = m.replace('{u}', res.arg1).replace('{a}', res.arg2);
+                                                m = m.replace('{u}', arg1).replace('{a}', arg2);
+                                            } else if (code === 'MSG_RST_DONE') {
+                                                if (arg1) m = m.replace('{arg1}', arg1);
                                             }
+                                            
                                             if (!m || m === 'undefined') m = T['MSG_RST_WAIT'];
                                             
                                             if (s === 'running') {
@@ -3038,7 +3052,7 @@ return view.extend({
                                             } else if (s === 'done') {
                                                 clearInterval(checkTimer);
                                                 if (pEl) pEl.innerHTML = '<span style="color:#10b981; font-size:18px;">🎉 ' + m + '</span>';
-                                                futureIp = res.arg1 || ''; 
+                                                futureIp = arg1; 
                                                 executeRebootProbe(futureIp); 
                                             }
                                         }).catch(function() {
