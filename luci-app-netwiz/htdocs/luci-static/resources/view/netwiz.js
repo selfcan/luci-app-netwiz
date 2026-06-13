@@ -390,7 +390,7 @@ var T = {
     'LBL_WEB_ACCESS_TOGGLE': _('🌐 Allow WAN Web Access'),
     
     'MSG_MAC_CLONE_TIP': _('💡 <b>Tip:</b> Some ISPs or campus networks bind to a specific device MAC. If dial-up fails, enter the cloned MAC here.'),
-    'BTN_GET_MAC': _('⚡ Extract accessing device MAC'),
+    'BTN_GET_MAC': _('⚡ Auto-fill MAC'),
     'MSG_MAC_NOT_FOUND': _('No active device connection detected, please enter MAC address manually.'),
     
     'LBL_CRON_ENABLE': _('Enable Scheduled Reboot'),
