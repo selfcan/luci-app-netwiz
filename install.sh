@@ -18,8 +18,9 @@ fi
 # 函数：获取当前系统中已安装的版本
 get_installed_version() {
     if [ "$PKG_TYPE" = "apk" ]; then
-        # apk 使用 -e 参数精确匹配，才能出版本号
-        apk info -e luci-app-netwiz 2>/dev/null | sed 's/^luci-app-netwiz-//'
+        # 使用 apk info -v 获取全量带版本号的列表，再用正则表达式精准捕获。
+        # [0-9] 可完美规避多语言包（zh-cn），仅抓取主程序的版本号
+        apk info -v 2>/dev/null | grep -E "^luci-app-netwiz-[0-9]" | head -n 1 | sed 's/^luci-app-netwiz-//'
     else
         opkg status luci-app-netwiz 2>/dev/null | grep -i "^Version:" | awk '{print $2}'
     fi
