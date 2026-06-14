@@ -1800,3 +1800,6 @@ msgstr "網際網路未連線"
 
 msgid "Ignore"
 msgstr "略過"
+
+msgid "Invalid MAC address format!"
+msgstr "MAC 位址格式不正確，請檢查！"
