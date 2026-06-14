@@ -417,7 +417,10 @@ var T = {
     'BTN_CANCEL': _('Cancel'),
     'BTN_OK': _('OK'),
     'M_CANCEL': _('Ignore'),
-    'M_FMT_MAC': _('Invalid MAC address format!'),
+    'M_FMT_MAC':_('Invalid MAC address format!'),
+    'MSG_MULTI_WAN':_('💡 Multi-WAN detected. You can modify the account and password for each line separately (other settings remain unchanged).'),
+    'MSG_WIZ_MULTI_WAN':_('💡 Multi-WAN detected. Only the primary WAN will be configured here, other lines remain unchanged.'),
+    'LBL_IFACE':_('Interface:'),
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -2254,15 +2257,61 @@ return view.extend({
                         }
                         setupStatusBox(container.querySelector('#status-router-info'), window._nwRealWanMode === 'pppoe', T['WARN_ROUTER_INVALID']);
 
-                        // 初次加载时：如果缓存是空的，就把路由器底层的旧帐密读进缓存里
-                        var uciUser = safeUciGet('network', 'wan', 'username', '');
-                        var uciPass = safeUciGet('network', 'wan', 'password', '');
-                        if (sessionStorage.getItem('nw_pppoe_user') === null) sessionStorage.setItem('nw_pppoe_user', uciUser);
-                        if (sessionStorage.getItem('nw_pppoe_pass') === null) sessionStorage.setItem('nw_pppoe_pass', uciPass);
-
-                        // 读取缓存数据
-                        if (container.querySelector('#pppoe-user')) container.querySelector('#pppoe-user').value = sessionStorage.getItem('nw_pppoe_user');
-                        if (container.querySelector('#pppoe-pass')) container.querySelector('#pppoe-pass').value = sessionStorage.getItem('nw_pppoe_pass');
+                        // --- 多线智能探测与渲染 ---
+                        var pppoeIfaces = [];
+                        var netSections = uci.sections('network', 'interface') || [];
+                        netSections.forEach(function(s) {
+                            if (s.proto === 'pppoe') {
+                                pppoeIfaces.push({ name: s['.name'], user: s.username || '', pass: s.password || '' });
+                            }
+                        });
+                        
+                        window._nwMultiPppoe=(pppoeIfaces.length>1)?pppoeIfaces:null;
+                        
+                        var wizPppoeForm=container.querySelector('#wiz-pppoe-fields');
+                        if(wizPppoeForm){
+                            var existHint=container.querySelector('#wiz-multi-wan-hint');
+                            if(window._nwMultiPppoe){
+                                if(!existHint){
+                                    var hint=document.createElement('div');
+                                    hint.id='wiz-multi-wan-hint';
+                                    hint.style.cssText='color:#b45309; font-size:12.5px; font-weight:bold; margin-bottom:12px; padding:8px 10px; background:#fef3c7; border-radius:6px; line-height:1.4; text-align:left;';
+                                    hint.innerHTML=T['MSG_WIZ_MULTI_WAN']||'💡 Multi-WAN detected. Only the primary WAN will be configured here, other lines remain unchanged.';
+                                    wizPppoeForm.insertBefore(hint,wizPppoeForm.firstChild);
+                                    }
+                                } else {
+                                    if(existHint)existHint.remove();
+                                }
+                            }
+                        var pppoeForm=container.querySelector('#main-pppoe-fields');
+                        if (pppoeForm) {
+                            if (window._nwMultiPppoe) {
+                                var mHtml = '<div style="color:#b45309; font-size:13.5px; font-weight:bold; margin-bottom:15px; padding:10px; background:#fef3c7; border-radius:6px; line-height:1.4;">' + (T['MSG_MULTI_WAN'] || '💡 系統偵測到多線撥號環境...') + '</div>';
+                                window._nwMultiPppoe.forEach(function(iface) {
+                                    mHtml += '<div class="nw-multi-pppoe-box" data-iface="' + iface.name + '" style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed #cbd5e1;">';
+                                    mHtml += '<div style="font-size:14px; font-weight:bold; color:#0284c7; margin-bottom:10px;">' + (T['LBL_IFACE'] || 'Interface:') + ' ' + iface.name.toUpperCase() + '</div>';
+                                    mHtml += '<div style="display:flex; gap:10px;">';
+                                    mHtml += '<input type="search" class="m-user nd-input" placeholder="' + (T['LBL_USER'] || 'User') + '" value="' + iface.user + '" style="flex:1; height:46px; border:1px solid #cbd5e1; border-radius:8px; padding:0 16px; box-sizing:border-box;">';
+                                    mHtml += '<input type="search" class="m-pass nd-input" placeholder="' + (T['LBL_PASS'] || 'Pass') + '" value="' + iface.pass + '" style="flex:1; height:46px; border:1px solid #cbd5e1; border-radius:8px; padding:0 16px; box-sizing:border-box;">';
+                                    mHtml += '</div></div>';
+                                });
+                                mHtml += '<button type="submit" id="main-pppoe-submit" style="display:none;">Apply</button>';
+                                pppoeForm.innerHTML = mHtml;
+                            } else {
+                                // 还原单线模式的 DOM
+                                if (!container.querySelector('#pppoe-user')) {
+                                    pppoeForm.innerHTML = '<div class="nw-value"><label class="nw-value-title">' + (T['LBL_USER'] || 'User') + '</label><div class="nw-value-field"><input type="search" id="pppoe-user" class="nd-input" placeholder="' + (T['PH_USER'] || '') + '" autocomplete="on"></div></div>' +
+                                                          '<div class="nw-value"><label class="nw-value-title">' + (T['LBL_PASS'] || 'Pass') + '</label><div class="nw-value-field"><input type="search" id="pppoe-pass" class="nd-input" placeholder="' + (T['PH_PASS'] || '') + '" autocomplete="on"></div></div>' +
+                                                          '<button type="submit" id="main-pppoe-submit" style="display:none;">Apply</button>';
+                                }
+                                var uciUser = safeUciGet('network', 'wan', 'username', '');
+                                var uciPass = safeUciGet('network', 'wan', 'password', '');
+                                if (sessionStorage.getItem('nw_pppoe_user') === null) sessionStorage.setItem('nw_pppoe_user', uciUser);
+                                if (sessionStorage.getItem('nw_pppoe_pass') === null) sessionStorage.setItem('nw_pppoe_pass', uciPass);
+                                if (container.querySelector('#pppoe-user')) container.querySelector('#pppoe-user').value = sessionStorage.getItem('nw_pppoe_user');
+                                if (container.querySelector('#pppoe-pass')) container.querySelector('#pppoe-pass').value = sessionStorage.getItem('nw_pppoe_pass');
+                            }
+                        }
 
                         if (container.querySelector('#router-ip')) container.querySelector('#router-ip').value = (wIp !== T['TXT_NOT_GOT']) ? wIp : '';
                         if (container.querySelector('#router-gw')) container.querySelector('#router-gw').value = (wGw !== T['TXT_NOT_SET']) ? wGw : '';
@@ -4472,7 +4521,16 @@ return view.extend({
                         return; // 拦截本次提交
                     }
                 } else if (selectedMode === 'pppoe') {
-                    if (!container.querySelector('#pppoe-user').value.trim() || !container.querySelector('#pppoe-pass').value.trim()) { openModal({title: T['M_INC_TIT'], msg: T['M_INC_PPPOE'], okText: T['BTN_EDIT']}); return; } 
+                    if (window._nwMultiPppoe) {
+                        var mBoxes = container.querySelectorAll('.nw-multi-pppoe-box');
+                        var mEmpty = false;
+                        mBoxes.forEach(function(b) {
+                            if (!b.querySelector('.m-user').value.trim() || !b.querySelector('.m-pass').value.trim()) mEmpty = true;
+                        });
+                        if (mEmpty) { openModal({title: T['M_INC_TIT'], msg: T['M_INC_PPPOE'], okText: T['BTN_EDIT']}); return; }
+                    } else {
+                        if (!container.querySelector('#pppoe-user').value.trim() || !container.querySelector('#pppoe-pass').value.trim()) { openModal({title: T['M_INC_TIT'], msg: T['M_INC_PPPOE'], okText: T['BTN_EDIT']}); return; } 
+                    }
                 } else if (selectedMode === 'wifi') {
                     var isSmart = container.querySelector('#wifi-smart-toggle').checked && !window._isSingleChip;
                     if (isSmart) {
@@ -4714,12 +4772,26 @@ return view.extend({
                             
                             confirmText.innerHTML = b(T['MODE_WIFI_TITLE'], confirmList);
                         } else {
-                            var oldPppoeUser = safeUciGet('network', 'wan', 'username', '');
-                            var oldPppoePass = safeUciGet('network', 'wan', 'password', '');
-                            confirmText.innerHTML = b(T['MODE_PPPOE_TITLE'], [
-                                mkDiff(T['M_ACCT'], container.querySelector('#pppoe-user').value, oldPppoeUser), 
-                                mkDiff(T['M_PWD'], container.querySelector('#pppoe-pass').value, oldPppoePass)
-                            ]);
+                            if (window._nwMultiPppoe) {
+                                var mDiffs = [];
+                                var mBoxes = container.querySelectorAll('.nw-multi-pppoe-box');
+                                mBoxes.forEach(function(b) {
+                                    var ifc = b.getAttribute('data-iface');
+                                    var u = b.querySelector('.m-user').value.trim();
+                                    var p = b.querySelector('.m-pass').value.trim();
+                                    var oldIf = window._nwMultiPppoe.find(function(x){ return x.name === ifc; });
+                                    mDiffs.push(mkDiff(ifc.toUpperCase() + ' ' + (T['M_ACCT']||'Account'), u, oldIf ? oldIf.user : ''));
+                                    mDiffs.push(mkDiff(ifc.toUpperCase() + ' ' + (T['M_PWD']||'Password'), p, oldIf ? oldIf.pass : ''));
+                                });
+                                confirmText.innerHTML = b(T['MODE_PPPOE_TITLE'], mDiffs);
+                            } else {
+                                var oldPppoeUser = safeUciGet('network', 'wan', 'username', '');
+                                var oldPppoePass = safeUciGet('network', 'wan', 'password', '');
+                                confirmText.innerHTML = b(T['MODE_PPPOE_TITLE'], [
+                                    mkDiff(T['M_ACCT'], container.querySelector('#pppoe-user').value, oldPppoeUser), 
+                                    mkDiff(T['M_PWD'], container.querySelector('#pppoe-pass').value, oldPppoePass)
+                                ]);
+                            }
                         }
                         
                         if (selectedMode === 'lan' && !isBypass && targetGw !== '') { openModal({ title: T['M_WARN_TIT'], msg: T['M_WARN_MSG'], cancelText: T['BTN_EDIT'], okText: T['M_WARN_BTN'], isDanger: true, onOk: function() { container.querySelector('#nw-global-modal').style.display = 'none'; step2.style.display = 'none'; step3.style.display = 'block'; setTimeout(function(){ smoothScrollToTop(650); }, 20); } }); return; }
@@ -4804,10 +4876,16 @@ return view.extend({
                     else { actionDetail = '<b style="color:#10b981;">' + T['OPT_DHCP'] + '</b>'; }
                     mTitle = rType === 'dhcp' ? T['ACT_WAN_DHCP'] : T['ACT_WAN_STATIC'];
                 } else if (selectedMode === 'pppoe') { 
-                    a1 = container.querySelector('#pppoe-user').value.replace(/[\r\n\s]+/g, '');
-                    a2 = container.querySelector('#pppoe-pass').value; 
-                    actionDetail = '<b style="color:#3b82f6;">' + a1 + '</b>';
-                    mTitle = T['ACT_PPPOE'];
+                    if (window._nwMultiPppoe) {
+                        mode = 'multi_pppoe';
+                        actionDetail = '<b style="color:#3b82f6;">Multi-WAN (' + window._nwMultiPppoe.length + ')</b>';
+                        mTitle = T['ACT_PPPOE'];
+                    } else {
+                        a1 = container.querySelector('#pppoe-user').value.replace(/[\r\n\s]+/g, '');
+                        a2 = container.querySelector('#pppoe-pass').value; 
+                        actionDetail = '<b style="color:#3b82f6;">' + a1 + '</b>';
+                        mTitle = T['ACT_PPPOE'];
+                    }
                 } else if (selectedMode === 'wifi') {
                     var isSmart = container.querySelector('#wifi-smart-toggle').checked && !window._isSingleChip;
                     var legacyB = container.querySelector('#legacy-b-toggle').checked ? '1' : '0';
@@ -4958,7 +5036,20 @@ return view.extend({
                         }, 3000);
                     }
                 };
-                callNetSetup(mode, a1, a2, a3, a4, a5, a6).then(function() { succ(); }).catch(function() { succ(); });
+                
+                if (mode === 'multi_pppoe') {
+                    var mBoxes = container.querySelectorAll('.nw-multi-pppoe-box');
+                    mBoxes.forEach(function(b) {
+                        var ifc = b.getAttribute('data-iface');
+                        var u = b.querySelector('.m-user').value.replace(/[\r\n\s]+/g, '');
+                        var p = b.querySelector('.m-pass').value;
+                        uci.set('network', ifc, 'username', u);
+                        uci.set('network', ifc, 'password', p);
+                    });
+                    uci.save().then(function() { return uci.apply(); }).then(function() { succ(); }).catch(function() { succ(); });
+                } else {
+                    callNetSetup(mode, a1, a2, a3, a4, a5, a6).then(function() { succ(); }).catch(function() { succ(); });
+                }
             } catch (err) {
                 openModal({ title: T['M_SYS_ERR'], msg: 'Application failed: ' + err, okText: T['M_CLOSE'] });
             }
