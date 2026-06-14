@@ -1791,3 +1791,12 @@ msgstr "MAC 複製"
 
 msgid "Clear"
 msgstr "🗑️ 清空(恢復預設)"
+
+msgid "Internet Connected"
+msgstr "網際網路已連線"
+
+msgid "Internet Disconnected"
+msgstr "網際網路未連線"
+
+msgid "Ignore"
+msgstr "略過"
