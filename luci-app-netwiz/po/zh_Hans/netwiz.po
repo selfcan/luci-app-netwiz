@@ -1803,3 +1803,9 @@ msgstr "忽略"
 
 msgid "Invalid MAC address format!"
 msgstr "MAC 地址格式不正确，请检查！"
+
+msgid "💡 Multi-WAN detected. You can modify the account and password for each line separately (other settings remain unchanged)."
+msgstr "💡 系统检测到多线拨号环境，可分别修改各线路的账号密码（其他设置保持不变）。"
+
+msgid "Interface:"
+msgstr "线路接口:"
