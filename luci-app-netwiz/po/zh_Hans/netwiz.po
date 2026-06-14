@@ -1800,3 +1800,6 @@ msgstr "互联网未连通"
 
 msgid "Ignore"
 msgstr "忽略"
+
+msgid "Invalid MAC address format!"
+msgstr "MAC 地址格式不正确，请检查！"
