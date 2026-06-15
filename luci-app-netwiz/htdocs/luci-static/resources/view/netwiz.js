@@ -1242,7 +1242,6 @@ return view.extend({
                                 rawText.value = textContent;
                                 visualUi.style.display = 'none';
                                 rawUi.style.display = 'block';
-                                this.style.color = '#2563eb'; 
                             } else {
                                 var lines = rawText.value.split('\n');
                                 var newArr = [];
@@ -1270,7 +1269,6 @@ return view.extend({
                                 renderHosts();
                                 rawUi.style.display = 'none';
                                 visualUi.style.display = 'block';
-                                this.style.color = 'inherit';
                             }
                         });
                     }
