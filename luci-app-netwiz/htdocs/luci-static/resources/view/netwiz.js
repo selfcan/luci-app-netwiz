@@ -421,6 +421,16 @@ var T = {
     'MSG_MULTI_WAN':_('💡 Multi-WAN detected. You can modify the account and password for each line separately (other settings remain unchanged).'),
     'MSG_WIZ_MULTI_WAN':_('💡 Multi-WAN detected. Only the primary WAN will be configured here, other lines remain unchanged.'),
     'LBL_IFACE':_('Interface:'),
+    'LBL_HOSTS_LINK': _('✏️ Custom Hosts'),
+    'LBL_HOSTS_TITLE': _('Custom <a href="javascript:void(0)" id="nw-hosts-raw-toggle" style="color:red; text-decoration:underline dashed; transition:color 0.2s;" title="Click to toggle pure text advanced mode">Hosts</a>👈 (Domain Hijack)'),
+    'LBL_HOSTS_VISUAL': _('💡 Quick Add:'),
+    'BTN_HOSTS_ADD': _('➕ Add'),
+    'TXT_HOSTS_EMPTY': _('No custom Hosts, please add below.'),
+    'PH_HOSTS_IP': _('IP (e.g., 192.168.1.50)'),
+    'PH_HOSTS_DOMAIN': _('Domain (e.g., router.lan)'),
+    'PH_HOSTS_CMT': _('Comment (Optional)'),
+    'LBL_HOSTS_RAW_TIP': _('💡 <b>Pure Text Advanced Mode</b>: Supports batch pasting. Format: <code>IP Domain #Comment</code>'),
+    'MSG_HOSTS_REQ': _('IP and Domain cannot be empty!'),
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -442,7 +452,7 @@ var callCheckMissingPkgs = rpc.declare({ object: 'netwiz', method: 'check_missin
 var callCheckInternet = rpc.declare({ object: 'netwiz', method: 'check_internet', expect: { '': {} } });
 var callGetClientMac = rpc.declare({ object: 'netwiz', method: 'get_client_mac', expect: { '': {} } });
 var callGetAdvSettings = rpc.declare({ object: 'netwiz', method: 'get_adv_settings', expect: { '': {} } });
-var callSetAdvSettings = rpc.declare({ object: 'netwiz', method: 'set_adv_settings', params: ['mac', 'web', 'cron'], expect: { result: 0 } });
+var callSetAdvSettings = rpc.declare({ object: 'netwiz', method: 'set_adv_settings', params: ['mac', 'web', 'cron', 'hosts'], expect: { result: 0 } });
 
 return view.extend({
     handleSaveApply: null,
@@ -649,6 +659,7 @@ return view.extend({
             '        <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:center; margin-bottom:12px; padding-bottom:12px; border-bottom: 1px dashed #cbd5e1;">',
             '            <a href="javascript:void(0)" id="link-mac-clone" style="color:#0284c7; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_MAC_CLONE_LINK}}</a>',
             '            <a href="javascript:void(0)" id="link-cron-reboot" style="color:#0284c7; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_CRON_REBOOT_LINK}}</a>',
+            '            <a href="javascript:void(0)" id="link-modify-hosts" style="color:#0284c7; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_HOSTS_LINK}}</a>',
             '        </div>',
             '        <div style="display:flex; justify-content:space-between; align-items:center;">',
             '            <div style="font-size:14.5px; font-weight:500; color:#0284c7;">{{LBL_WEB_ACCESS_TOGGLE}}</div>',
@@ -1151,7 +1162,196 @@ return view.extend({
         }
         // ====================================================
 
+        // 修改 Hosts
+        if(container.querySelector('#link-modify-hosts')) {
+            container.querySelector('#link-modify-hosts').addEventListener('click', function() {
+                callGetAdvSettings().then(function(res) {
+                    var hostsArr = [];
+                    try { 
+                        // 增强数据解析兼容性
+                        hostsArr = (typeof res.hosts === 'string') ? JSON.parse(res.hosts) : (res.hosts || []); 
+                        if (!Array.isArray(hostsArr)) hostsArr = [];
+                    } catch(e) { hostsArr = []; }
+                    
+                    var esc = function(s) { return (s || '').replace(/"/g, '&quot;'); };
+                    var html = '<div id="nw-hosts-visual-ui">' +
+                                   '<div style="background:#eff6ff; border:1px dashed #93c5fd; padding:12px; border-radius:8px; margin-bottom:15px;">' +
+                                       '<div style="font-size:13px; color:#1e3a8a; font-weight:bold; margin-bottom:10px;">' + (T['LBL_HOSTS_VISUAL'] || '💡 Quick Add:') + '</div>' +
+                                       '<div style="display:flex; gap:10px; margin-bottom:10px;">' +
+                                           '<input type="text" id="nw-quick-dom" placeholder="' + (T['PH_HOSTS_DOMAIN'] || 'Domain (e.g., router.lan)') + '" style="flex:1; width:50%; height:36px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13.5px; box-sizing:border-box;">' +
+                                           '<input type="text" id="nw-quick-ip" value="127.0.0.1" placeholder="' + (T['PH_HOSTS_IP'] || 'IP') + '" style="flex:1; width:50%; height:36px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13.5px; box-sizing:border-box; font-family:monospace;">' +
+                                       '</div>' +
+                                       '<div style="display:flex; gap:10px;">' +
+                                           '<input type="text" id="nw-quick-cmt" placeholder="' + (T['PH_HOSTS_CMT'] || 'Comment (Optional)') + '" style="flex:1; height:36px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13px; box-sizing:border-box;">' +
+                                           '<button id="nw-quick-add-btn" class="nw-u-btn" style="width:80px; height:36px; background:#fff; color:#2563eb; border:1px solid #2563eb; border-radius:6px; font-weight:bold; cursor:pointer; transition:all 0.2s;">' + (T['BTN_HOSTS_ADD'] || '➕ Add') + '</button>' +
+                                       '</div>' +
+                                   '</div>' +
+                                   '<div id="nw-hosts-list" style="max-height:280px; overflow-y:auto; overflow-x:hidden; padding-right:5px; margin-bottom:10px;"></div>' +
+                               '</div>' +
+                               
+                               // 隐藏的纯文本模式
+                               '<div id="nw-hosts-raw-ui" style="display:none; margin-bottom:10px;">' +
+                                   '<div style="font-size:13px; color:#64748b; margin-bottom:10px;">' + (T['LBL_HOSTS_RAW_TIP'] || '💡 <b>Pure Text Advanced Mode</b>: Supports batch pasting. Format: <code>IP Domain #Comment</code>') + '</div>' +
+                                   '<textarea id="nw-hosts-raw-text" spellcheck="false" style="width:100%; height:320px; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-family:monospace; font-size:13.5px; box-sizing:border-box; background:#f8fafc; color:#334155; line-height:1.6; resize:none;"></textarea>' +
+                               '</div>';
+                               
+                    var isRawMode = false;
+
+                    showAdvModal((T['LBL_HOSTS_TITLE']), html, function(box) {
+                        if (isRawMode) {
+                            var tBtn = document.getElementById('nw-hosts-raw-toggle');
+                            if(tBtn) tBtn.click();
+                        }
+                        
+                        var finalData = hostsArr.filter(function(item) { return item.ip.trim() !== '' && item.dom.trim() !== ''; });
+                        var jsonStr = JSON.stringify(finalData);
+                        
+                        openModal({ title: (T['MSG_WRITING'] || 'Saving...'), msg: (T['MSG_WAIT'] || 'Please wait...'), spin: true });
+                        var gm2 = document.getElementById('nw-global-modal'); if (gm2) gm2.style.zIndex = '100000';
+                        
+                        callSetAdvSettings('', '', '', jsonStr).then(function() { 
+                            setTimeout(function(){ window.location.reload(); }, 1500); 
+                        });
+                    });
+                    
+                    var modalBox = document.getElementById('nw-adv-modal');
+                    if (modalBox) {
+                        var innerBox = modalBox.querySelector('div');
+                        if (innerBox) {
+                            innerBox.style.width = '460px';
+                            innerBox.style.maxWidth = '95%';
+                        }
+                    }
+                    
+                    // ================= 双向解析转换 =================
+                    var toggleBtn = document.getElementById('nw-hosts-raw-toggle');
+                    if (toggleBtn) {
+                        toggleBtn.addEventListener('click', function() {
+                            isRawMode = !isRawMode;
+                            var visualUi = document.getElementById('nw-hosts-visual-ui');
+                            var rawUi = document.getElementById('nw-hosts-raw-ui');
+                            var rawText = document.getElementById('nw-hosts-raw-text');
+
+                            if (isRawMode) {
+                                var textContent = '';
+                                hostsArr.forEach(function(item) {
+                                    var prefix = item.en ? '' : '# '; 
+                                    var cmt = item.cmt ? ' \t# ' + item.cmt : '';
+                                    textContent += prefix + item.ip + '\t' + item.dom + cmt + '\n';
+                                });
+                                rawText.value = textContent;
+                                visualUi.style.display = 'none';
+                                rawUi.style.display = 'block';
+                                this.style.color = '#2563eb'; 
+                            } else {
+                                var lines = rawText.value.split('\n');
+                                var newArr = [];
+                                lines.forEach(function(line) {
+                                    line = line.trim();
+                                    if (!line) return;
+                                    var en = true;
+                                    
+                                    if (line.charAt(0) === '#') {
+                                        var uncommented = line.substring(1).trim();
+                                        if (/^[a-fA-F0-9\.:]+\s+[^\s#]+/.test(uncommented)) {
+                                            en = false; 
+                                            line = uncommented;
+                                        } else {
+                                            return; 
+                                        }
+                                    }
+                                    
+                                    var match = line.match(/^([a-fA-F0-9\.:]+)\s+([^\s#]+)(?:\s+#\s*(.*))?$/);
+                                    if (match) {
+                                        newArr.push({ ip: match[1], dom: match[2], cmt: match[3] || '', en: en });
+                                    }
+                                });
+                                hostsArr = newArr;
+                                renderHosts();
+                                rawUi.style.display = 'none';
+                                visualUi.style.display = 'block';
+                                this.style.color = 'inherit';
+                            }
+                        });
+                    }
+                    
+                    // 可视化渲染逻辑
+                    var renderHosts = function() {
+                        var listHtml = '';
+                        hostsArr.forEach(function(item, idx) {
+                            var opacity = item.en ? '1' : '0.5';
+                            listHtml += '<div style="margin-bottom:12px; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; transition:opacity 0.2s;" id="h-row-'+idx+'" style="opacity:'+opacity+';">';
+                            listHtml += '<div style="display:flex; gap:8px; margin-bottom:8px;">';
+                            listHtml += '<input type="text" class="h-dom nd-input" data-idx="'+idx+'" value="'+esc(item.dom)+'" placeholder="' + (T['PH_HOSTS_DOMAIN']||'Domain') + '" style="flex:1; width:50% !important; height:34px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13.5px; box-sizing:border-box;">';
+                            listHtml += '<input type="text" class="h-ip nd-input" data-idx="'+idx+'" value="'+esc(item.ip)+'" placeholder="' + (T['PH_HOSTS_IP']||'IP') + '" style="flex:1; width:50% !important; height:34px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13.5px; font-family:monospace; box-sizing:border-box;">';
+                            listHtml += '</div>';
+                            listHtml += '<div style="display:flex; gap:8px; align-items:center;">';
+                            listHtml += '<label class="nw-switch nw-flex-shrink-0" style="margin:0;"><input type="checkbox" class="h-en" data-idx="'+idx+'" '+(item.en?'checked':'')+'><span class="nw-slider"></span></label>';
+                            listHtml += '<input type="text" class="h-cmt nd-input" data-idx="'+idx+'" value="'+esc(item.cmt)+'" placeholder="' + (T['PH_HOSTS_CMT']||'Comment') + '" style="flex:1; height:34px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13px; box-sizing:border-box; color:#64748b;">';
+                            listHtml += '<button class="h-del nw-u-btn nw-u-btn-red" data-idx="'+idx+'" style="width:34px; height:34px; min-height:34px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:6px;" title="Delete">✕</button>';
+                            listHtml += '</div></div>';
+                        });
+                        
+                        if(hostsArr.length === 0) {
+                            listHtml = '<div style="text-align:center; color:#94a3b8; padding:20px 10px; font-size:13.5px; background:#f1f5f9; border-radius:8px; border:1px dashed #cbd5e1;">' + (T['TXT_HOSTS_EMPTY'] || 'No custom Hosts') + '</div>';
+                        }
+                        
+                        var listContainer = document.getElementById('nw-hosts-list');
+                        listContainer.innerHTML = listHtml;
+                        
+                        listContainer.querySelectorAll('.h-en, .h-ip, .h-dom, .h-cmt').forEach(function(el) {
+                            el.addEventListener('change', function() {
+                                var idx = parseInt(this.getAttribute('data-idx'), 10);
+                                if(this.classList.contains('h-en')) { 
+                                    hostsArr[idx].en = this.checked; 
+                                    document.getElementById('h-row-'+idx).style.opacity = this.checked ? '1' : '0.5'; 
+                                }
+                                if(this.classList.contains('h-ip')) hostsArr[idx].ip = this.value;
+                                if(this.classList.contains('h-dom')) hostsArr[idx].dom = this.value;
+                                if(this.classList.contains('h-cmt')) hostsArr[idx].cmt = this.value;
+                            });
+                        });
+                        
+                        listContainer.querySelectorAll('.h-del').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                hostsArr.splice(parseInt(this.getAttribute('data-idx'), 10), 1);
+                                renderHosts();
+                            });
+                        });
+                    };
+                    
+                    renderHosts();
+                    
+                    var addBtn = document.getElementById('nw-quick-add-btn');
+                    if (addBtn) {
+                        addBtn.onmouseover = function() { this.style.background = '#eff6ff'; };
+                        addBtn.onmouseout = function() { this.style.background = '#fff'; };
+                        addBtn.onclick = function() {
+                            var ipInput = document.getElementById('nw-quick-ip');
+                            var domInput = document.getElementById('nw-quick-dom');
+                            var cmtInput = document.getElementById('nw-quick-cmt');
+                            var ipVal = ipInput.value.trim();
+                            var domVal = domInput.value.trim();
+                            
+                            if (!ipVal || !domVal) {
+                                alert(T['MSG_HOSTS_REQ'] || 'IP and Domain cannot be empty!');
+                                return;
+                            }
+                            
+                            hostsArr.unshift({ ip: ipVal, dom: domVal, cmt: cmtInput.value.trim(), en: true });
+                            renderHosts();
+                            
+                            ipInput.value = '127.0.0.1'; 
+                            domInput.value = ''; 
+                            cmtInput.value = '';
+                            document.getElementById('nw-hosts-list').scrollTop = 0;
+                        };
+                    }
+                });
+            });
+        }
         // ==============================================================
+
         // 防空指针，重定向 DOM 查找
         var oriQuery = container.querySelector.bind(container);
         var oriQueryAll = container.querySelectorAll.bind(container);
