@@ -14,26 +14,26 @@ body {
 /* -------  开始  ------*/
 body input::placeholder { 
   color: #94a3b8 !important; 
-  opacity: 1 !important; 
   font-weight: 500 !important; 
+  opacity: 1 !important; 
 }
 
 body input::-webkit-input-placeholder { 
   color: #94a3b8 !important; 
-  opacity: 1 !important; 
   font-weight: 500 !important; 
+  opacity: 0.99 !important; /* 需要不一样，骗压缩工具 */
 }
 
 body input::-moz-placeholder { 
   color: #94a3b8 !important; 
-  opacity: 1 !important; 
   font-weight: 500 !important; 
+  opacity: 0.98 !important; /* 需要不一样，骗压缩工具具 */
 }
 
 body input:-ms-input-placeholder { 
   color: #94a3b8 !important; 
-  opacity: 1 !important; 
   font-weight: 500 !important; 
+  opacity: 0.97 !important; /* 需要不一样，骗压缩工具 */
 }
 /* -------  结束  ------*/
 
