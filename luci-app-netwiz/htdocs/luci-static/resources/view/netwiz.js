@@ -418,6 +418,7 @@ var T = {
     'BTN_OK': _('OK'),
     'M_CANCEL': _('Ignore'),
     'M_FMT_MAC':_('Invalid MAC address format!'),
+    'PH_MAC': _('e.g., AA:BB:CC:DD:EE:FF'),
     'MSG_MULTI_WAN':_('💡 Multi-WAN detected. You can modify the account and password for each line separately (other settings remain unchanged).'),
     'MSG_WIZ_MULTI_WAN':_('💡 Multi-WAN detected. Only the primary WAN will be configured here, other lines remain unchanged.'),
     'LBL_IFACE':_('Interface:'),
@@ -941,6 +942,7 @@ return view.extend({
         // =================高级设置弹窗与逻辑=================
         function showAdvModal(title, html, onOk) {
             var bg = document.createElement('div');
+            bg.id = 'nw-adv-modal';
             bg.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(2px);';
             var box = document.createElement('div');
             box.style.cssText = 'background:#fff; width:360px; max-width:90%; border-radius:12px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); font-family:sans-serif;';
