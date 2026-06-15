@@ -874,7 +874,7 @@ msgstr "勾选：依据 IP 网段来对设备分类"
 msgid "Unchecked: Classify device types by built-in names"
 msgstr "取消：依据内置名称来对设备分类"
 
-msgid "Group Name"
+msgid "Alias"
 msgstr "分组名称"
 
 msgid "Group "
