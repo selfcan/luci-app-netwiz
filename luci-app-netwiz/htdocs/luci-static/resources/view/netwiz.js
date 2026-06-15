@@ -437,7 +437,9 @@ var T = {
     'M_INC_TIT': _('Notice'),
     'MSG_WAIT': _('Please wait...'),
     'MSG_HOSTS_DUP': _('This IP and Domain combination already exists!'),
-    'MSG_HOSTS_DUP_RAW': _('Duplicate records found in Hosts! Please remove them before continuing.')
+    'MSG_HOSTS_DUP_RAW': _('Duplicate records found in Hosts! Please remove them before continuing.'),
+    'LBL_SMART_ADD': _('Smart Auto-fill'),
+    'TIP_SMART_ADD': _('Auto-fill IPv4/v6 & www domain combinations')
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -1188,8 +1190,9 @@ return view.extend({
                                         '<input type="text" id="nw-quick-dom" placeholder="' + (T['PH_HOSTS_DOMAIN'] || 'Domain') + '" style="flex:1 1 0%; min-width:0; height:36px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13.5px; box-sizing:border-box;">' +
                                         '<input type="text" id="nw-quick-ip" value="127.0.0.1" placeholder="' + (T['PH_HOSTS_IP'] || 'IP') + '" style="flex:1 1 0%; min-width:0; height:36px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13.5px; box-sizing:border-box; color: #000;">' +
                                     '</div>' +
-                                    '<div style="display:flex; gap:10px; width:100%; box-sizing:border-box;">' +
+                                    '<div style="display:flex; gap:10px; width:100%; box-sizing:border-box; align-items:center;">' +
                                         '<input type="text" id="nw-quick-cmt" placeholder="' + (T['PH_HOSTS_CMT'] || 'Comment') + '" style="flex:1 1 0%; min-width:0; height:36px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:13px; box-sizing:border-box;">' +
+                                        '<label style="display:flex; align-items:center; font-size:13px; color:#2563eb; cursor:pointer; flex-shrink:0; user-select:none;" title="' + (T['TIP_SMART_ADD'] || 'Auto-fill IPv4/v6 & www combinations') + '"><input type="checkbox" id="nw-smart-add-cb" checked style="top:0px;"> ' + (T['LBL_SMART_ADD'] || 'Smart Auto-fill') + '</label>' +
                                         '<button id="nw-quick-add-btn" class="nw-u-btn" style="flex:0 0 auto; flex-shrink:0; white-space:nowrap; padding:0 15px; height:36px; background:#fff; color:#2563eb; border:1px solid #2563eb; border-radius:6px; font-weight:bold; cursor:pointer; transition:all 0.2s;">' + (T['BTN_HOSTS_ADD'] || '➕ Add') + '</button>' +
                                     '</div>' +
                                 '</div>' +
@@ -1396,16 +1399,51 @@ return view.extend({
                                 return; 
                             }
                             
-                            // 查重防呆：检查数组中是否已经存在相同的IP + 域名
-                            var isDupNew = hostsArr.some(function(x) { return x.ip === ipVal && x.dom === domVal; });
-                            if (isDupNew) {
-                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'This IP and Domain combination already exists!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                            var isSmartAdd = document.getElementById('nw-smart-add-cb').checked;
+                            var cmtVal = cmtInput.value.trim().replace(/[<>"']/g, '');
+                            var addList = [];
+                            
+                            if (isSmartAdd) {
+                                // 智能解析：去除域名前面的 www.，提取主域名
+                                var rootDom = domVal.replace(/^www\./i, '');
+                                var doms = [rootDom, 'www.' + rootDom]; // 组合 1：无 www，组合 2：有 www
+                                var ips = [ipVal];
+                                
+                                // 智能判断：如果用户填的是屏蔽/回环 IP，自动裂变出 IPv4 和 IPv6 两个版本
+                                if (ipVal === '127.0.0.1' || ipVal === '::1' || ipVal === '0.0.0.0' || ipVal === '::') {
+                                    ips = ['127.0.0.1', '::1'];
+                                }
+                                
+                                // 交叉组合所有 IP 和域名
+                                ips.forEach(function(i) {
+                                    doms.forEach(function(d) {
+                                        addList.push({ ip: i, dom: d, cmt: cmtVal, en: true });
+                                    });
+                                });
+                            } else {
+                                // 未开启智能补全，只添加当前输入的一条
+                                addList.push({ ip: ipVal, dom: domVal, cmt: cmtVal, en: true });
+                            }
+
+                            var addedCount = 0;
+                            // 倒序遍历插入，保证生成的 4 条规则在列表里看起来排版舒适且符合逻辑
+                            for (var i = addList.length - 1; i >= 0; i--) {
+                                var item = addList[i];
+                                // 查重防呆：如果 4 条规则中有一部分已经存在了，自动跳过重复的，只加上缺失的
+                                var isDup = hostsArr.some(function(x) { return x.ip === item.ip && x.dom === item.dom; });
+                                if (!isDup) {
+                                    hostsArr.unshift(item);
+                                    addedCount++;
+                                }
+                            }
+
+                            // 如果计算完发现一条新规则都没加进去（全重复了）
+                            if (addedCount === 0) {
+                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['BTN_CLOSE'] || 'Close' }); 
                                 return;
                             }
                             
-                            hostsArr.unshift({ ip: ipVal, dom: domVal, cmt: cmtInput.value.trim().replace(/[<>"']/g, ''), en: true });
                             renderHosts();
-                            
                             ipInput.value = '127.0.0.1'; domInput.value = ''; cmtInput.value = '';
                             document.getElementById('nw-hosts-list').scrollTop = 0;
                         };
