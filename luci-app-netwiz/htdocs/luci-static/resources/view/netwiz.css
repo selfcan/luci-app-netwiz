@@ -10,26 +10,32 @@ body {
     overflow-x: clip !important;
 }
 
-#netwiz-container input::placeholder { 
+/* 所有输入框的占位符样式 */
+/* -------  开始  ------*/
+input::placeholder { 
    color: #94a3b8 !important; 
    opacity: 1 !important; 
    font-weight: 500 !important;
 }
-#netwiz-container input::-webkit-input-placeholder { 
+
+input::-webkit-input-placeholder { 
    color: #94a3b8 !important; 
    opacity: 1 !important; 
    font-weight: 500 !important;
 }
-#netwiz-container input::-moz-placeholder { 
+
+input::-moz-placeholder { 
    color: #94a3b8 !important; 
    opacity: 1 !important; 
    font-weight: 500 !important;
 }
-#netwiz-container input:-ms-input-placeholder { 
+
+input:-ms-input-placeholder { 
    color: #94a3b8 !important; 
    opacity: 1 !important; 
    font-weight: 500 !important;
 }
+/* -------  结束  ------*/
 
 #netwiz-container, #netwiz-dev-container { 
     display: block !important; width: 100% !important; 
