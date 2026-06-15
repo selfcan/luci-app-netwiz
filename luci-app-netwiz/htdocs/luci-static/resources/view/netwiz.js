@@ -436,6 +436,7 @@ var T = {
     'MSG_NO_CHANGE': _('No changes have been made.'),
     'M_INC_TIT': _('Notice'),
     'MSG_WAIT': _('Please wait...'),
+    'MSG_HOSTS_DUP': _('This IP and Domain combination already exists!')
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -1253,7 +1254,13 @@ return view.extend({
                                         var parsedIp = match[1];
                                         var isIpv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(parsedIp);
                                         var isIpv6 = /^[a-fA-F0-9:]+:[a-fA-F0-9:]+$/.test(parsedIp);
-                                        if (isIpv4 || isIpv6) { newArr.push({ ip: parsedIp, dom: match[2], cmt: match[3] || '', en: en }); }
+                                        if (isIpv4 || isIpv6) { 
+                                            // 静默去重：若纯文本中存在重复的IP+域名，仅保留首次出现的一笔
+                                            var isDup = newArr.some(function(x) { return x.ip === parsedIp && x.dom === match[2]; });
+                                            if (!isDup) {
+                                                newArr.push({ ip: parsedIp, dom: match[2], cmt: match[3] || '', en: en }); 
+                                            }
+                                        }
                                     }
                                 });
                                 hostsArr = newArr;
@@ -1298,10 +1305,16 @@ return view.extend({
                                     var isIpv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(ipVal);
                                     var isIpv6 = /^[a-fA-F0-9:]+:[a-fA-F0-9:]+$/.test(ipVal);
                                     if (ipVal !== '' && !isIpv4 && !isIpv6) { 
-                                        // 替换 原生alert()弹窗
-                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_IP'] || 'Invalid IP format!', okText: T['M_CLOSE'] || 'Close' }); 
+                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_IP'] || 'Invalid IP format!', okText: T['BTN_CLOSE'] || 'Close' }); 
                                         this.value = hostsArr[idx].ip; 
                                         return; 
+                                    }
+                                    // 查重防呆：不得与其他行的IP+域名组合完全相同
+                                    var isDupIp = hostsArr.some(function(x, i) { return i !== idx && x.ip === ipVal && x.dom === hostsArr[idx].dom; });
+                                    if (isDupIp) {
+                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                        this.value = hostsArr[idx].ip; 
+                                        return;
                                     }
                                     hostsArr[idx].ip = ipVal;
                                 }
@@ -1309,10 +1322,16 @@ return view.extend({
                                 if(this.classList.contains('h-dom')) {
                                     var domVal = this.value.trim();
                                     if (/[\s<>"']/.test(domVal)) { 
-                                        // 替换 原生alert()弹窗
-                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['M_CLOSE'] || 'Close' }); 
+                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['BTN_CLOSE'] || 'Close' }); 
                                         this.value = hostsArr[idx].dom; 
                                         return; 
+                                    }
+                                    // 查重防呆：不得与其他行的IP+域名组合完全相同
+                                    var isDupDom = hostsArr.some(function(x, i) { return i !== idx && x.ip === hostsArr[idx].ip && x.dom === domVal; });
+                                    if (isDupDom) {
+                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                        this.value = hostsArr[idx].dom; 
+                                        return;
                                     }
                                     hostsArr[idx].dom = domVal;
                                 }
@@ -1353,9 +1372,15 @@ return view.extend({
                                 return; 
                             }
                             if (/[\s<>"']/.test(domVal)) { 
-                                // 替换 原生alert()弹窗
-                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['M_CLOSE'] || 'Close' }); 
+                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['BTN_CLOSE'] || 'Close' }); 
                                 return; 
+                            }
+                            
+                            // 查重防呆：检查数组中是否已经存在相同的IP + 域名
+                            var isDupNew = hostsArr.some(function(x) { return x.ip === ipVal && x.dom === domVal; });
+                            if (isDupNew) {
+                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'This IP and Domain combination already exists!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                return;
                             }
                             
                             hostsArr.unshift({ ip: ipVal, dom: domVal, cmt: cmtInput.value.trim().replace(/[<>"']/g, ''), en: true });
