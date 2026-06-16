@@ -1216,17 +1216,30 @@ return view.extend({
                     var isRawMode = false;
 
                     showAdvModal((T['LBL_HOSTS_TITLE']), html, function(box) {
+                        // 记忆触发保存时的UI状态
+                        var wasRaw = isRawMode;
+                        
                         if (isRawMode) { var tBtn = document.getElementById('nw-hosts-raw-toggle'); if(tBtn) tBtn.click(); }
                         
-                        // 修复与拦截：有重复项纯文本转换失败，isRawMode 恢复为 true。return false 阻止弹窗关闭和保存
+                        // 纯文本转换失败，此时 isRawMode 会被恢复为 true。阻止弹窗关闭和保存
                         if (isRawMode) return false;
 
                         var finalData = hostsArr.filter(function(item) { return item.ip.trim() !== '' && item.dom.trim() !== ''; });
                         var jsonStr = JSON.stringify(finalData);
                         
-                        // 拦截未修改：比对最终数据与初始数据快照
+                        // 比对数据与初始数据快照
                         if (jsonStr === initialJsonStr) {
-                            openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_NO_CHANGE'] || 'No changes have been made.', okText: T['BTN_CLOSE'] || 'Close' });
+                            openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_NO_CHANGE'] || 'No changes have been made.', okText: T['M_CLOSE'] || 'Close' });
+                            
+                            // 原本是在纯文字模式下触发的，瞬间将UI恢复回纯文字模式
+                            if (wasRaw) {
+                                isRawMode = true;
+                                document.getElementById('nw-hosts-visual-ui').style.display = 'none';
+                                document.getElementById('nw-hosts-raw-ui').style.display = 'block';
+                                var rawToggleBtn = document.getElementById('nw-hosts-raw-toggle');
+                                if (rawToggleBtn) rawToggleBtn.style.color = '#2563eb';
+                            }
+                            
                             return false; // 终止后续的写入与重启
                         }
                         
@@ -1374,14 +1387,14 @@ return view.extend({
                                     var isIpv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(ipVal);
                                     var isIpv6 = /^[a-fA-F0-9:]+:[a-fA-F0-9:]+$/.test(ipVal);
                                     if (ipVal !== '' && !isIpv4 && !isIpv6) { 
-                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_IP'] || 'Invalid IP format!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_IP'] || 'Invalid IP format!', okText: T['M_CLOSE'] || 'Close' }); 
                                         this.value = hostsArr[idx].ip; 
                                         return; 
                                     }
                                     // 查重防呆：不得与其他行的IP+域名组合完全相同
                                     var isDupIp = hostsArr.some(function(x, i) { return i !== idx && x.ip === ipVal && x.dom === hostsArr[idx].dom; });
                                     if (isDupIp) {
-                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['M_CLOSE'] || 'Close' }); 
                                         this.value = hostsArr[idx].ip; 
                                         return;
                                     }
@@ -1391,14 +1404,14 @@ return view.extend({
                                 if(this.classList.contains('h-dom')) {
                                     var domVal = this.value.trim();
                                     if (/[\s<>"'\*]/.test(domVal)) {
-                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['M_CLOSE'] || 'Close' }); 
                                         this.value = hostsArr[idx].dom; 
                                         return; 
                                     }
                                     // 查重防呆：不得与其他行的IP+域名组合完全相同
                                     var isDupDom = hostsArr.some(function(x, i) { return i !== idx && x.ip === hostsArr[idx].ip && x.dom === domVal; });
                                     if (isDupDom) {
-                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                        openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['M_CLOSE'] || 'Close' }); 
                                         this.value = hostsArr[idx].dom; 
                                         return;
                                     }
@@ -1441,7 +1454,7 @@ return view.extend({
                                 return; 
                             }
                             if (/[\s<>"'\*]/.test(domVal)) {
-                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['M_CLOSE'] || 'Close' }); 
                                 return; 
                             }
                             
@@ -1485,7 +1498,7 @@ return view.extend({
 
                             // 如果计算完发现一条新规则都没加进去（全重复了）
                             if (addedCount === 0) {
-                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['BTN_CLOSE'] || 'Close' }); 
+                                openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP'] || 'Already exists!', okText: T['M_CLOSE'] || 'Close' }); 
                                 return;
                             }
                             
