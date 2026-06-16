@@ -442,7 +442,6 @@ var T = {
     'TIP_SMART_ADD': _('Auto-fill IPv4/v6 & www domain combinations'),
     'LBL_HOSTS_DESC': _('💡 This feature forces specific domains to resolve to designated IPs. Commonly used for blocking domain access or local device redirection.'),
     'MSG_RAW_CONFIRM': _('Found {count} invalid or duplicate records!\n\nClick [OK] to automatically discard them and continue, or [Cancel] to manually fix them.'),
-}; // 這是 T 字典的結尾
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -1219,7 +1218,7 @@ return view.extend({
                     showAdvModal((T['LBL_HOSTS_TITLE']), html, function(box) {
                         if (isRawMode) { var tBtn = document.getElementById('nw-hosts-raw-toggle'); if(tBtn) tBtn.click(); }
                         
-                        // 修复与拦截：因为有重复项纯文本转换失败，isRawMode 会被恢复为 true。return false 阻止弹窗关闭和保存
+                        // 修复与拦截：有重复项纯文本转换失败，isRawMode 恢复为 true。return false 阻止弹窗关闭和保存
                         if (isRawMode) return false;
 
                         var finalData = hostsArr.filter(function(item) { return item.ip.trim() !== '' && item.dom.trim() !== ''; });
@@ -1244,7 +1243,10 @@ return view.extend({
                     
                     var toggleBtn = document.getElementById('nw-hosts-raw-toggle');
                     if (toggleBtn) {
-                        toggleBtn.addEventListener('click', function() {
+                        toggleBtn.addEventListener('click', function(e) {
+                            // 1：判断切换，是手动点，还是点击底部保存时程序自动触发
+                            var isIntentSave = (e && e.isTrusted === false); 
+                            
                             isRawMode = !isRawMode;
                             var visualUi = document.getElementById('nw-hosts-visual-ui');
                             var rawUi = document.getElementById('nw-hosts-raw-ui');
@@ -1261,10 +1263,10 @@ return view.extend({
                                 rawText.value = textContent;
                                 visualUi.style.display = 'none'; rawUi.style.display = 'block';
                             } else {
-                                // 2. 纯文本 切 UI (带严密查重与格式拦截)
+                                // 2. 纯文本 切 UI (查重与格式拦截)
                                 var lines = rawText.value.split('\n');
                                 var newArr = [];
-                                var errorCount = 0; // 记录错误与重复的数量
+                                var errorCount = 0; 
 
                                 lines.forEach(function(line) {
                                     line = line.trim(); if (!line) return;
@@ -1280,42 +1282,59 @@ return view.extend({
                                         var isIpv6 = /^[a-fA-F0-9:]+:[a-fA-F0-9:]+$/.test(parsedIp);
                                         if (isIpv4 || isIpv6) { 
                                             var isDup = newArr.some(function(x) { return x.ip === parsedIp && x.dom === match[2]; });
-                                            if (isDup) {
-                                                errorCount++; // 重复项计数
-                                            } else {
-                                                newArr.push({ ip: parsedIp, dom: match[2], cmt: match[3] || '', en: en }); 
-                                            }
-                                        } else {
-                                            errorCount++; // IP 格式错误计数
-                                        }
-                                    } else {
-                                        errorCount++; // 域名带 * 号或整体格式错误计数
-                                    }
+                                            if (isDup) { errorCount++; } else { newArr.push({ ip: parsedIp, dom: match[2], cmt: match[3] || '', en: en }); }
+                                        } else { errorCount++; }
+                                    } else { errorCount++; }
                                 });
 
-                                // “丢弃并继续”拦截逻辑
+                                var processValidData = function() {
+                                    hostsArr = newArr;
+                                    renderHosts();
+                                    rawUi.style.display = 'none'; 
+                                    visualUi.style.display = 'block';
+                                    var tBtn = document.getElementById('nw-hosts-raw-toggle');
+                                    if (tBtn) tBtn.style.color = 'reb';
+                                };
+
                                 if (errorCount > 0) {
+                                    isRawMode = true; 
                                     var confirmMsg = (T['MSG_RAW_CONFIRM'] || 'Found {count} invalid or duplicate records!\n\nClick [OK] to automatically discard them and continue, or [Cancel] to manually fix them.').replace('{count}', errorCount);
                                     
-                                    if (!confirm(confirmMsg)) {
-                                        isRawMode = true; // [取消]，留在纯文本模式让他自己寻找和修改
-                                        return; 
-                                    }
-                                    
-                                    // [确定]，系统将自动丢弃垃圾数据并继续！
-                                    // 清洗后干净的数据重新写回纯文本框，防止数据不同步
-                                    var cleanText = '';
-                                    newArr.forEach(function(item) {
-                                        var prefix = item.en ? '' : '# '; 
-                                        var cmt = item.cmt ? ' \t# ' + item.cmt : '';
-                                        cleanText += prefix + item.ip + '\t' + item.dom + cmt + '\n';
+                                    openModal({
+                                        title: T['M_INC_TIT'] || 'Notice',
+                                        msg: '<div style="white-space:pre-wrap; line-height:1.6; font-size:14.5px; color:#475569;">' + confirmMsg + '</div>',
+                                        okText: T['BTN_OK'] || 'OK',
+                                        cancelText: T['BTN_CANCEL'] || 'Cancel',
+                                        isDanger: true, 
+                                        onCancel: function() {
+                                            var gm = document.getElementById('nw-global-modal'); if (gm) gm.style.display = 'none';
+                                        },
+                                        onOk: function() {
+                                            var cleanText = '';
+                                            newArr.forEach(function(item) {
+                                                var prefix = item.en ? '' : '# '; 
+                                                var cmt = item.cmt ? ' \t# ' + item.cmt : '';
+                                                cleanText += prefix + item.ip + '\t' + item.dom + cmt + '\n';
+                                            });
+                                            rawText.value = cleanText;
+                                            isRawMode = false; 
+                                            processValidData();
+                                            var gm = document.getElementById('nw-global-modal'); if (gm) gm.style.display = 'none';
+                                            
+                                            // 在清洗完成后，自动保存
+                                            if (isIntentSave) {
+                                                var mdlOk = document.getElementById('mdl-ok');
+                                                if (mdlOk) {
+                                                    // 100ms 后再保存
+                                                    setTimeout(function(){ mdlOk.click(); }, 100);
+                                                }
+                                            }
+                                        }
                                     });
-                                    rawText.value = cleanText;
+                                    return; 
                                 }
 
-                                hostsArr = newArr;
-                                renderHosts();
-                                rawUi.style.display = 'none'; visualUi.style.display = 'block';
+                                processValidData();
                             }
                         });
                     }
