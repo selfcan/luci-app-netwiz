@@ -440,7 +440,9 @@ var T = {
     'MSG_HOSTS_DUP_RAW': _('Duplicate records found in Hosts! Please remove them before continuing.'),
     'LBL_SMART_ADD': _('Smart Auto-fill'),
     'TIP_SMART_ADD': _('Auto-fill IPv4/v6 & www domain combinations'),
-    'LBL_HOSTS_DESC': _('💡 This feature forces specific domains to resolve to designated IPs. Commonly used for blocking domain access or local device redirection.')
+    'LBL_HOSTS_DESC': _('💡 This feature forces specific domains to resolve to designated IPs. Commonly used for blocking domain access or local device redirection.'),
+    'MSG_RAW_CONFIRM': _('Found {count} invalid or duplicate records!\n\nClick [OK] to automatically discard them and continue, or [Cancel] to manually fix them.'),
+}; // 這是 T 字典的結尾
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -1259,10 +1261,10 @@ return view.extend({
                                 rawText.value = textContent;
                                 visualUi.style.display = 'none'; rawUi.style.display = 'block';
                             } else {
-                                // 2. 纯文本 切 UI
+                                // 2. 纯文本 切 UI (带严密查重与格式拦截)
                                 var lines = rawText.value.split('\n');
                                 var newArr = [];
-                                var hasDupError = false; // 重复标记
+                                var errorCount = 0; // 记录错误与重复的数量
 
                                 lines.forEach(function(line) {
                                     line = line.trim(); if (!line) return;
@@ -1277,22 +1279,38 @@ return view.extend({
                                         var isIpv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(parsedIp);
                                         var isIpv6 = /^[a-fA-F0-9:]+:[a-fA-F0-9:]+$/.test(parsedIp);
                                         if (isIpv4 || isIpv6) { 
-                                            // 发现重复，立刻标记报错
                                             var isDup = newArr.some(function(x) { return x.ip === parsedIp && x.dom === match[2]; });
                                             if (isDup) {
-                                                hasDupError = true;
+                                                errorCount++; // 重复项计数
                                             } else {
                                                 newArr.push({ ip: parsedIp, dom: match[2], cmt: match[3] || '', en: en }); 
                                             }
+                                        } else {
+                                            errorCount++; // IP 格式错误计数
                                         }
+                                    } else {
+                                        errorCount++; // 域名带 * 号或整体格式错误计数
                                     }
                                 });
 
-                                // 发现重复项，使用精美弹窗警告，并强制留在纯文本模式！
-                                if (hasDupError) {
-                                    openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_DUP_RAW'] || 'Duplicate records found in text! Please remove them.', okText: T['BTN_CLOSE'] || 'Close' });
-                                    isRawMode = true; // 恢复状态变量
-                                    return; // 终止 UI 转换
+                                // “丢弃并继续”拦截逻辑
+                                if (errorCount > 0) {
+                                    var confirmMsg = (T['MSG_RAW_CONFIRM'] || 'Found {count} invalid or duplicate records!\n\nClick [OK] to automatically discard them and continue, or [Cancel] to manually fix them.').replace('{count}', errorCount);
+                                    
+                                    if (!confirm(confirmMsg)) {
+                                        isRawMode = true; // [取消]，留在纯文本模式让他自己寻找和修改
+                                        return; 
+                                    }
+                                    
+                                    // [确定]，系统将自动丢弃垃圾数据并继续！
+                                    // 清洗后干净的数据重新写回纯文本框，防止数据不同步
+                                    var cleanText = '';
+                                    newArr.forEach(function(item) {
+                                        var prefix = item.en ? '' : '# '; 
+                                        var cmt = item.cmt ? ' \t# ' + item.cmt : '';
+                                        cleanText += prefix + item.ip + '\t' + item.dom + cmt + '\n';
+                                    });
+                                    rawText.value = cleanText;
                                 }
 
                                 hostsArr = newArr;
