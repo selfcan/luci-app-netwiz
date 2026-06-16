@@ -432,7 +432,7 @@ var T = {
     'LBL_HOSTS_RAW_TIP': _('💡 <b>Pure Text Mode</b>: <b>Paste</b> to import, <b>Copy</b> to export. Format: <code>IP Domain #Comment</code>'),
     'MSG_HOSTS_REQ': _('IP and Domain cannot be empty!'),
     'M_FMT_IP': _('Invalid IP address format!'),
-    'M_FMT_DOMAIN': _('Invalid domain format! Spaces and special characters are not allowed.'),
+    'M_FMT_DOMAIN': _('Invalid domain! Spaces, wildcards (*), and special characters are not allowed.'),
     'MSG_NO_CHANGE': _('No changes have been made.'),
     'M_INC_TIT': _('Notice'),
     'MSG_WAIT': _('Please wait...'),
@@ -440,7 +440,7 @@ var T = {
     'MSG_HOSTS_DUP_RAW': _('Duplicate records found in Hosts! Please remove them before continuing.'),
     'LBL_SMART_ADD': _('Smart Auto-fill'),
     'TIP_SMART_ADD': _('Auto-fill IPv4/v6 & www domain combinations'),
-    'LBL_HOSTS_DESC': _('💡 This feature forces specific domains to resolve to designated IPs. Commonly used for ad blocking or local NAS redirection.')
+    'LBL_HOSTS_DESC': _('💡 This feature forces specific domains to resolve to designated IPs. Commonly used for blocking domain access or local device redirection.')
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -1271,7 +1271,7 @@ return view.extend({
                                         var uncommented = line.substring(1).trim();
                                         if (/^[a-fA-F0-9\.:]+\s+[^\s#]+/.test(uncommented)) { en = false; line = uncommented; } else { return; }
                                     }
-                                    var match = line.match(/^([a-fA-F0-9\.:]+)\s+([^\s<>"'#]+)(?:\s+#\s*(.*))?$/);
+                                    var match = line.match(/^([a-fA-F0-9\.:]+)\s+([^\s<>"'\*#]+)(?:\s+#\s*(.*))?$/);
                                     if (match) { 
                                         var parsedIp = match[1];
                                         var isIpv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(parsedIp);
@@ -1353,7 +1353,7 @@ return view.extend({
                                 
                                 if(this.classList.contains('h-dom')) {
                                     var domVal = this.value.trim();
-                                    if (/[\s<>"']/.test(domVal)) { 
+                                    if (/[\s<>"'\*]/.test(domVal)) {
                                         openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['BTN_CLOSE'] || 'Close' }); 
                                         this.value = hostsArr[idx].dom; 
                                         return; 
@@ -1403,7 +1403,7 @@ return view.extend({
                                 openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_IP'] || 'Invalid IP format!', okText: T['M_CLOSE'] || 'Close' }); 
                                 return; 
                             }
-                            if (/[\s<>"']/.test(domVal)) { 
+                            if (/[\s<>"'\*]/.test(domVal)) {
                                 openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_DOMAIN'] || 'Invalid domain format!', okText: T['BTN_CLOSE'] || 'Close' }); 
                                 return; 
                             }
