@@ -1148,7 +1148,9 @@ case "$1" in
                     
                     #  ash 脚本的非函数区
                     tar_targets=""
-                    base_targets="/etc/config /etc/passwd /etc/shadow /etc/group /etc/dropbear /etc/profile /etc/sysupgrade.conf /etc/hosts /etc/netwiz/hosts.json"
+                    # 备份列表
+                    # 包含设置文件、软件源 rc.local, 定時任務, MAC綁定, 防火牆腳本
+                    base_targets="/etc/config /etc/passwd /etc/shadow /etc/group /etc/dropbear /etc/profile /etc/sysupgrade.conf /etc/hosts /etc/netwiz/hosts.json /etc/apk/repositories.d/distfeeds.list /etc/opkg/distfeeds.conf /etc/opkg/customfeeds.conf /etc/rc.local /etc/crontabs/root /etc/ethers /etc/firewall.user"
                     # 绝对安全过滤
                     for target in $base_targets; do
                         if [ -e "$target" ]; then
@@ -1168,6 +1170,10 @@ case "$1" in
                         /usr/share/xray
                         /etc/passwall
                         /etc/smartdns
+                        /etc/homeproxy
+                        /etc/mihomo
+                        /etc/ssrplus
+                        /etc/bypass
                     "
                     
                     for dir in $check_dirs; do
