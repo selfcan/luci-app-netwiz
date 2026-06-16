@@ -1222,14 +1222,22 @@ EOF
                     fi
                     
                     log "[BACKUP]" "内存校验通过，开始极速压缩 (已智能排除日志与庞大数据库)..."
-                    tar -czf /tmp/nw_sys_config.tar.gz \
-                        --exclude="*.log" \
-                        --exclude="*querylog.json" \
-                        --exclude="*stats.db" \
-                        --exclude="*stats.db-wal" \
-                        --exclude="*stats.db-shm" \
-                        --exclude="*cache*" \
-                        -C / $tar_targets >> "$LOG_FILE" 2>&1 || true
+                    
+                    # 生成排除列表文件配合 -X 参数使用
+                    cat > /tmp/nw_exclude_list.txt << 'EOF'
+*.log
+*querylog.json
+*stats.db
+*stats.db-wal
+*stats.db-shm
+*cache*
+EOF
+                    
+                    # 使用 -X 挂载排除列表
+                    tar -czf /tmp/nw_sys_config.tar.gz -X /tmp/nw_exclude_list.txt -C / $tar_targets >> "$LOG_FILE" 2>&1 || true
+                    
+                    # 打包完成，清理临时排除列表
+                    rm -f /tmp/nw_exclude_list.txt
                     
                     mkdir -p /tmp/nw_offline_pkgs
                     cd /tmp/nw_offline_pkgs
