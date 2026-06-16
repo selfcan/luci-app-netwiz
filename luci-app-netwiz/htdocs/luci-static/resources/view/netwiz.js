@@ -429,7 +429,7 @@ var T = {
     'PH_HOSTS_IP': _('IP (e.g., 192.168.1.50)'),
     'PH_HOSTS_DOMAIN': _('Domain (e.g., router.lan)'),
     'PH_HOSTS_CMT': _('Comment (Optional)'),
-    'LBL_HOSTS_RAW_TIP': _('💡 <b>Pure Text Advanced Mode</b>: Supports batch pasting. Format: <code>IP Domain #Comment</code>'),
+    'LBL_HOSTS_RAW_TIP': _('💡 <b>Pure Text Mode</b>: <b>Paste</b> to import, <b>Copy</b> to export. Format: <code>IP Domain #Comment</code>'),
     'MSG_HOSTS_REQ': _('IP and Domain cannot be empty!'),
     'M_FMT_IP': _('Invalid IP address format!'),
     'M_FMT_DOMAIN': _('Invalid domain format! Spaces and special characters are not allowed.'),
