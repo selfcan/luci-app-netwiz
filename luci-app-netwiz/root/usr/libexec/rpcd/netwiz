@@ -1169,6 +1169,7 @@ case "$1" in
                         /usr/share/v2ray
                         /usr/share/xray
                         /etc/passwall
+                        /etc/passwall2
                         /etc/smartdns
                         /etc/homeproxy
                         /etc/mihomo
