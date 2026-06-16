@@ -1834,8 +1834,8 @@ msgstr "劫持域名 (如 router.lan)"
 msgid "Comment (Optional)"
 msgstr "备注说明 (选填)"
 
-msgid "💡 <b>Pure Text Advanced Mode</b>: Supports batch pasting. Format: <code>IP Domain #Comment</code>"
-msgstr "💡 <b>纯文本高级模式</b>：支持批量粘贴。格式：<code>IP 域名 #备注</code>"
+msgid "💡 <b>Pure Text Mode</b>: <b>Paste</b> to import, <b>Copy</b> to export. Format: <code>IP Domain #Comment</code>"
+msgstr "💡 <b>纯文本模式</b>：<b>粘贴</b>即导入，<b>全选复制</b>即导出。格式：<code>IP 域名 #备注</code>"
 
 msgid "IP and Domain cannot be empty!"
 msgstr "IP 和 域名 不能为空！"
