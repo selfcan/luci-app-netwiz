@@ -704,7 +704,7 @@ return view.extend({
             '            <a href="javascript:void(0)" id="link-repair-plugin" style="color:#ef4444; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_REPAIR_BTN}}</a>',
             '        </div>',
             '        <div style="display:flex; justify-content:space-between; align-items:center;">',
-            '            <div style="display:flex; align-items:center; gap:10px;">',
+            '            <div style="display:flex; align-items:center; gap:0;">',
             '                <div style="font-size:14.5px; font-weight:500; color:#0284c7;">{{LBL_WEB_ACCESS_TOGGLE}}</div>',
             '                <input type="number" id="adv-web-port" placeholder="80" title="{{LBL_WEB_PORT_TITLE}}" style="width:70px; height:26px; border:1px solid #cbd5e1; border-radius:4px; padding:0 8px; font-size:13px; outline:none; background-color: #fff; color: #000;" min="1" max="65535">',
             '            </div>',
