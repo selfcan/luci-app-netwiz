@@ -442,7 +442,28 @@ var T = {
     'TIP_SMART_ADD': _('Auto-fill IPv4/v6 & www domain combinations'),
     'LBL_HOSTS_DESC': _('💡 This feature forces specific domains to resolve to designated IPs. Commonly used for blocking domain access or local device redirection.'),
     'MSG_RAW_ERR_1': _('Found invalid or duplicate records:'),
-    'MSG_RAW_ERR_2': _('Click [OK] to automatically discard them and continue, or [Cancel] to manually fix them.')
+    'MSG_RAW_ERR_2': _('Click [OK] to automatically discard them and continue, or [Cancel] to manually fix them.'),
+    // --- 插件修复急救箱 ---
+    'LBL_REPAIR_BTN': _('🚑 Plugin Repair'),
+    'M_REP_SCAN_TIT': _('Please wait'),
+    'M_REP_SCAN_MSG': _('Scanning for repairable plugins...'),
+    'M_REP_DESC': _('Standard uninstallation does not remove plugin configuration files. If a plugin malfunctions after reinstallation, select it below to reset it to its initial state.'),
+    'M_REP_OPT': _(' Factory Default'),
+    'M_REP_TIT': _('🚑 Plugin Repair Toolkit'),
+    'M_REP_OK': _('Repair Now'),
+    'M_REP_PROC_TIT': _('Processing'),
+    'M_REP_PROC_MSG1': _('Repairing and restarting '),
+    'M_REP_PROC_MSG2': _(' please wait'),
+    'M_REP_SUCC_TIT': _('Repair Successful'),
+    'M_REP_SUCC_MSG': _(' has been successfully restored'),
+    'M_REP_FAIL_TIT': _('Repair Failed'),
+    'M_REP_FAIL_MSG': _('Unable to repair this plugin'),
+    'M_REP_ERR_TIT': _('System Error'),
+    'M_REP_ERR_MSG': _('Request timeout or error'),
+    'M_REP_NOTICE_TIT': _('Notice'),
+    'M_REP_EMPTY_MSG': _('No repairable plugins found'),
+    'M_REP_GET_ERR': _('Failed to get plugin list'),
+    // ---------------------------
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -673,9 +694,10 @@ return view.extend({
             '    <div style="margin-top: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 15px; text-align: left;">',
             '        <div style="font-size:14px; font-weight:bold; color:#475569; margin-bottom:12px;">{{LBL_ADV_UTILS_TITLE}}</div>',
             '        <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:center; margin-bottom:12px; padding-bottom:12px; border-bottom: 1px dashed #cbd5e1;">',
-            '            <a href="javascript:void(0)" id="link-mac-clone" style="color:#0284c7; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_MAC_CLONE_LINK}}</a>',
             '            <a href="javascript:void(0)" id="link-cron-reboot" style="color:#0284c7; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_CRON_REBOOT_LINK}}</a>',
+            '            <a href="javascript:void(0)" id="link-mac-clone" style="color:#0284c7; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_MAC_CLONE_LINK}}</a>',
             '            <a href="javascript:void(0)" id="link-modify-hosts" style="color:#0284c7; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_HOSTS_LINK}}</a>',
+            '            <a href="javascript:void(0)" id="link-repair-plugin" style="color:#ef4444; text-decoration:none; font-size:14.5px; font-weight:500;">{{LBL_REPAIR_BTN}}</a>',
             '        </div>',
             '        <div style="display:flex; justify-content:space-between; align-items:center;">',
             '            <div style="font-size:14.5px; font-weight:500; color:#0284c7;">{{LBL_WEB_ACCESS_TOGGLE}}</div>',
@@ -1177,6 +1199,73 @@ return view.extend({
             container.querySelector('#adv-web-toggle').addEventListener('change', function() { callSetAdvSettings('', this.checked ? '1' : '0', ''); });
         }
         // ====================================================
+
+        // 插件修复弹窗与逻辑
+        if(container.querySelector('#link-repair-plugin')) {
+            container.querySelector('#link-repair-plugin').addEventListener('click', function() {
+                openModal({ title: T['M_REP_SCAN_TIT'] || 'Please wait', msg: T['M_REP_SCAN_MSG'] || 'Scanning for repairable plugins...', hideCancel: true, hideOk: true });
+
+                rpc.declare({ object: 'netwiz', method: 'get_repairable_configs', expect: { '': {} } })().then(function(res) {
+                    if (res && res.configs && res.configs.length > 0) {
+                        
+                        var descText = T['M_REP_DESC'] || 'Standard uninstallation does not remove plugin configuration files. If a plugin malfunctions after reinstallation, select it below to reset it to its initial state.';
+                        var descHtml = '<p style="color:#64748b; font-size:13px; margin-bottom:15px; line-height:1.5;">' + descText + '</p>';
+                        
+                        var optText = T['M_REP_OPT'] || ' Factory Default';
+                        var selectHtml = '<select id="nw-repair-select" style="width:100%; height:40px; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; font-size:14px; outline:none; margin-bottom:10px;">';
+                        res.configs.forEach(function(pluginName) {
+                            selectHtml += '<option value="' + pluginName + '">' + pluginName + optText + '</option>';
+                        });
+                        selectHtml += '</select>';
+
+                        var titleText = T['M_REP_TIT'] || '🚑 Plugin Repair Toolkit';
+                        var titleWithX = '<div style="display:flex; justify-content:space-between; align-items:center;"><span>' + titleText + '</span><span onclick="document.getElementById(\'nw-global-modal\').style.display=\'none\'" style="cursor:pointer; color:#ffffff; font-size:40px; line-height:1; margin-right:15px;">&times;</span></div>';
+
+                        openModal({
+                            title: titleWithX,
+                            msg: descHtml + selectHtml,
+                            okText: T['M_REP_OK'] || 'Repair Now',
+                            cancelText: T['M_CLOSE'] || 'Close',
+                            isDanger: true,
+                            onOk: function() {
+                                var selectedPlugin = document.getElementById('nw-repair-select');
+                                if (!selectedPlugin || !selectedPlugin.value) return;
+                                var pName = selectedPlugin.value;
+                                
+                                var pTit = T['M_REP_PROC_TIT'] || 'Processing';
+                                var pMsg1 = T['M_REP_PROC_MSG1'] || 'Repairing and restarting ';
+                                var pMsg2 = T['M_REP_PROC_MSG2'] || ' please wait';
+                                openModal({ title: pTit, msg: pMsg1 + pName + pMsg2, hideCancel: true, hideOk: true });
+                                
+                                rpc.declare({ object: 'netwiz', method: 'repair_config', params: ['plugin'], expect: { '': {} } })(pName).then(function(r) {
+                                    if (r && r.result === 0) {
+                                        var sTit = T['M_REP_SUCC_TIT'] || 'Repair Successful';
+                                        var sMsg = T['M_REP_SUCC_MSG'] || ' has been successfully restored';
+                                        openModal({ title: sTit, msg: pName + sMsg, okText: T['M_CLOSE'] || 'Close', hideCancel: true });
+                                    } else {
+                                        var fTit = T['M_REP_FAIL_TIT'] || 'Repair Failed';
+                                        var fMsg = T['M_REP_FAIL_MSG'] || 'Unable to repair this plugin';
+                                        openModal({ title: fTit, msg: fMsg, okText: T['M_CLOSE'] || 'Close', hideCancel: true });
+                                    }
+                                }).catch(function() {
+                                    var eTit = T['M_REP_ERR_TIT'] || 'System Error';
+                                    var eMsg = T['M_REP_ERR_MSG'] || 'Request timeout or error';
+                                    openModal({ title: eTit, msg: eMsg, okText: T['M_CLOSE'] || 'Close', hideCancel: true });
+                                });
+                            }
+                        });
+                    } else {
+                        var nTit = T['M_REP_NOTICE_TIT'] || 'Notice';
+                        var nMsg = T['M_REP_EMPTY_MSG'] || 'No repairable plugins found';
+                        openModal({ title: nTit, msg: nMsg, okText: T['M_CLOSE'] || 'Close', hideCancel: true });
+                    }
+                }).catch(function() {
+                    var errTit = T['M_ERR'] || 'Error';
+                    var errMsg = T['M_REP_GET_ERR'] || 'Failed to get plugin list';
+                    openModal({ title: errTit, msg: errMsg, okText: T['M_CLOSE'] || 'Close', hideCancel: true });
+                });
+            });
+        }
 
         // 修改 Hosts
         if(container.querySelector('#link-modify-hosts')) {
