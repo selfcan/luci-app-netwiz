@@ -468,6 +468,7 @@ var T = {
     'M_PORT_ERR1': _('⚠️ For system security, do not use'),
     'M_PORT_ERR2': _('as the external port. It is a reserved high-risk port.'),
     'M_PORT_SUGG': _('It is recommended to use 8080 or a port above 10000.'),
+    'LBL_WEB_PORT_TITLE': _('Enter custom external port number'),
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -706,7 +707,7 @@ return view.extend({
             '        <div style="display:flex; justify-content:space-between; align-items:center;">',
             '            <div style="display:flex; align-items:center; gap:10px;">',
             '                <div style="font-size:14.5px; font-weight:500; color:#0284c7;">{{LBL_WEB_ACCESS_TOGGLE}}</div>',
-            '                <input type="number" id="adv-web-port" placeholder="80" title="自定义外网端口默认80" style="width:75px; height:26px; border:1px solid #cbd5e1; border-radius:4px; padding:0 8px; font-size:13px; outline:none;" min="1" max="65535">',
+            '                <input type="number" id="adv-web-port" placeholder="80" title="{{LBL_WEB_PORT_TITLE}}" style="width:75px; height:26px; border:1px solid #cbd5e1; border-radius:4px; padding:0 8px; font-size:13px; outline:none;" min="1" max="65535">',
             '            </div>',
             '            <label class="nw-switch"><input type="checkbox" id="adv-web-toggle"><span class="nw-slider"></span></label>',
             '        </div>',
