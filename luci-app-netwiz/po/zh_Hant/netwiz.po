@@ -1929,3 +1929,15 @@ msgstr "沒有找到可以修復的插件"
 
 msgid "Failed to get plugin list"
 msgstr "獲取插件清單失敗"
+
+msgid "⚠️ Port number must be between 1 and 65535"
+msgstr "⚠️ 埠號必須介於 1 到 65535 之間"
+
+msgid "⚠️ For system security, do not use"
+msgstr "⚠️ 為了系統安全請勿使用"
+
+msgid "as the external port. It is a reserved high-risk port."
+msgstr "作為外網埠號此為系統保留高危險埠號"
+
+msgid "It is recommended to use 8080 or a port above 10000."
+msgstr "建議使用 8080 或 10000 以上的埠號"
