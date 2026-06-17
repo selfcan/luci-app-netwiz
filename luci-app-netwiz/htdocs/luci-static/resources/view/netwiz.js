@@ -706,7 +706,7 @@ return view.extend({
             '        <div style="display:flex; justify-content:space-between; align-items:center;">',
             '            <div style="display:flex; align-items:center; gap:10px;">',
             '                <div style="font-size:14.5px; font-weight:500; color:#0284c7;">{{LBL_WEB_ACCESS_TOGGLE}}</div>',
-            '                <input type="number" id="adv-web-port" placeholder="80" title="{{LBL_WEB_PORT_TITLE}}" style="width:75px; height:26px; border:1px solid #cbd5e1; border-radius:4px; padding:0 8px; font-size:13px; outline:none; background-color: #fff; color: #000;" min="1" max="65535">',
+            '                <input type="number" id="adv-web-port" placeholder="80" title="{{LBL_WEB_PORT_TITLE}}" style="width:70px; height:26px; border:1px solid #cbd5e1; border-radius:4px; padding:0 8px; font-size:13px; outline:none; background-color: #fff; color: #000;" min="1" max="65535">',
             '            </div>',
             '            <label class="nw-switch"><input type="checkbox" id="adv-web-toggle"><span class="nw-slider"></span></label>',
             '        </div>',
@@ -1205,7 +1205,49 @@ return view.extend({
             var webTog = container.querySelector('#adv-web-toggle');
             var webPort = container.querySelector('#adv-web-port');
             var lastValidPort = '';
-            
+            var isSaving = false; // 防重复提交锁
+
+            // 校验与保存通道
+            function validateAndSavePort(portStr) {
+                if (isSaving) return;
+
+                var pText = portStr.trim();
+                if (pText !== '') {
+                    var pNum = parseInt(pText);
+                    
+                    // 拦截非法数字范围
+                    if (isNaN(pNum) || pNum < 1 || pNum > 65535) {
+                        openModal({ title: T['M_REP_NOTICE_TIT'] || 'Notice', msg: T['M_PORT_RANGE'] || '⚠️ Port number must be between 1 and 65535', okText: T['M_CLOSE'] || 'Close', hideCancel: true });
+                        webPort.value = lastValidPort; // 恢复旧端口
+                        webTog.checked = false;        // 强制把被点开的开关关回去
+                        return;
+                    }
+                    
+                    // 拦截高危系统端口
+                    var dangerPorts = [21, 22, 23, 53, 67, 68];
+                    if (dangerPorts.indexOf(pNum) !== -1) {
+                        var e1 = T['M_PORT_ERR1'] || '⚠️ For system security, do not use';
+                        var e2 = T['M_PORT_ERR2'] || 'as the external port. It is a reserved high-risk port.';
+                        var sg = T['M_PORT_SUGG'] || 'It is recommended to use 8080 or a port above 10000.';
+                        openModal({ title: T['M_REP_NOTICE_TIT'] || 'Notice', msg: e1 + ' <span style="color:#ef4444; font-weight:bold;">' + pNum + '</span> ' + e2 + '<br><br>' + sg, okText: T['M_CLOSE'] || 'Close', hideCancel: true });
+                        webPort.value = lastValidPort; // 恢复旧端口
+                        webTog.checked = false;        // 强制把被点开的开关关回去
+                        return;
+                    }
+                }
+
+                // 通过所有安检，开始执行保存
+                isSaving = true;
+                var val = pText ? pText : '1';
+                lastValidPort = val;
+                webTog.checked = true; // 确保开关 UI 处于打开状态
+                
+                openModal({ title: T['LBL_ADV_UTILS_TITLE'] || '⚙️ Advanced Utilities', msg: T['MSG_WRITING'] || 'Please wait...', spin: true });
+                var gm2 = document.getElementById('nw-global-modal'); if (gm2) gm2.style.zIndex = '100000';
+                callSetAdvSettings('', val, '', '').then(function() { setTimeout(function(){ window.location.reload(); }, 3500); });
+            }
+
+            // 1. 页面初始化加载历史状态
             callGetAdvSettings().then(function(res) { 
                 if (res) {
                     if (res.last_port && res.last_port !== '80' && res.last_port !== '1' && res.last_port !== '0') {
@@ -1222,59 +1264,36 @@ return view.extend({
                 } 
             });
             
-            // 开关事件优化 打开静默允许输入 关闭则明确弹出重整 3500毫秒防止防火墙重启阻塞UBUS导致WiFi卡片消失
+            // 2. 点击开关事件
             webTog.addEventListener('change', function() { 
                 if (this.checked) {
-                    var p = webPort.value.trim();
-                    callSetAdvSettings('', (p ? p : '1'), '', ''); 
+                    // 开关打开时，强制把框内的值送去中央安检站
+                    validateAndSavePort(webPort.value);
                 } else {
+                    // 开关关闭时
+                    if (isSaving) return;
+                    isSaving = true;
                     openModal({ title: T['LBL_ADV_UTILS_TITLE'] || '⚙️ Advanced Utilities', msg: T['MSG_WRITING'] || 'Please wait...', spin: true });
                     var gm2 = document.getElementById('nw-global-modal'); if (gm2) gm2.style.zIndex = '100000';
-                    // 1500 改為 3500
                     callSetAdvSettings('', '0', '', '').then(function() { setTimeout(function(){ window.location.reload(); }, 3500); });
                 }
             });
 
-            // 监听回车键主动触发失去焦点保存
+            // 3. 回车键主动触发
             webPort.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') this.blur(); 
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur(); 
+                }
             });
 
-            // 端口修改保存逻辑 加入200ms避让机制 延长重载时间至3500毫秒
+            // 4. 输入框内容改变且失去焦点事件
             webPort.addEventListener('change', function() {
                 var self = this;
-                var pText = this.value.trim();
-                
                 setTimeout(function() {
+                    // 如果此时开关处于关闭状态，说明用户不想保存，直接退出
                     if (!webTog.checked) return;
-
-                    if (pText !== '') {
-                        var pNum = parseInt(pText);
-                        
-                        if (isNaN(pNum) || pNum < 1 || pNum > 65535) {
-                            openModal({ title: T['M_REP_NOTICE_TIT'] || 'Notice', msg: T['M_PORT_RANGE'] || '⚠️ Port number must be between 1 and 65535', okText: T['M_CLOSE'] || 'Close', hideCancel: true });
-                            self.value = lastValidPort;
-                            return;
-                        }
-                        
-                        var dangerPorts = [21, 22, 23, 53, 67, 68];
-                        if (dangerPorts.indexOf(pNum) !== -1) {
-                            var e1 = T['M_PORT_ERR1'] || '⚠️ For system security, do not use';
-                            var e2 = T['M_PORT_ERR2'] || 'as the external port. It is a reserved high-risk port.';
-                            var sg = T['M_PORT_SUGG'] || 'It is recommended to use 8080 or a port above 10000.';
-                            
-                            openModal({ title: T['M_REP_NOTICE_TIT'] || 'Notice', msg: e1 + ' <span style="color:#ef4444; font-weight:bold;">' + pNum + '</span> ' + e2 + '<br><br>' + sg, okText: T['M_CLOSE'] || 'Close', hideCancel: true });
-                            self.value = lastValidPort;
-                            return;
-                        }
-                    }
-
-                    var val = pText ? pText : '1';
-                    lastValidPort = pText;
-                    
-                    openModal({ title: T['LBL_ADV_UTILS_TITLE'] || '⚙️ Advanced Utilities', msg: T['MSG_WRITING'] || 'Please wait...', spin: true });
-                    var gm2 = document.getElementById('nw-global-modal'); if (gm2) gm2.style.zIndex = '100000';
-                    callSetAdvSettings('', val, '', '').then(function() { setTimeout(function(){ window.location.reload(); }, 3500); });
+                    validateAndSavePort(self.value);
                 }, 200);
             });
         }
