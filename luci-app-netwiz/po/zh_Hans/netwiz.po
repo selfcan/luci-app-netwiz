@@ -1798,12 +1798,6 @@ msgstr "六"
 msgid "Sun"
 msgstr "日"
 
-msgid "Advanced Settings ▲"
-msgstr "高级设置 ▲"
-
-msgid "Advanced Settings ▼"
-msgstr "高级设置 ▼"
-
 msgid "Scheduled Reboot"
 msgstr "定时重启"
 
@@ -1840,8 +1834,11 @@ msgstr "系统检测到多拨环境，向导中仅配置主线路 (WAN)，其余
 msgid "Custom Hosts"
 msgstr "自定义 Hosts"
 
-msgid "Custom <a href=\"javascript:void(0)\" id=\"nw-hosts-raw-toggle\" style=\"color:red; text-decoration:underline dashed; transition:color 0.2s;\" title=\"Click to toggle pure text advanced mode\">Hosts</a>👈 (Domain Hijack)"
-msgstr "自定义 <a href=\"javascript:void(0)\" id=\"nw-hosts-raw-toggle\" style=\"color:red; text-decoration:underline dashed; transition:color 0.2s;\" title=\"点击切换纯文本高级模式\">Hosts</a>👈 (域名劫持)"
+msgid "Custom <a href=\"javascript:void(0)\" id=\"nw-hosts-raw-toggle\" style=\"color:red; text-decoration:underline dashed; transition:color 0.2s;\" title=\"Click to toggle pure text advanced mode\">Hosts</a>"
+msgstr "自定义 <a href=\"javascript:void(0)\" id=\"nw-hosts-raw-toggle\" style=\"color:red; text-decoration:underline dashed; transition:color 0.2s;\" title=\"点击切换纯文本高级模式\">Hosts</a>"
+
+msgid "(Domain Hijack)"
+msgstr "(域名劫持)"
 
 msgid "Quick Add:"
 msgstr "快速添加记录:"
