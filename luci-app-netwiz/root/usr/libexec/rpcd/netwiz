@@ -378,18 +378,12 @@ case "$1" in
                             uci set firewall.netwiz_web.target='ACCEPT'
                             uci set firewall.netwiz_web.proto='tcp'
                         else
-                            uhttpd_port=$(uci -q get uhttpd.main.listen_http | head -n1 | awk -F':' '{print $NF}')
-                            [ -z "$uhttpd_port" ] && uhttpd_port="80"
-                            
-                            lan_ip=$(uci -q get network.lan.ipaddr | cut -d/ -f1)
-                            
-                            uci set firewall.netwiz_web=redirect
+                            # --- 兼容 IPv6 的入站规则 (rule)，彻底废弃端口转发 (redirect) ---
+                            uci set firewall.netwiz_web=rule
                             uci set firewall.netwiz_web.name='Netwiz_Web_Custom'
                             uci set firewall.netwiz_web.src='wan'
-                            uci set firewall.netwiz_web.src_dport="$web"
-                            uci set firewall.netwiz_web.dest='lan'
-                            [ -n "$lan_ip" ] && uci set firewall.netwiz_web.dest_ip="$lan_ip"
-                            uci set firewall.netwiz_web.dest_port="$uhttpd_port"
+                            uci set firewall.netwiz_web.dest_port="$web"
+                            uci set firewall.netwiz_web.target='ACCEPT'
                             uci set firewall.netwiz_web.proto='tcp'
                         fi
                     fi
