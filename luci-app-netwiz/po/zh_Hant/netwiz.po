@@ -562,8 +562,8 @@ msgstr "略過本次引導"
 msgid "Don't show this again"
 msgstr "不再提示"
 
-msgid "✨ Reopen Wizard"
-msgstr "✨ 初始精靈"
+msgid "Reopen Wizard"
+msgstr "初始精靈"
 
 msgid "Skip Wi-Fi Setup (Keep current)"
 msgstr "暫不設定 Wi-Fi (保持現狀)"
