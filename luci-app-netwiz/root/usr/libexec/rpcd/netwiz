@@ -341,7 +341,7 @@ case "$1" in
                     if netstat -tuln 2>/dev/null | awk '{print $4}' | grep -E -q ":$web$"; then
                         is_uhttpd=$(netstat -tulpn 2>/dev/null | grep -E ":$web " | grep "uhttpd")
                         if [ -z "$is_uhttpd" ]; then
-                            # exit 1 送达前端
+                            # exit 0 送达前端
                             echo '{"status":"error", "msg":"Port Conflict: Port '$web' is already in use by another application!"}'
                             exit 0
                         fi
