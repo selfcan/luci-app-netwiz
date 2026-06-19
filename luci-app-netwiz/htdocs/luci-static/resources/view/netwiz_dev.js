@@ -218,10 +218,10 @@ var T = {
     'TXT_WAKING_UP': _('Waking up...'),
     'TIP_LOCAL_V6': _('Displaying self-assigned local IPv6 as IPv4 is unavailable'),
     'BDG_LOCAL_V6': _('Local IPv6'),
-    'LBL_FW_EXPOSE_TITLE': '🌍 ' + _('外网直连 (白名单)'),
-    'LBL_FW_EXPOSE_DESC': _('开放防火墙，允许外网直接访问该设备。'),
-    'OPT_PROTO_V6': _('仅 IPv6'),
-    'OPT_PROTO_V4': _('仅 IPv4'),
+    'LBL_FW_EXPOSE_TITLE': '🌍 ' + _('Direct WAN Access (Whitelist)'),
+    'LBL_FW_EXPOSE_DESC': _('Open firewall to allow direct external access to this device.'),
+    'OPT_PROTO_V6': _('IPv6 Only'),
+    'OPT_PROTO_V4': _('IPv4 Only'),
     'OPT_PROTO_ALL': _('IPv4 + IPv6'),
 };
 
