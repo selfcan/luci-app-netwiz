@@ -2017,17 +2017,32 @@ msgstr "底層硬體正在執行中，請耐心等待..."
 msgid "Advanced Panel Management"
 msgstr "進階功能面板管理"
 
-msgid "Drag ☰ to reorder, check to show/hide:"
-msgstr "按住 ☰ 拖曳排序，勾選開關顯示："
+msgid "Scheduled Reboot"
+msgstr "定時重啟"
 
-msgid "Save and Apply"
-msgstr "儲存並套用"
+msgid "MAC Address Clone"
+msgstr "MAC 位址複製"
+
+msgid "MAC Clone"
+msgstr "MAC 複製"
+
+msgid "Custom Hosts"
+msgstr "自訂 Hosts"
+
+msgid "Plugin Repair"
+msgstr "系統急救箱"
 
 msgid "Plugin Installation"
 msgstr "外掛安裝"
 
 msgid "Offline Plugin Installation"
 msgstr "離線外掛安裝"
+
+msgid "Drag ☰ to reorder, check to show/hide:"
+msgstr "按住 ☰ 拖曳排序，勾選開關顯示："
+
+msgid "Save and Apply"
+msgstr "儲存並套用"
 
 msgid "Drop or click to select multiple .apk / .ipk files"
 msgstr "支援拖曳或點擊選擇多個 .apk / .ipk"
@@ -2051,7 +2066,7 @@ msgid "All files secured! Refreshing..."
 msgstr "所有檔案均已成功入庫！正在重新整理..."
 
 msgid "All files secured, executing batch install..."
-msgstr "所有檔案入庫完畢，正在執行全家桶合併安裝..."
+msgstr "所有檔案入庫完畢，正在執行合併安裝..."
 
 msgid "Installation successful! Refreshing..."
 msgstr "安裝與重置成功！正在重新整理..."
@@ -2066,7 +2081,7 @@ msgid "Processing ({idx}/{total}): {name} - {pct}%"
 msgstr "正在處理 ({idx}/{total}): {name} - {pct}%"
 
 msgid "Securing in background: {name}"
-msgstr "後台入庫中: {name}"
+msgstr "後台安裝中: {name}"
 
 msgid "Backend transfer failed: {name}"
 msgstr "後端轉移失敗: {name}"
@@ -2079,3 +2094,12 @@ msgstr "網路連線中斷: {name}"
 
 msgid "Continue to retry remaining files"
 msgstr "繼續重試上傳剩餘檔案"
+
+msgid "Ghost Plugin Deletion Warning"
+msgstr "幽靈外掛徹底拔除警告"
+
+msgid "Eradicating completely..."
+msgstr "正在徹底執行連根拔除..."
+
+msgid "has been completely uninstalled and cleaned."
+msgstr "已被徹底解除安裝並清理。"
