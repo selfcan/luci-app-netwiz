@@ -11,7 +11,7 @@ msgid "Pure · Secure · Non-destructive Minimalist Config"
 msgstr "纯粹 · 安全 · 无损的极简配置"
 
 msgid "Secondary Router Mode"
-msgstr "二级路由模式"
+msgstr "二级路由模式 (WAN)"
 
 msgid "Upstream network dials up, this device acts as a secondary router."
 msgstr "上级网络负责拨号，本设备作为二级路由使用。"
@@ -56,7 +56,7 @@ msgid "e.g., 192.168.1.1"
 msgstr "例如：192.168.1.1"
 
 msgid "PPPoE Credentials"
-msgstr "PPPoE 拨号信息"
+msgstr "PPPoE 拨号信息 (WAN)"
 
 msgid "PPPoE Username"
 msgstr "宽带账号"
