@@ -11,7 +11,7 @@ msgid "Pure · Secure · Non-destructive Minimalist Config"
 msgstr "純粹 · 安全 · 無損的極簡設定"
 
 msgid "Secondary Router Mode"
-msgstr "二級路由模式"
+msgstr "二級路由模式 (LAN)"
 
 msgid "Upstream network dials up, this device acts as a secondary router."
 msgstr "上級網路負責撥號，本設備作為二級路由使用。"
