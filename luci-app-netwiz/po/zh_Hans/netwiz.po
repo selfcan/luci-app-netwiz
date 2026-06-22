@@ -2150,10 +2150,10 @@ msgid "Click to view Cloudflare tutorial & source code"
 msgstr "点击查看 Cloudflare 示例教程与源码"
 
 msgid "To ensure the probe works correctly, the following dependent features have been automatically enabled:"
-msgstr "為了確保探針正常運作，系統已同步為您啟用以下相依功能："
+msgstr "为了确保探针正常工作，系统已同步为您开启以下依赖功能："
 
 msgid "IPv6 Master Switch"
-msgstr "IPv6 總開關"
+msgstr "IPv6 总开关"
 
 msgid "Allow WAN Access to Web UI"
-msgstr "允許外網存取面板"
+msgstr "允许外网访问面板"
