@@ -509,7 +509,7 @@ var T = {
     'ADV_BTN_REMOVE': _('Remove'),
     'ADV_ERR_SAVE_LAYOUT': _('Save layout failed'),
     'ADV_WARN_NO_WIFI': _('Warning: No Wi-Fi hardware detected, Wi-Fi configuration card is hidden.'),
-    'LBL_WATCHDOG_LINK': _('IPv6 Watchdog'),
+    'LBL_WATCHDOG_LINK': '📡 ' + _('IPv6 Watchdog'),
     'WOG_TITLE': _('IPv6 Heartbeat Probe'),
     'WOG_ENABLE': _('Enable Advanced IPv6 Link Monitoring & Auto Recovery'),
     'WOG_URL_LBL': _('Probe Target URL'),
