@@ -524,9 +524,13 @@ var T = {
                 '<code style="background:#e2e8f0; padding:2px 6px; border-radius:4px; color:#0f172a; margin-bottom:8px; display:inline-block; word-break:break-all;">http://your-vps-ip:8080/probe</code> ' + _('(VPS)') + '<br>' +
                 '🔗 <a href="https://raw.githubusercontent.com/huchd0/luci-app-netwiz/refs/heads/master/worker.js" target="_blank" style="color:#0284c7; text-decoration:underline; font-weight: bold;">' + _('Click to view Cloudflare tutorial & source code') + '</a>' +
                 '</div>',
-    'MSG_WOG_LINKAGE': _('To ensure the probe works correctly, the following dependent features have been automatically enabled:') + '\n',
+    'MSG_WOG_LINKAGE': _('To ensure the probe works correctly, the following dependent features have been automatically enabled'),
     'MSG_WOG_LINK_V6': _('IPv6 Master Switch'),
-    'MSG_WOG_LINK_WAN': _('Allow WAN Access to Web UI')
+    'MSG_WOG_LINK_WAN': _('Allow WAN Access to Web UI'),
+    'MSG_SEC_NOTICE': _('Security Notice'),
+    'MSG_WOG_OFF_WAN': _('You have disabled WAN access. To ensure the firewall is completely closed, the IPv6 Watchdog has been automatically disabled.'),
+    'MSG_DEP_NOTICE': _('Dependency Notice'),
+    'MSG_WOG_OFF_V6': _('You have disabled IPv6. The IPv6 Watchdog, which depends on it, has been automatically disabled.')
 };
 
 var callNetSetup = rpc.declare({ object: 'netwiz', method: 'set_network', params: ['mode', 'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6'], expect: { result: 0 } });
@@ -1498,10 +1502,10 @@ return view.extend({
                         if (this.checked) {
                             var needsPrompt = false;
                             
-                            // 改用 HTML 拼接，适配插件的原生 UI，排版更精美
+                            // HTML 拼接
                             var promptHtml = '<div style="font-size:14px; line-height:1.6; color:#334155; text-align:left; padding: 5px;">' +
                                              '<div style="margin-bottom: 12px; font-weight: bold; color: #0284c7;">' + 
-                                             (T['MSG_WOG_LINKAGE'] || "To ensure the probe works correctly, the following dependent features have been automatically enabled:") + '</div>';
+                                             (T['MSG_WOG_LINKAGE'] || "To ensure the probe works correctly, the following dependent features have been automatically enabled") + '：</div>';
 
                             // 联动 1：IPv6 总开关
                             if (ipv6Checkbox && !ipv6Checkbox.checked) {
@@ -1880,6 +1884,15 @@ return view.extend({
                 } else {
                     // 开关关闭时
                     if (isSaving) return;
+
+                    // 防呆：如果关闭了外网访问，同时在底层关闭 IPv6 探针
+                    var isWogEn = safeUciGet('netwiz', 'main', 'watchdog_enable', '0');
+                    if (isWogEn === '1') {
+                        uci.set('netwiz', 'main', 'watchdog_enable', '0');
+                        uci.save(); // 立即异步存入配置
+                        alert('⚠️ ' + (T['MSG_SEC_NOTICE'] || 'Security Notice') + '：\n' + (T['MSG_WOG_OFF_WAN'] || 'You have disabled WAN access. To ensure the firewall is completely closed, the IPv6 Watchdog has been automatically disabled.'));
+                    }
+
                     isSaving = true;
                     openModal({ title: T['LBL_ADV_UTILS_TITLE'] || '⚙️ Advanced Utilities', msg: T['MSG_WRITING'] || 'Please wait...', spin: true });
                     var gm2 = document.getElementById('nw-global-modal'); if (gm2) gm2.style.zIndex = '100000';
@@ -2544,6 +2557,18 @@ return view.extend({
         });
         container.addEventListener('change', function(e) {
             if (e.target && e.target.id && e.target.id.indexOf('wifi-') !== -1) window._updateLiveQR();
+
+            // 连动：关闭「IPv6 总开关」
+            if (e.target && e.target.id === 'lan-ipv6-toggle') {
+                if (!e.target.checked) {
+                    var isWogEn = safeUciGet('netwiz', 'main', 'watchdog_enable', '0');
+                    if (isWogEn === '1') {
+                        uci.set('netwiz', 'main', 'watchdog_enable', '0');
+                        uci.save(); // 立即异步写入底层
+                        alert('⚠️ ' + (T['MSG_DEP_NOTICE'] || 'Dependency Notice') + '：\n' + (T['MSG_WOG_OFF_V6'] || 'You have disabled IPv6. The IPv6 Watchdog, which depends on it, has been automatically disabled.'));
+                    }
+                }
+            }
         });
         container.querySelector('#tab-2g').addEventListener('click', function() { setTimeout(window._updateLiveQR, 50); });
         container.querySelector('#tab-5g').addEventListener('click', function() { setTimeout(window._updateLiveQR, 50); });
