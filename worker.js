@@ -3,7 +3,7 @@
 # 📡 Netwiz Probe (IPv6 保活探针) - Cloudflare 版
 
 这是一个专为路由器 IPv6 直联自愈机制设计的**无服务器（Serverless）网络探针**。依托于 Cloudflare 强大的全球边缘网络，您可以将它零成本、免配置地部署在云端。
-### 完美配合路由器的 luci-app-netwiz ，实现企业级的 IPv6 自动保活与故障自愈。
+### 完美配合路由器的 luci-app-netwiz ，实现企业级的 IPv6 直联保活与故障自愈。
 
 ## ✨ 核心特性
 
