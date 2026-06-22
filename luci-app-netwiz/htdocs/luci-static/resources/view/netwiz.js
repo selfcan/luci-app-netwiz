@@ -511,7 +511,7 @@ var T = {
     'ADV_WARN_NO_WIFI': _('Warning: No Wi-Fi hardware detected, Wi-Fi configuration card is hidden.'),
     'LBL_WATCHDOG_LINK': _('IPv6 Watchdog'),
     'WOG_TITLE': _('IPv6 Heartbeat Probe'),
-    'WOG_ENABLE': _('Enable Advanced Watchdog'),
+    'WOG_ENABLE': _('Enable Advanced IPv6 Link Monitoring & Auto Recovery'),
     'WOG_URL_LBL': _('Probe Target URL'),
     'WOG_URL_PH': _('e.g., XXXXX-XXXXX.workers.dev'),
     'WOG_HELP': '<div style="font-size:13px; color:#475569; line-height:1.6; text-align:left;">' +
@@ -1415,7 +1415,7 @@ return view.extend({
             // 渲染极客级设置面板
             var html = '<div style="text-align:left; font-size:14px; line-height:1.6; color:#334155;">' +
                 '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px; padding-bottom:12px; border-bottom:1px solid #e2e8f0;">' +
-                    '<span style="font-weight:bold; color:#0f172a; font-size:14.5px;">' + (T['WOG_ENABLE'] || 'Enable Advanced Watchdog') + '</span>' +
+                    '<span style="font-weight:bold; color:#0f172a; font-size:14.5px;">' + (T['WOG_ENABLE'] || 'Enable Advanced IPv6 Link Monitoring & Auto Recovery') + '</span>' +
                     '<label class="nw-switch" style="margin:0;"><input type="checkbox" id="nw-wog-en" '+(isEn==='1'?'checked':'')+'><span class="nw-slider"></span></label>' +
                 '</div>' +
                 '<div id="nw-wog-url-box" style="margin-bottom:15px; '+(isEn==='1'?'':'display:none;')+'">' +
@@ -5966,7 +5966,7 @@ return view.extend({
                                     }
                                 }
                             }
-                            
+
                             confirmText.innerHTML = b(T['MODE_WIFI_TITLE'], confirmList);
                         } else {
                             if (window._nwMultiPppoe) {
@@ -5985,14 +5985,14 @@ return view.extend({
                                 var oldPppoeUser = safeUciGet('network', 'wan', 'username', '');
                                 var oldPppoePass = safeUciGet('network', 'wan', 'password', '');
                                 confirmText.innerHTML = b(T['MODE_PPPOE_TITLE'], [
-                                    mkDiff(T['M_ACCT'], container.querySelector('#pppoe-user').value, oldPppoeUser), 
+                                    mkDiff(T['M_ACCT'], container.querySelector('#pppoe-user').value, oldPppoeUser),
                                     mkDiff(T['M_PWD'], container.querySelector('#pppoe-pass').value, oldPppoePass)
                                 ]);
                             }
                         }
-                        
+
                         if (selectedMode === 'lan' && !isBypass && targetGw !== '') { openModal({ title: T['M_WARN_TIT'], msg: T['M_WARN_MSG'], cancelText: T['BTN_EDIT'], okText: T['M_WARN_BTN'], isDanger: true, onOk: function() { container.querySelector('#nw-global-modal').style.display = 'none'; step2.style.display = 'none'; step3.style.display = 'block'; setTimeout(function(){ smoothScrollToTop(650); }, 20); } }); return; }
-                        
+
                         // ===== Wi-Fi 无密码拦截 =====
                         var hasOpenWifi = false;
                         if (selectedMode === 'wifi') {
@@ -6006,20 +6006,20 @@ return view.extend({
                         }
 
                         if (hasOpenWifi) {
-                            openModal({ 
-                                title: T['M_OPEN_WARN_TIT'] || '⚠️ No Password', 
-                                msg: T['M_OPEN_WARN_MSG'] || 'Setting up an open Wi-Fi without a password. Continue?', 
-                                cancelText: T['BTN_EDIT'], 
-                                okText: T['M_WARN_BTN'], 
-                                isDanger: true, 
-                                onOk: function() { 
-                                    container.querySelector('#nw-global-modal').style.display = 'none'; 
-                                    step2.style.display = 'none'; 
-                                    step3.style.display = 'block'; 
-                                    setTimeout(function(){ smoothScrollToTop(650); }, 20); 
-                                } 
-                            }); 
-                            return; 
+                            openModal({
+                                title: T['M_OPEN_WARN_TIT'] || '⚠️ No Password',
+                                msg: T['M_OPEN_WARN_MSG'] || 'Setting up an open Wi-Fi without a password. Continue?',
+                                cancelText: T['BTN_EDIT'],
+                                okText: T['M_WARN_BTN'],
+                                isDanger: true,
+                                onOk: function() {
+                                    container.querySelector('#nw-global-modal').style.display = 'none';
+                                    step2.style.display = 'none';
+                                    step3.style.display = 'block';
+                                    setTimeout(function(){ smoothScrollToTop(650); }, 20);
+                                }
+                            });
+                            return;
                         }
                         // ======================================
 
@@ -6120,7 +6120,7 @@ return view.extend({
                             bandwidth: container.querySelector('#wifi-5g-bw').value,
                             roaming: container.querySelector('#wifi-5g-roaming').checked ? "1" : "0"
                         };
-                        
+
                         // 5G_Game 逻辑
                         if (container.querySelector('#tab-5g2').style.display !== 'none') {
                             payload.radio_5g2 = {
@@ -6152,37 +6152,37 @@ return view.extend({
                     actionDetail = '<b style="color:#10b981;">' + T['MODE_WIFI_TITLE'] + '</b>';
                     mTitle = T['ACT_WIFI'];
                 }
-                
+
                 openModal({ title: mTitle, msg: '<div style="font-size: 16px; margin-bottom: 10px;">' + T['LBL_TARGET'] + ' ' + actionDetail + '</div><div style="color: #64748b; font-size: 16px;">' + T['MSG_WRITING'] + '</div>', spin: true });
-                
+
                 var succ = function() {
                     var h = window.location.hostname, sec = 0;
-                    if (selectedMode === 'lan' && a1 && a1 !== h) { 
+                    if (selectedMode === 'lan' && a1 && a1 !== h) {
                         if (a5 === '1') {
                             var countdownTimer = setInterval(function() {
                                 sec += 3;
                                 if (sec <= 120) {
                                     document.getElementById('nw-global-msg').innerHTML = '<div style="font-size: 16px; margin-bottom: 12px;">' + T['LBL_TARGET'] + ' <b style="color:#3b82f6; font-size: 18px;">' + a1 + '</b></div><div style="color: #64748b; font-size: 14px; font-weight: bold;">' + T['MSG_TIMER'].replace('{sec}', sec).replace('{total}', 120) + '</div>';
-                                    if (sec >= 8) { 
+                                    if (sec >= 8) {
                                         fetchProbe('http://' + a1 + '/luci-static/resources/view/netwiz.js?v=' + Date.now(), 2000)
-                                        .then(function() { 
-                                            clearInterval(countdownTimer); 
+                                        .then(function() {
+                                            clearInterval(countdownTimer);
                                             var jumpUrl = 'http://' + a1 + '/cgi-bin/luci/admin/netwiz';
                                             var doJump = function() { window.location.href = jumpUrl; };
-                                            callNetDefuse().then(doJump).catch(doJump); 
+                                            callNetDefuse().then(doJump).catch(doJump);
                                             setTimeout(doJump, 1000);
-                                        }).catch(function() {}); 
+                                        }).catch(function() {});
                                     }
                                 } else {
-                                    clearInterval(countdownTimer); 
+                                    clearInterval(countdownTimer);
                                     var rollbackSec = 0;
-                                    var checkOldIpTimer = setInterval(function() { 
-                                        rollbackSec += 3; 
+                                    var checkOldIpTimer = setInterval(function() {
+                                        rollbackSec += 3;
                                         document.getElementById('nw-global-msg').innerHTML = '<div style="color:#10b981; font-weight:bold; font-size:15px; margin-top:20px; margin-bottom:10px;">' + T['MSG_WAIT_OLD'].replace('{sec}', rollbackSec) + '</div><div style="color:#64748b; font-size:14px;">' + T['MSG_ABANDONING'] + '</div>'; 
                                         fetchProbe('http://' + h + '/cgi-bin/luci/?v=' + Date.now(), 2000)
-                                        .then(function() { 
+                                        .then(function() {
                                             clearInterval(checkOldIpTimer);
-                                            
+
                                             // 网络恢复后，向后端发送确认信号，解除看门狗回滚警报
                                             var confirmRpc = rpc.declare({ object: 'netwiz', method: 'confirm' });
                                             confirmRpc().then(function() {
@@ -6199,31 +6199,31 @@ return view.extend({
                                 }
                             }, 3000);
                         } else {
-                            var probeNewTimer = setInterval(function() { 
-                                sec += 3; 
+                            var probeNewTimer = setInterval(function() {
+                                sec += 3;
                                 document.getElementById('nw-global-msg').innerHTML = '<div style="font-size: 16px; margin-bottom: 10px;">' + T['LBL_TARGET'] + ' ' + actionDetail + '</div><div style="color: #059669; font-size: 16px; font-weight: bold;">' + T['MSG_WAIT_NET'].replace('{sec}', sec) + '</div>'; 
-                                
+
                                 // 前 9 秒倒数
                                 if (sec <= 9) return;
 
                                 fetchProbe('http://' + a1 + '/cgi-bin/luci/?v=' + Date.now(), 2000)
-                                .then(function() { 
-                                    clearInterval(probeNewTimer); 
+                                .then(function() {
+                                    clearInterval(probeNewTimer);
                                     var doJump = function() { window.location.href = 'http://' + a1 + '/cgi-bin/luci/admin/netwiz'; };
                                     callNetDefuse().then(doJump).catch(doJump);
                                 }).catch(function() {});
                             }, 3000);
                         }
-                    } else { 
-                        var checkSameTimer = setInterval(function() { 
-                            sec += 3; 
+                    } else {
+                        var checkSameTimer = setInterval(function() {
+                            sec += 3;
                             document.getElementById('nw-global-msg').innerHTML = '<div style="font-size: 16px; margin-bottom: 10px;">' + T['LBL_TARGET'] + ' ' + actionDetail + '</div><div style="color: #059669; font-size: 16px; font-weight: bold;">' + T['MSG_WAIT_NET'].replace('{sec}', sec) + '</div>'; 
-                            
+
                             if (sec <= 9) return;
 
                             fetchProbe('http://' + h + '/cgi-bin/luci/?v=' + Date.now(), 2000)
-                            .then(function() { 
-                                clearInterval(checkSameTimer); 
+                            .then(function() {
+                                clearInterval(checkSameTimer);
                                 var match = window.location.pathname.match(/;stok=[a-zA-Z0-9]+/);
                                 var stok = match ? match[0] + '/' : '';
                                 var jumpUrl = window.location.protocol + '//' + h + '/cgi-bin/luci/' + stok + 'admin/netwiz';
@@ -6233,7 +6233,7 @@ return view.extend({
                         }, 3000);
                     }
                 };
-                
+
                 if (mode === 'multi_pppoe') {
                     var mBoxes = container.querySelectorAll('.nw-multi-pppoe-box');
                     mBoxes.forEach(function(b) {
