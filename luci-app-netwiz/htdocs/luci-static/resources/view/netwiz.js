@@ -3292,19 +3292,50 @@ return view.extend({
                         }
                     }
 
-                    // --- 核心防呆 2：从网卡中提取 IP 时，强制优先选择【非内网】的真实公网 IP ---
+                    // --- 核心防呆 2：强制优先公网 IP + 智能穿透探测真实公网 IP ---
                     var liveWanIp = '';
+                    var isPrivateWan = false;
+                    
                     if (activeWan['ipv4-address'] && activeWan['ipv4-address'].length > 0) {
                         var pubIpObj = activeWan['ipv4-address'].find(function(ipObj) {
                             var ip = ipObj.address || '';
-                            // 过滤掉所有 192.168.x.x, 10.x.x.x, 172.16.x.x 等局域网或 CGNAT 大内网 IP
+                            // 过滤掉所有局域网和运营商大内网 (CGNAT) IP
                             return !/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\.)/.test(ip);
                         });
-                        // 如果找到了公网 IP 就用它，如果全是内网 IP（比如真的只是二级路由），才拿第一个
-                        liveWanIp = pubIpObj ? pubIpObj.address : activeWan['ipv4-address'][0].address;
+                        
+                        if (pubIpObj) {
+                            liveWanIp = pubIpObj.address; // 物理网卡上直接就有真实的公网 IP
+                        } else {
+                            liveWanIp = activeWan['ipv4-address'][0].address; // 只有内网 IP（确认为二级路由模式）
+                            isPrivateWan = true;
+                        }
                     }
                     liveWanIp = liveWanIp.split('/')[0];
+
+                    // 二级路由的内网 IP，利用浏览器在后台静默请求真正的外网 IP
+                    if (isPrivateWan && liveWanIp) {
+                        // 加入缓存机制，每 60 秒最多请求一次外部 API，防止轮询被封锁
+                        if (typeof fetch !== 'undefined') {
+                            if (!window._pubIpCache || (Date.now() - window._pubIpLastCheck > 60000)) {
+                                window._pubIpLastCheck = Date.now();
+                                fetch('https://api.ipify.org?format=text')
+                                    .then(function(res) { return res.text(); })
+                                    .then(function(ip) {
+                                        // 严格校验返回的是否为合法的数字 IP
+                                        if (/^([0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip)) {
+                                            window._pubIpCache = ip;
+                                        }
+                                    }).catch(function(e) {}); // 失败则静默忽略
+                            }
+                            // 如果成功抓到了真实的公网 IP，在前端替换显示，并打上标识
+                            if (window._pubIpCache) {
+                                liveWanIp = window._pubIpCache + ' (真实公网)';
+                            }
+                        }
+                    }
+
                     window._liveWanIp = liveWanIp;
+                    // -------------------------------------------------------------------------
                     
                     var liveGw = activeWan.nexthop || '';
                     if (!liveGw && Array.isArray(activeWan.route)) { var defaultRoute = activeWan.route.find(function(r) { return r.target === '0.0.0.0'; }); if (defaultRoute) liveGw = defaultRoute.nexthop; }
