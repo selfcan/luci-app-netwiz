@@ -2080,8 +2080,10 @@ EOF
                                 [ -x /etc/init.d/ddns ] && /etc/init.d/ddns restart >/dev/null 2>&1
 
                                 logger -t Netwiz "[保活守护] ✅ 自愈指令下发完毕！"
-                            else
-                                logger -t Netwiz "[保活守护] ⚠️ 连续 3 次自愈无效，推测为 ISP 严重故障。已触发熔断保护，暂停自愈。"
+                            elif [ $heal_fail_cnt -eq 3 ]; then
+                                # 当刚好达到3次时，打印最后一次警告，然后将计数器加到4
+                                heal_fail_cnt=4
+                                logger -t Netwiz "[保活守护] ⚠️ 连续 3 次自愈无效，推测为 ISP 严重故障。已触发熔断，进入完全静默等待模式，下次如果探测成功，熔断器会自动复位。"
                             fi
                         else
                             # 探针畅通无阻，复位计数器
