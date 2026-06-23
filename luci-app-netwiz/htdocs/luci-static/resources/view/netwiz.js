@@ -3388,7 +3388,7 @@ return view.extend({
                     var dns2 = dnsServers[1] || '';
 
                     var wIp = safeUciGet('network', 'wan', 'ipaddr', T['TXT_NOT_GOT']).split('/')[0], wGw = safeUciGet('network', 'wan', 'gateway', T['TXT_NOT_SET']);
-                    var lIp = safeUciGet('network', 'lan', 'ipaddr', window.location.hostname).split('/')[0], lGw = safeUciGet('network', 'lan', 'gateway', T['TXT_NOT_SET']), lIgnore = safeUciGet('dhcp', 'lan', 'ignore', ''), isBypass = (lIgnore === '1' || lIgnore === 'true' || lIgnore === 'on' || lIgnore === 'yes');
+                    var lIp = safeUciGet('network', 'lan', 'ipaddr', '192.168.1.1').split('/')[0], lGw = safeUciGet('network', 'lan', 'gateway', T['TXT_NOT_SET']), lIgnore = safeUciGet('dhcp', 'lan', 'ignore', ''), isBypass = (lIgnore === '1' || lIgnore === 'true' || lIgnore === 'on' || lIgnore === 'yes');
                     
                     // 全局拦截，只要发现网段死环，立刻弹窗
                     var sysWanIp = window._liveWanIp || ''; 
@@ -5080,7 +5080,12 @@ return view.extend({
 
                 // 3. 正常探测逻辑
                 if (!gw || gw === T['TXT_GETTING'] || gw === T['TXT_NOT_SET']) {
-                    gw = (currentUrlIp.indexOf('.') > -1 ? currentUrlIp.substring(0, currentUrlIp.lastIndexOf('.') + 1) + '1' : ''); 
+                    // 确保 URL 是数字 IP 格式，绝对不能用域名来切分网关！
+                    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(currentUrlIp)) {
+                        gw = currentUrlIp.substring(0, currentUrlIp.lastIndexOf('.') + 1) + '1';
+                    } else {
+                        gw = ''; // 域名登录，直接留空
+                    }
                 }
                 
                 if (gw && gw.indexOf('.') > -1) {
@@ -5840,7 +5845,7 @@ return view.extend({
                 } else if (selectedMode === 'router') { 
                     // 主路由模式下的避让，包含 DHCP 和 Static
                     // DHCP 还是配置 Static，路由器的 LAN IP 和现在的 WAN 冲突，修改 LAN IP
-                    var currentLanIp = container.querySelector('#lan-ip').value || safeUciGet('network', 'lan', 'ipaddr', window.location.hostname).split('/')[0];
+                    var currentLanIp = container.querySelector('#lan-ip').value || safeUciGet('network', 'lan', 'ipaddr', '192.168.1.1').split('/')[0];
                     
                     if (rType === 'static') { 
                         targetIp = container.querySelector('#router-ip').value.trim(); 
@@ -5949,7 +5954,7 @@ return view.extend({
                 
                 uci.load('network').then(function() {
                     try {
-                        var currentLanIp = safeUciGet('network', 'lan', 'ipaddr', window.location.hostname).split('/')[0];
+                        var currentLanIp = safeUciGet('network', 'lan', 'ipaddr', '192.168.1.1').split('/')[0];
                         var currentLanGw = safeUciGet('network', 'lan', 'gateway', '');
                         var currentWanProto = safeUciGet('network', 'wan', 'proto', '').toLowerCase();
                         var currentWanIp = (currentWanProto === 'static') ? safeUciGet('network', 'wan', 'ipaddr', '').split('/')[0] : (window._liveWanIp || '');
