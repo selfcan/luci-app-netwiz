@@ -3332,9 +3332,13 @@ return view.extend({
                                 }).catch(function(e) {}); // 全部失败则静默忽略
                             }
                             
-                            // 替换显示 (这里尊重您自己修改的 '(wan)' 标识)
+                            // 并列显示物理 IP 与出口 IP
                             if (window._pubIpCache) {
-                                liveWanIp = window._pubIpCache + '(wan)';
+                                // 取出原始的物理 WAN IP (也就是光猫分发的 192.168.x.x 或 PPPoE 抓到的 IP)
+                                var physicalIp = activeWan['ipv4-address'] ? activeWan['ipv4-address'][0].address.split('/')[0] : '';
+                                
+                                // 组合展示：前面是物理真实 IP，后面带上穿透探测到的出口 IP
+                                liveWanIp = physicalIp + '  (🌐: ' + window._pubIpCache + ')';
                             }
                         }
                     }
