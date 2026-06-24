@@ -3325,9 +3325,26 @@ return view.extend({
                     var liveWanIp = '';
                     var protoName = '';
 
-                    // 获取真实的接口 IP (完全等同于官方页面显示的第一个 IP)
+                    // 获取真实的接口 IP (优先提取网卡上自带的公网 IP，杜绝双 IP 轮询乱跳)
                     if (activeWan['ipv4-address'] && activeWan['ipv4-address'].length > 0) {
-                        liveWanIp = activeWan['ipv4-address'][0].address;
+                        var foundPubIp = null;
+                        var foundPrivIp = null;
+                        
+                        // 遍历网卡上的所有 IP
+                        activeWan['ipv4-address'].forEach(function(ipObj) {
+                            var ip = ipObj.address || '';
+                            // 匹配所有局域网和运营商大内网 (CGNAT) IP
+                            var isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\.)/.test(ip);
+                            
+                            if (isPrivate) {
+                                if (!foundPrivIp) foundPrivIp = ip; // 记录找到的第一个私有 IP
+                            } else {
+                                if (!foundPubIp) foundPubIp = ip;   // 记录找到的第一个公网 IP
+                            }
+                        });
+
+                        // 终极优先级：有公网选公网，没公网才选私有 IP 兜底
+                        liveWanIp = foundPubIp ? foundPubIp : (foundPrivIp ? foundPrivIp : activeWan['ipv4-address'][0].address);
                     }
 
                     // 获取协议类型 (加入 || '' 防止读取失败时报错卡死)
