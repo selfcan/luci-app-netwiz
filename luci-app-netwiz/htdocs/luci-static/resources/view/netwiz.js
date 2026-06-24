@@ -1848,20 +1848,39 @@ return view.extend({
                             lastValidPort = res.web;
                         }
                         
-                        // === IPv6 直达链接 ===
+                        // === IPv6 直达链接 (支持探针代理拼接) ===
                         if (res.wan6_ip) {
                             if (!container.querySelector('#nw-v6-link')) {
-                                var curPort = (res.web !== '1') ? res.web : '80';
-                                var v6Link = 'http://[' + res.wan6_ip + ']:' + curPort;
-                                
-                                var linkDiv = document.createElement('div');
-                                linkDiv.id = 'nw-v6-link'; 
-                                
-                                linkDiv.style.cssText = 'width: 100%; text-align: left; margin-top: 4px; font-size: 13.5px; opacity: 0.9; display: block;';
-                                linkDiv.innerHTML = '<a href="' + v6Link + '" target="_blank" style="color: #0ea5e9; text-decoration: underline; font-family: monospace; font-weight: bold; font-size: 14px;">' + v6Link + '</a>';
-                                
-                                var rowContainer = webPort.parentNode.parentNode;
-                                rowContainer.insertAdjacentElement('afterend', linkDiv);
+                                uci.load('netwiz').then(function() {
+                                    var wogUrl = safeUciGet('netwiz', 'main', 'watchdog_url', '').trim();
+                                    var wogEn = safeUciGet('netwiz', 'main', 'watchdog_enable', '0');
+                                    var curPort = (res.web !== '1') ? res.web : '80';
+                                    var v6Link = 'http://[' + res.wan6_ip + ']:' + curPort;
+                                    var finalLink = '';
+
+                                    // 如果用户填了探测源目标网址，并且开启了探针
+                                    if (wogEn === '1' && wogUrl !== '') {
+                                        // 确保带有 http/https 前缀
+                                        if (wogUrl.indexOf('http') !== 0) wogUrl = 'https://' + wogUrl;
+                                        // 去掉末尾的斜杠防止双斜杠
+                                        wogUrl = wogUrl.replace(/\/+$/, '');
+
+                                        // 拼接格式：代理网址/[IPv6]:端口
+                                        finalLink = wogUrl + '/[' + res.wan6_ip + ']:' + curPort;
+                                    } else {
+                                        // 没有探针，走原本的裸连 IPv6
+                                        finalLink = 'http://[' + res.wan6_ip + ']:' + curPort;
+                                    }
+
+                                    var linkDiv = document.createElement('div');
+                                    linkDiv.id = 'nw-v6-link';
+
+                                    linkDiv.style.cssText = 'width: 100%; text-align: left; margin-top: 4px; font-size: 13.5px; opacity: 0.9; display: block;';
+                                    linkDiv.innerHTML = '<a href="' + finalLink + '" target="_blank" style="color: #0ea5e9; text-decoration: underline; font-family: monospace; font-weight: bold; font-size: 14px;">' + v6Link + '</a>';
+
+                                    var rowContainer = webPort.parentNode.parentNode;
+                                    rowContainer.insertAdjacentElement('afterend', linkDiv);
+                                });
                             }
                         }
                         // ==================================================
