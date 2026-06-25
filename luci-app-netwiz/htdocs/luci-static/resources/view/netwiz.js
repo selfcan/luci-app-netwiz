@@ -2419,14 +2419,14 @@ return view.extend({
                             var domVal = domInput.value.trim();
                             
                             if (!ipVal || !domVal) { 
-                                // 替换 原生alert()弹窗
+                                // 替换 alert()弹窗
                                 openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['MSG_HOSTS_REQ'] || 'IP and Domain cannot be empty!', okText: T['M_CLOSE'] || 'Close' }); 
                                 return; 
                             }
                             var isIpv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(ipVal);
                             var isIpv6 = /^[a-fA-F0-9:]+:[a-fA-F0-9:]+$/.test(ipVal);
                             if (!isIpv4 && !isIpv6) { 
-                                // 替换 原生alert()弹窗
+                                // 替换 alert()弹窗
                                 openModal({ title: T['M_INC_TIT'] || 'Notice', msg: T['M_FMT_IP'] || 'Invalid IP format!', okText: T['M_CLOSE'] || 'Close' }); 
                                 return; 
                             }
@@ -3381,7 +3381,7 @@ return view.extend({
                         if (!secs) return '';
                         var d = Math.floor(secs / 86400), h = Math.floor((secs % 86400) / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
                         var res = '';
-                        if (d > 0) res += d + 'd ';
+                        if (d > 0) res += d + 'D ';
                         if (h > 0) res += h + 'H ';
                         if (m > 0) res += m + 'm ';
                         res += s + 's';
@@ -4378,7 +4378,7 @@ return view.extend({
                     extraInfo += wifiLines.join('');
                     extraInfo += "</div>";
 
-                    // ✨ 读取会话记忆，保持按钮文字与智能折叠状态一致
+                    // 读取会话记忆，保持按钮文字与智能折叠状态一致
                     var isExpanded = (sessionStorage.getItem('nw_adv_expanded') === '1');
                     var btnText = isExpanded ? (T['BTN_ADV_HIDE'] || 'Advanced Settings ▲') : (T['BTN_ADV_SHOW'] || 'Advanced Settings ▼');
                     var btnBg = isExpanded ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.15)';
