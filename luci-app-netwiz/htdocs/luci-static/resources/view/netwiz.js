@@ -3283,60 +3283,60 @@ return view.extend({
                     var rawIfaces = results[3] || {}, ifaces = Array.isArray(rawIfaces.interface) ? rawIfaces.interface : (Array.isArray(rawIfaces) ? rawIfaces : []);
                     var wProto = safeUciGet('network', 'wan', 'proto', '').toLowerCase();
 
-                    // --- 提取基础网卡信息 ---
+                    // ==========================================
+                    // 1. 全局防抖：锁定网卡列表 (容错 15 秒)
+                    // ==========================================
+                    // 判断本次轮询是否抓到了健康的 IP 数据
+                    var isHealthyPoll = ifaces.some(function(i) { return i && i.up && i['ipv4-address'] && i['ipv4-address'].length > 0; });
+                    
+                    if (isHealthyPoll) {
+                        window._stableIfaces = ifaces;
+                        window._stableIfacesTime = Date.now();
+                    } else if (window._stableIfaces && window._stableIfacesTime && (Date.now() - window._stableIfacesTime < 15000)) {
+                        // 遭遇闪断或底层空数据，15 秒内的健康缓存，彻底稳住整个 UI 不乱跳
+                        ifaces = window._stableIfaces;
+                    }
+
+                    // 在防抖锁之后重新提取 phyWan 和 virWwan，确保它们吃到的都是健康数据
                     var phyWan = ifaces.find(function(i) { return i && i.interface === 'wan'; }) || {};
                     var virWwan = ifaces.find(function(i) { return i && i.interface === 'wwan'; }) || {};
 
                     // ==========================================
-                    // 1. 穿透寻找真正的出口网卡
+                    // 2. 穿透寻找真正的出口网卡
                     // ==========================================
                     var routeWan = ifaces.find(function(i) {
                         return i.up && Array.isArray(i.route) && i.route.some(function(r) { return r.target === '0.0.0.0' && (r.mask === 0 || !r.mask); });
                     });
-
-                    // 没找到默认路由，再尝试按名字找 wan
+                    
                     if (!routeWan) {
+                        // 兜底：按名字找
                         routeWan = ifaces.find(function(i) { return i && (i.interface === 'wan' || i.interface === 'wwan' || (i.interface && i.interface.indexOf('wan') !== -1 && i.interface.indexOf('lan') === -1)); }) || {};
                     }
 
-                    // ==========================================
-                    // 2. 防抖锁：杜绝面板乱跳
-                    // ==========================================
-                    if (typeof window._stablePhyWan === 'undefined') {
-                        window._stablePhyWan = routeWan;
-                    }
-                    if (routeWan && routeWan.up && routeWan['ipv4-address'] && routeWan['ipv4-address'].length > 0) {
-                        window._stablePhyWan = routeWan; 
-                    } else if (window._stablePhyWan && window._stablePhyWan.up) {
-                        routeWan = window._stablePhyWan; 
-                    }
-
-                    var activeWan = routeWan; 
+                    var activeWan = routeWan;
                     var isWispActive = false;
                     var hasWispConfigured = !!uci.sections('wireless', 'wifi-iface').find(function(i) { return i.network === 'wwan' && i.mode === 'sta'; });
 
-                    var virWwan = ifaces.find(function(i) { return i && i.interface === 'wwan'; }) || {};
                     var activeWanHasIp = activeWan.up && activeWan['ipv4-address'] && activeWan['ipv4-address'].length > 0;
                     var virWwanHasIp = virWwan.up && virWwan['ipv4-address'] && virWwan['ipv4-address'].length > 0;
 
-                    // WAN 没通，但无线通了，说明可能是 WISP
                     if (!activeWanHasIp && virWwanHasIp) {
                         activeWan = virWwan;
                         isWispActive = true;
                     }
 
                     // ==========================================
-                    // 3. 同步官方协议名称
+                    // 3. 识别协议名称
                     // ==========================================
                     var rawProto = (safeUciGet('network', activeWan.interface || 'wan', 'proto', '') || '').toLowerCase();
                     var protoName = '';
                     if (rawProto === 'pppoe') protoName = 'PPPoE 拨号';
                     else if (rawProto === 'dhcp') protoName = '自动获取 (DHCP)';
                     else if (rawProto === 'static') protoName = '静态 IP';
-                    else protoName = '自动获取 (DHCP)'; // 终极兜底，强杀“局域网”误判字眼
+                    else protoName = '自动获取 (DHCP)'; // 终极兜底，强杀局域网误判
 
                     // ==========================================
-                    // 4. 提取本地物理 WAN IP (剔除光猫管理 IP)
+                    // 4. 提取主力 IP
                     // ==========================================
                     var liveWanIp = '';
                     if (activeWan['ipv4-address'] && activeWan['ipv4-address'].length > 0) {
@@ -3345,21 +3345,18 @@ return view.extend({
                         
                         activeWan['ipv4-address'].forEach(function(ipObj) {
                             var ip = ipObj.address || '';
-                            // 标记光猫 192.168 的局域网 IP
                             if (ip.indexOf('192.168.') === 0) {
                                 if (!foundModemIp) foundModemIp = ip;
                             } else {
-                                // 提取主力 IP
                                 if (!foundMainIp) foundMainIp = ip;
                             }
                         });
-
-                        // 有主力就显示优先，只有光猫才显示光猫
+                        
                         liveWanIp = foundMainIp ? foundMainIp : (foundModemIp ? foundModemIp : activeWan['ipv4-address'][0].address);
                     }
 
                     // ==========================================
-                    // 5. 只显示本地真实状态
+                    // 5. 纯净渲染
                     // ==========================================
                     if (liveWanIp) {
                         window._liveWanIp = liveWanIp + '  (' + protoName + ')';
