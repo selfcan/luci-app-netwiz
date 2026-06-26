@@ -2,7 +2,6 @@
 
 # 📡 Netwiz Probe (IPv6 Watchdog) - Cloudflare Edition
 # 📡 Netwiz Probe (IPv6 保活探针) - Cloudflare 版
-# 📡 Netwiz Probe (IPv6 保活探針) - Cloudflare 版
 
 Developed specifically to address the instability of IPv6 direct-connected devices. Leveraging Cloudflare's global edge network, it allows you to deploy quickly with zero cost and zero configuration.
 专门针对 IPv6 直连设备时不稳定的痛点开发，借助 Cloudflare 覆盖全球的边缘节点网络优势，让您可以零成本、免配置地快速部署。
